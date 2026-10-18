@@ -1,0 +1,5 @@
+{
+  "train": {"count": 2594, "fg_ratio_mean": 0.2140, "fg_ratio_median": 0.1382, "fg_p05": 0.0155, "fg_p95": 0.6518, "empty_masks": 0, "multi_component": 731},
+  "val":   {"count": 100,  "fg_ratio_mean": 0.2684, "fg_ratio_median": 0.2163, "fg_p05": 0.0481, "fg_p95": 0.7126, "empty_masks": 0, "multi_component": 9},
+  "test":  {"count": 1000, "fg_ratio_mean": 0.2798, "fg_ratio_median": 0.2098, "fg_p05": 0.0346, "fg_p95": 0.7572, "empty_masks": 0, "multi_component": 142}
+}

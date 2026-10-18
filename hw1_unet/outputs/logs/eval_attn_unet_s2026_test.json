@@ -1,0 +1,26 @@
+{
+  "tag": "attn_unet_s2026",
+  "split": "test",
+  "ckpt": "best",
+  "size": 256,
+  "params_M": 29.47,
+  "metrics": {
+    "n": 1000,
+    "dice": 0.5929557681458584,
+    "dice_std": 0.2900914369494635,
+    "iou": 0.4787531524219285,
+    "iou_std": 0.28208994001021476,
+    "hd95": 103.05039165340594,
+    "hd95_std": 35.782270702564595,
+    "hd95_valid": 998,
+    "sensitivity": 0.6870114254045964,
+    "sens_valid": 1000,
+    "specificity": 0.8127406061504293,
+    "spec_valid": 998,
+    "pixel_acc": 0.7727939300537109,
+    "empty_pred": 2,
+    "empty_gt": 0,
+    "spec_undefined": 2,
+    "sens_undefined": 0
+  }
+}

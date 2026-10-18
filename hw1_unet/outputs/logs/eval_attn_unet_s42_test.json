@@ -1,0 +1,26 @@
+{
+  "tag": "attn_unet_s42",
+  "split": "test",
+  "ckpt": "best",
+  "size": 256,
+  "params_M": 29.47,
+  "metrics": {
+    "n": 1000,
+    "dice": 0.6225659028112043,
+    "dice_std": 0.29348956581760793,
+    "iou": 0.5141365777426907,
+    "iou_std": 0.29609291962300127,
+    "hd95": 82.84346785139151,
+    "hd95_std": 44.52808252593893,
+    "hd95_valid": 993,
+    "sensitivity": 0.7178434195851396,
+    "sens_valid": 1000,
+    "specificity": 0.811185406074879,
+    "spec_valid": 998,
+    "pixel_acc": 0.776343505859375,
+    "empty_pred": 7,
+    "empty_gt": 0,
+    "spec_undefined": 2,
+    "sens_undefined": 0
+  }
+}

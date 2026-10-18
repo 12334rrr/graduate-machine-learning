@@ -1,0 +1,2404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MedSeg Dataset Hub · 科研数据集展示平台</title>
+<script>
+/* 主题必须在首帧前应用，否则深色模式下会闪一下白屏 */
+(function () {
+  try {
+    var t = localStorage.getItem("dh-theme");
+    if (t !== "light" && t !== "dark") {
+      t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    document.documentElement.dataset.theme = t;
+  } catch (e) { /* 隐私模式下 localStorage 可能不可用，忽略 */ }
+})();
+</script>
+<style>
+/* ================= 设计系统：浅色 / 深色双主题 =================
+ * 全部颜色走语义化 CSS 变量，主题切换只换变量、不动结构。
+ * 深色配色参考 Grafana 暗色主题：低饱和深灰底 + 高对比数据色。 */
+:root{
+  color-scheme: light;
+  --primary:#1a73e8; --primary-dark:#1557b0; --primary-weak:#e8f0fe;
+  --primary-solid:#1a73e8;   /* 实心填充按钮底色：保证白字对比度 ≥4.5:1 */
+  --bg:#f8f9fa; --card:#ffffff; --border:#e0e3e8;
+  --text:#1f2329; --text2:#5f6470;
+  --accent:#188038; --accent-weak:#e6f4ea;
+  --danger:#d93025; --danger-weak:#fce8e6;
+  --warn:#b06000; --warn-weak:#fef7e0;
+  --violet:#7c3aed; --violet-weak:#f3e8fd;
+  /* 次级表面 / 骨架 / 图表 / 代码块 / 遮罩 */
+  --surface-2:#f1f3f4;
+  --surface-3:#e8eaed;
+  --skeleton:#eceef1;
+  --chart-grid:#e9ebef;
+  --chart-axis:#c8ccd4;
+  --chart-area:.16;
+  --code-bg:#f6f8fa;
+  --code-key:#7c3aed;
+  --toast-bg:#2d2f33; --toast-fg:#ffffff;
+  --scrim:rgba(31,35,41,.48);
+  --shadow:0 2px 10px rgba(31,35,41,.10);
+  --shadow-lg:0 14px 44px rgba(31,35,41,.22);
+  /* 图表数据色板（8 色，色相分散且对色盲友好） */
+  --s1:#1a73e8; --s2:#7c3aed; --s3:#188038; --s4:#e37400;
+  --s5:#d93025; --s6:#00838f; --s7:#c2185b; --s8:#5f6470;
+  --radius:8px;
+  --mono:"SF Mono",Menlo,Consolas,"Courier New",monospace;
+}
+[data-theme="dark"]{
+  color-scheme: dark;
+  --primary:#4c9aff; --primary-dark:#8ab4f8; --primary-weak:#16283f;
+  --primary-solid:#1d5bbf;   /* 深色下用更深的实心蓝，白字才够清晰 */
+  --bg:#0e1013; --card:#171a20; --border:#2a2f3a;
+  --text:#e3e6ea; --text2:#98a0ac;
+  --accent:#5bb974; --accent-weak:#14291c;
+  --danger:#f28b82; --danger-weak:#33191a;
+  --warn:#fdd663; --warn-weak:#33290f;
+  --violet:#c58af9; --violet-weak:#271a38;
+  --surface-2:#1f232b;
+  --surface-3:#262b34;
+  --skeleton:#242932;
+  --chart-grid:#232833;
+  --chart-axis:#3c4351;
+  --chart-area:.22;
+  --code-bg:#12151a;
+  --code-key:#c58af9;
+  --toast-bg:#e3e6ea; --toast-fg:#12151a;
+  --scrim:rgba(0,0,0,.62);
+  --shadow:0 2px 10px rgba(0,0,0,.45);
+  --shadow-lg:0 14px 44px rgba(0,0,0,.62);
+  --s1:#4c9aff; --s2:#c58af9; --s3:#5bb974; --s4:#fdd663;
+  --s5:#f28b82; --s6:#4dd0e1; --s7:#f48fb1; --s8:#98a0ac;
+}
+/* 主题切换的过渡（只过渡颜色，避免布局抖动） */
+body,.card,.nav,.btn,.chip,.tag,.badge,.bubble,footer,.about-table,.formula,.report-pre{
+  transition:background-color .18s ease,border-color .18s ease,color .18s ease;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font:14px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+code,.mono{font-family:var(--mono);font-size:.92em}
+h1,h2,h3{font-weight:600;line-height:1.35;margin:0 0 8px}
+button{font-family:inherit}
+
+/* ---- 顶部导航 ---- */
+.nav{position:sticky;top:0;z-index:60;background:var(--card);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1840px;margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;color:var(--text);white-space:nowrap}
+.brand:hover{text-decoration:none}
+.brand .logo{font-size:20px}
+.brand .sub{font-size:12px;color:var(--text2);font-weight:400}
+.nav-links{display:flex;gap:4px;margin-left:8px;flex:1}
+.nav-links a{padding:6px 12px;border-radius:6px;color:var(--text2);font-weight:500}
+.nav-links a:hover{background:var(--primary-weak);color:var(--primary);text-decoration:none}
+.nav-links a.active{background:var(--primary-weak);color:var(--primary)}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);white-space:nowrap;cursor:default}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot.green{background:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+.dot.yellow{background:#e37400;box-shadow:0 0 0 3px var(--warn-weak)}
+.nav-burger{display:none;margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:16px;cursor:pointer;color:var(--text2)}
+.theme-btn{background:none;border:1px solid var(--border);border-radius:6px;width:34px;height:30px;font-size:15px;
+  cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
+.theme-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-weak)}
+
+/* ---- 布局 ---- */
+.container{max-width:1840px;margin:0 auto;padding:0 22px}
+.view{padding:28px 0 60px;animation:fadein .22s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ---- 卡片 ---- */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;transition:transform .18s ease,box-shadow .18s ease}
+a.card{display:block;color:var(--text)}
+a.card:hover,.card.lift:hover{transform:translateY(-2px);box-shadow:var(--shadow);text-decoration:none}
+.card h3{margin:0 0 6px;font-size:15.5px}
+.card .muted{color:var(--text2);font-size:13px}
+
+/* ---- 徽标 / 标签 / chips ---- */
+.tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:12px;font-weight:500;
+  background:var(--primary-weak);color:var(--primary-dark);vertical-align:1px}
+.tag.cat{background:var(--surface-2);color:var(--text2)}
+.lic{display:inline-block;padding:2px 10px;border-radius:4px;font-size:12.5px;font-weight:600;
+  background:var(--accent-weak);color:var(--accent);border:1px solid var(--border);cursor:pointer}
+.lic:hover{background:var(--accent-weak)}
+.src{display:inline-block;padding:1px 8px;border-radius:4px;font-size:12px;font-weight:500}
+.src.official{background:var(--primary-weak);color:var(--primary-dark)}
+.src.mirror{background:var(--violet-weak);color:var(--violet)}
+.src.other{background:var(--surface-2);color:var(--text2)}
+.chiprow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{padding:5px 14px;border-radius:999px;border:1px solid var(--border);background:var(--card);
+  color:var(--text2);font-size:13px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--primary);color:var(--primary)}
+.chip.active{background:var(--primary-solid);border-color:var(--primary-solid);color:#fff;font-weight:500}
+
+/* ---- 按钮 ---- */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:6px;
+  border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13.5px;
+  cursor:pointer;transition:.15s;text-decoration:none}
+.btn:hover{border-color:var(--primary);color:var(--primary);text-decoration:none}
+.btn.primary{background:var(--primary-solid);border-color:var(--primary-solid);color:#fff;font-weight:500}
+.btn.primary:hover{filter:brightness(1.12);color:#fff}
+.btn.sm{padding:3px 10px;font-size:12.5px;border-radius:5px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn.link{border:none;background:none;color:var(--primary);padding:4px 6px}
+
+/* ---- Hero ---- */
+.hero{padding:46px 0 30px}
+.hero .pill{display:inline-block;padding:3px 12px;border-radius:999px;background:var(--primary-weak);
+  color:var(--primary-dark);font-size:12.5px;font-weight:500;margin-bottom:14px}
+.hero h1{font-size:32px;margin-bottom:10px}
+.hero .lead{font-size:15.5px;color:var(--text2);max-width:760px;margin:0 0 22px}
+.statrow{display:flex;gap:44px;flex-wrap:wrap;margin-bottom:24px}
+.stat .num{font-family:var(--mono);font-size:32px;font-weight:700;color:var(--primary);line-height:1.1}
+.stat .lab{font-size:13px;color:var(--text2)}
+.ctarow{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ---- 区块标题 ---- */
+.sec{margin-top:34px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.sec-head h2{font-size:19px;margin:0}
+.sec-head .more{font-size:13px}
+
+/* ---- 网格 ---- */
+.grid{display:grid;gap:16px}
+.grid > *{min-width:0}   /* 防止宽表/长文件名把网格列撑破（grid 子项默认 min-width:auto） */
+/* Grafana 式 12 列仪表盘网格：面板按 col-* 占列，窄屏自动折叠 */
+.g12{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.g12 > *{min-width:0}
+.col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-4{grid-column:span 4}
+.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-7{grid-column:span 7}
+.col-8{grid-column:span 8}.col-9{grid-column:span 9}.col-12{grid-column:span 12}
+@media (max-width:1280px){
+  .col-3{grid-column:span 4}.col-5{grid-column:span 6}.col-7{grid-column:span 12}
+  .col-4{grid-column:span 6}
+}
+@media (max-width:900px){
+  .g12 > [class*="col-"]{grid-column:1/-1}
+}
+/* 面板头（Grafana panel header）：标题 + 右侧元信息 */
+.ph{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+.ph h3{margin:0;font-size:14.5px}
+.ph .p-meta{font-size:12px;color:var(--text2);font-family:var(--mono);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+/* 阈值着色（Grafana value mapping） */
+.vt-good{color:var(--accent);font-weight:600}
+.vt-mid{color:var(--warn);font-weight:600}
+.vt-bad{color:var(--danger);font-weight:600}
+/* 表格行可点击 */
+.row-click{cursor:pointer}
+.row-click:hover{background:var(--surface-2)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+
+/* ---- 榜单速览横条 ---- */
+.lb-strip{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;background:var(--accent-weak);
+  border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px}
+.lb-strip .t{font-weight:600;color:var(--accent);white-space:nowrap}
+.lb-strip .item{font-size:13px;color:var(--text)}
+.lb-strip .item b{color:var(--accent)}
+.lb-strip a{color:var(--text);border-bottom:1px dotted var(--accent)}
+.lb-strip a:hover{text-decoration:none;color:var(--accent)}
+
+/* ---- 列表页工具行 ---- */
+.toolbar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.search{flex:1;min-width:220px;max-width:420px;position:relative}
+.search input{width:100%;padding:8px 12px 8px 34px;border:1px solid var(--border);border-radius:6px;
+  font-size:13.5px;background:var(--card);color:var(--text);outline:none;transition:.15s}
+.search input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-weak)}
+.search .ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:14px}
+
+/* ---- 详情页 ---- */
+.crumbs{font-size:13px;color:var(--text2);margin-bottom:14px}
+.crumbs a{color:var(--text2)}
+.crumbs a:hover{color:var(--primary)}
+.detail-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
+.side{display:flex;flex-direction:column;gap:16px;position:sticky;top:76px}
+.info-table{width:100%;border-collapse:collapse;font-size:13px}
+.info-table td{padding:7px 0;border-bottom:1px dashed var(--border);vertical-align:top}
+.info-table tr:last-child td{border-bottom:none}
+.info-table td:first-child{color:var(--text2);white-space:nowrap;padding-right:14px}
+.dl-row{padding:13px 0;border-bottom:1px dashed var(--border)}
+.dl-row:last-child{border-bottom:none}
+.dl-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dl-name{font-weight:500;flex:1;min-width:200px}
+.dl-meta{font-size:12.5px;color:var(--text2);font-family:var(--mono)}
+.dl-btns{display:flex;gap:6px}
+.dl-check{margin-top:7px;font-size:12.5px;line-height:1.6;display:none;padding:7px 10px;border-radius:6px}
+.dl-check.ok{display:block;background:var(--accent-weak);color:var(--accent)}
+.dl-check.bad{display:block;background:var(--danger-weak);color:var(--danger)}
+.dl-check.warn{display:block;background:var(--warn-weak);color:var(--warn)}
+.lb-row{padding:11px 0;border-bottom:1px dashed var(--border)}
+.lb-row:last-child{border-bottom:none}
+.lb-row .name{font-weight:500}
+.lb-row .name a{margin-left:6px;font-size:12px}
+.lb-row .note{font-size:12.5px;color:var(--text2);margin-top:2px}
+.stat-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.stat-table td{padding:7px 0;border-bottom:1px dashed var(--border)}
+.stat-table tr:last-child td{border-bottom:none}
+.stat-table td:first-child{color:var(--text2)}
+.stat-table td:last-child{font-family:var(--mono);font-weight:600;text-align:right}
+
+/* ---- 术语 ---- */
+.term{border-bottom:1px dotted var(--primary);cursor:help;color:inherit}
+.term:hover{color:var(--primary);background:var(--primary-weak);border-bottom-style:solid}
+#term-tip{position:fixed;z-index:95;max-width:320px;background:var(--card);border:1px solid var(--border);
+  border-radius:8px;box-shadow:var(--shadow-lg);padding:12px 14px;font-size:12.5px;
+  display:none;pointer-events:none}
+#term-tip .tt-name{font-weight:600;font-size:13.5px}
+#term-tip .tt-en{color:var(--text2);margin:1px 0 6px}
+#term-tip .tt-def{line-height:1.6}
+#term-tip .tt-go{margin-top:8px;color:var(--primary);font-size:12px}
+.formula{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:6px;padding:8px 12px;margin-top:8px;overflow-x:auto;white-space:nowrap}
+.g-term{padding:14px 0;border-bottom:1px dashed var(--border)}
+.g-term:last-child{border-bottom:none}
+.g-term .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.g-term .name{font-weight:600;font-size:15px}
+.g-term .en{color:var(--text2);font-size:12.5px}
+.g-term .def{margin-top:5px;font-size:13.5px}
+.g-group{margin-bottom:8px}
+.flash{animation:flashbg 2.2s ease}
+@keyframes flashbg{0%,30%{background:var(--warn-weak)}100%{background:transparent}}
+
+/* ---- 状态组件 ---- */
+.skel{background:var(--skeleton);border-radius:6px;height:14px;animation:pulse 1.2s ease-in-out infinite;margin-bottom:10px}
+.skel.t{height:22px;width:45%}.skeleton-card .skel:last-child{margin-bottom:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.err-box{background:var(--danger-weak);border-left:3px solid var(--danger);color:var(--danger);
+  border-radius:6px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.err-box .btn{border-color:var(--danger);color:var(--danger)}
+.empty{text-align:center;padding:52px 20px;color:var(--text2)}
+.empty .emoji{font-size:40px;margin-bottom:10px}
+
+/* ---- 架构页 ---- */
+.arch-svg{width:100%;height:auto;display:block}
+.svg-box{fill:var(--card);stroke:var(--border)}
+.svg-box.blue{fill:var(--primary-weak);stroke:var(--primary)}
+.svg-box.green{fill:var(--accent-weak);stroke:var(--accent)}
+.svg-box.dashed{stroke-dasharray:5 4;fill:var(--surface-2)}
+.svg-txt{font-size:12.5px;fill:var(--text)}
+.svg-txt.b{font-weight:600;font-size:13px}
+.svg-txt.s{font-size:11px;fill:var(--text2)}
+.svg-txt.blue{fill:var(--primary-dark)}
+.svg-line{stroke:var(--chart-axis);stroke-width:1.4;fill:none;marker-end:url(#arrow)}
+.svg-lab{font-size:11px;fill:var(--text2)}
+.about-table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);
+  border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.about-table th,.about-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.about-table th{background:var(--surface-2);font-weight:600}
+.about-table tr:last-child td{border-bottom:none}
+.chain{counter-reset:step;padding-left:0;list-style:none;margin:0}
+.chain li{counter-increment:step;position:relative;padding:10px 0 10px 44px;border-bottom:1px dashed var(--border);font-size:13.5px}
+.chain li:last-child{border-bottom:none}
+.chain li::before{content:counter(step);position:absolute;left:0;top:12px;width:28px;height:28px;border-radius:50%;
+  background:var(--primary-weak);color:var(--primary-dark);font-weight:600;display:flex;align-items:center;justify-content:center}
+.svc-card{border-top:3px solid var(--primary)}
+.svc-card .port{font-family:var(--mono);font-size:12.5px;color:var(--text2)}
+
+/* ---- 实验观测视图 ---- */
+.run-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dashed var(--border);flex-wrap:wrap}
+.run-row:last-child{border-bottom:none}
+.run-tag{font-family:var(--mono);font-weight:600;font-size:13px;min-width:150px}
+.run-metric{font-family:var(--mono);font-size:12.5px;color:var(--text2)}
+.badge{display:inline-block;padding:1px 9px;border-radius:4px;font-size:12px;font-weight:500}
+.badge.done{background:var(--accent-weak);color:var(--accent)}
+.badge.running{background:var(--primary-weak);color:var(--primary-dark)}
+.badge.pending{background:var(--surface-2);color:var(--text2)}
+/* 数值表：首列左对齐，其余列右对齐（表头与数据一致） */
+.num-table td:not(:first-child){text-align:right}
+/* 宽表横向滚动容器（移动端防溢出） */
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.stage-card{border-top:3px solid var(--border)}
+.stage-card.done{border-top-color:var(--accent)}
+.stage-card.running{border-top-color:var(--primary)}
+.stage-card .metric-big{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--text)}
+.chart-legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;font-size:12.5px;color:var(--text2)}
+.chart-legend .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.chart-legend .lg{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid transparent;
+  border-radius:5px;padding:2px 7px;color:var(--text2);font-size:12.5px;cursor:pointer;font-family:inherit;transition:.14s}
+.chart-legend .lg:hover{background:var(--surface-2);color:var(--text)}
+.chart-legend .lg.off{opacity:.38;text-decoration:line-through}
+.c-tick{font-size:10.5px;fill:var(--text2);font-family:var(--mono)}
+.c-axlabel{font-size:11px;fill:var(--text2)}
+/* 图表容器 + 悬停 tooltip */
+.gchart{position:relative}
+.gc-tip{position:absolute;display:none;pointer-events:none;background:var(--card);border:1px solid var(--border);
+  border-radius:7px;box-shadow:var(--shadow-lg);padding:8px 10px;font-size:12px;min-width:150px;z-index:20}
+.gc-tip .tip-x{color:var(--text2);font-family:var(--mono);font-size:11px;margin-bottom:4px;
+  border-bottom:1px dashed var(--border);padding-bottom:3px}
+.gc-tip .tip-row{display:flex;align-items:center;gap:6px;line-height:1.7}
+.gc-tip .tip-row .dot{width:9px;height:9px;border-radius:2.5px;flex-shrink:0}
+.gc-tip .tip-row .tip-n{flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.gc-tip .tip-row b{font-family:var(--mono);color:var(--text)}
+/* Grafana 风统计面板 */
+.gstat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;min-width:0}
+.gstat .gs-lab{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gstat .gs-val{font-family:var(--mono);font-size:24px;font-weight:700;line-height:1.25;margin-top:2px}
+.gstat .gs-unit{font-size:12px;font-weight:400;color:var(--text2);margin-left:3px}
+.gstat .gs-sub{font-size:11.5px;color:var(--text2);margin-top:2px}
+.grid-stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.prog{background:var(--skeleton);border-radius:999px;height:10px;overflow:hidden;flex:1;min-width:120px}
+.prog > i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.prog-row{display:flex;align-items:center;gap:12px;padding:7px 0;font-size:13px}
+.prog-row .lab{width:52px;color:var(--text2);font-family:var(--mono)}
+.prog-row .val{width:150px;text-align:right;font-family:var(--mono);font-size:12.5px;color:var(--text2)}
+.file-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);font-size:13px;flex-wrap:wrap}
+.file-row:last-child{border-bottom:none}
+.file-row .nm{font-family:var(--mono);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.report-pre{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:14px;
+  font-family:var(--mono);font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;max-height:420px;overflow-y:auto}
+.fig-frame{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+
+/* ---- 弹窗（运行详情 / 评测档案 / 源码 / 图片灯箱） ---- */
+.modal{position:fixed;inset:0;z-index:120;background:var(--scrim);display:none;align-items:center;justify-content:center;padding:24px}
+.modal-card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);
+  width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.modal.wide .modal-card{width:min(1080px,100%)}
+.modal-head{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-head b{flex:1;font-size:14px;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modal-x{background:none;border:none;font-size:16px;color:var(--text2);cursor:pointer;padding:3px 8px;border-radius:5px}
+.modal-x:hover{background:var(--surface-2);color:var(--text)}
+.modal-body{padding:18px;overflow-y:auto}
+.lightbox-img{width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}
+.code-view{max-height:64vh;font-size:11.5px;line-height:1.65;white-space:pre;overflow:auto}
+
+/* ---- 图表画廊 ---- */
+.gallery{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.gal-item{margin:0;cursor:zoom-in;border:1px solid var(--border);border-radius:8px;overflow:hidden;
+  background:var(--surface-2);transition:transform .16s ease,box-shadow .16s ease}
+.gal-item:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.gal-item img{width:100%;height:132px;object-fit:cover;display:block}
+.gal-item figcaption{padding:6px 9px;font-size:11.5px;color:var(--text2);font-family:var(--mono);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid var(--border)}
+
+/* ---- 源码浏览器 ---- */
+.code-list{display:flex;flex-direction:column;gap:2px;max-height:330px;overflow-y:auto}
+.code-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;
+  border-radius:6px;padding:7px 10px;cursor:pointer;color:var(--text);font-size:13px;transition:.14s}
+.code-item:hover{background:var(--primary-weak);color:var(--primary-dark)}
+.code-item .mono{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fig-frame img{max-width:100%;height:auto;border-radius:4px}
+
+/* ---- 页脚 ---- */
+footer{border-top:1px solid var(--border);background:var(--card);padding:20px 0;margin-top:20px}
+footer .container{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--text2);font-size:12.5px}
+
+/* ---- 聊天助手 ---- */
+#chat-fab{position:fixed;right:24px;bottom:24px;width:56px;height:56px;border-radius:50%;border:none;
+  background:var(--primary-solid);color:#fff;font-size:24px;cursor:pointer;z-index:80;
+  box-shadow:0 4px 18px rgba(26,115,232,.42);transition:.18s}
+#chat-fab:hover{transform:scale(1.06);filter:brightness(1.12)}
+#chat-panel{position:fixed;right:24px;bottom:92px;width:380px;height:520px;max-height:calc(100vh - 120px);
+  background:var(--card);border:1px solid var(--border);border-radius:12px;z-index:85;display:none;
+  flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg)}
+#chat-panel.open{display:flex;animation:fadein .18s ease}
+.chat-head{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--card)}
+.chat-head .t{font-weight:600;font-size:14px;flex:1}
+.chat-head .sub{font-size:11.5px;color:var(--text2)}
+.chat-close{background:none;border:none;font-size:17px;color:var(--text2);cursor:pointer;padding:2px 6px;border-radius:4px}
+.chat-close:hover{background:var(--surface-2);color:var(--text)}
+.chat-body{flex:1;overflow-y:auto;padding:14px;background:var(--bg);display:flex;flex-direction:column}
+.msg{display:flex;margin-bottom:10px}
+.msg.user{justify-content:flex-end}
+.bubble{max-width:84%;padding:9px 12px;border-radius:10px;font-size:13.5px;line-height:1.65;word-break:break-word}
+.msg.user .bubble{background:var(--primary-solid);color:#fff;border-bottom-right-radius:4px}
+.msg.bot .bubble{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg.err .bubble{background:var(--danger-weak);border-color:var(--border);color:var(--danger);font-size:12.5px}
+.bubble code{background:var(--surface-2);padding:1px 5px;border-radius:4px}
+.msg.user .bubble code{background:rgba(255,255,255,.18)}
+.cursor{display:inline-block;width:7px;height:14px;background:var(--text2);vertical-align:-2px;
+  animation:blink .9s steps(1) infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.chat-note{font-size:12px;color:var(--warn);background:var(--warn-weak);border-radius:6px;padding:8px 12px;margin:0 14px 8px;display:none}
+.chat-chips{display:flex;gap:6px;padding:0 14px 10px;flex-wrap:wrap}
+.chat-chips .chip{font-size:12px;padding:4px 10px}
+.chat-input{display:flex;gap:8px;padding:10px 14px 14px;border-top:1px solid var(--border);background:var(--card)}
+.chat-input textarea{flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:8px 10px;
+  font:13.5px/1.5 inherit;font-family:inherit;color:var(--text);outline:none;max-height:96px}
+.chat-input textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-weak)}
+#toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(8px);background:var(--toast-bg);color:var(--toast-fg);
+  padding:9px 18px;border-radius:8px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:.25s}
+#toast.show{opacity:1;transform:translateX(-50%)}
+
+/* ---- 响应式 ---- */
+@media (max-width:1100px){
+  .grid-3{grid-template-columns:repeat(2,1fr)}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .detail-grid{grid-template-columns:minmax(0,1fr) 264px}
+}
+@media (max-width:767px){
+  .nav-inner{gap:10px}
+  .brand{flex-shrink:1;min-width:0}
+  .brand .sub{display:none}
+  .nav-burger{flex-shrink:0}
+  .nav-links{display:none;position:absolute;top:56px;left:0;right:0;background:var(--card);
+    border-bottom:1px solid var(--border);flex-direction:column;padding:8px 12px;gap:2px;margin:0}
+  .nav-links a{padding:10px 12px}
+  .nav.open .nav-links{display:flex}
+  .nav-burger{display:block}
+  .nav-status .st-lab{display:none}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .detail-grid{grid-template-columns:1fr}
+  .side{position:static}
+  .hero h1{font-size:25px}
+  .hero{padding:30px 0 20px}
+  .statrow{gap:26px}
+  .stat .num{font-size:26px}
+  #chat-panel{right:0;bottom:0;width:100%;height:100%;max-height:none;border-radius:0;border:none}
+  #chat-fab{right:16px;bottom:16px}
+  .sec-head{flex-wrap:wrap}
+  /* 实验视图移动端：文件名折行、进度行两行布局、宽表横向滚动 */
+  .file-row .nm{white-space:normal;word-break:break-all;flex-basis:100%}
+  .prog-row{flex-wrap:wrap}
+  .prog-row .lab{order:1;width:auto;min-width:44px}
+  .prog-row .val{order:2;width:auto;flex:1;text-align:right;font-size:11.5px}
+  .prog-row .prog{order:3;flex-basis:100%;min-width:0;margin-top:5px}
+  .table-scroll table{min-width:560px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 顶部导航 ================= -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#/"><span class="logo">🔬</span>MedSeg Dataset Hub<span class="sub">科研数据集门户</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="#/" data-route="/">首页</a>
+      <a href="#/datasets" data-route="/datasets">数据集</a>
+      <a href="#/hw1" data-route="/hw1">作业 1 · U-Net</a>
+      <a href="#/hw2" data-route="/hw2">作业 2 · SAM</a>
+      <a href="#/glossary" data-route="/glossary">术语表</a>
+      <a href="#/about" data-route="/about">架构说明</a>
+    </div>
+    <div class="nav-status" id="nav-status" title="检查 AI 助手配置状态">
+      <span class="dot yellow" id="status-dot"></span><span class="st-lab" id="status-lab">加载中</span>
+    </div>
+    <button class="theme-btn" id="theme-btn" title="切换深色 / 浅色主题（记忆偏好）" aria-label="切换主题">🌙</button>
+    <button class="nav-burger" id="nav-burger" aria-label="展开导航">☰</button>
+  </div>
+</nav>
+
+<main id="app" class="container"><div class="view"><div class="skel t"></div><div class="skel" style="width:80%"></div><div class="skel" style="width:60%"></div></div></main>
+
+<footer>
+  <div class="container">
+    <span>MedSeg Dataset Hub · 127.0.0.1:8800 · 为皮肤病变分割研究项目服务</span>
+    <span>数据、链接与榜单均来自官方公开来源 · 仅用于课程与学术研究</span>
+  </div>
+</footer>
+
+<!-- ================= 术语悬浮卡 ================= -->
+<div id="term-tip"></div>
+
+<!-- ================= AI 聊天助手 ================= -->
+<button id="chat-fab" aria-label="打开 AI 研究助手">💬</button>
+<div id="chat-panel" role="dialog" aria-label="AI 研究助手">
+  <div class="chat-head">
+    <span class="dot yellow" id="chat-dot"></span>
+    <div class="t">研究助手 <span class="sub">DeepSeek · 流式</span></div>
+    <button class="chat-close" id="chat-close" aria-label="关闭">✕</button>
+  </div>
+  <div class="chat-note" id="chat-note"></div>
+  <div class="chat-body" id="chat-body"></div>
+  <div class="chat-chips" id="chat-chips"></div>
+  <div class="chat-input">
+    <textarea id="chat-text" rows="1" placeholder="输入问题，Enter 发送（Shift+Enter 换行）"></textarea>
+    <button class="btn primary" id="chat-send">发送</button>
+    <button class="btn" id="chat-stop" style="display:none">停止</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+ * MedSeg Dataset Hub 前端 · 单文件 SPA（无构建 / 无 CDN）
+ * 路由：#/ 首页 · #/datasets 列表 · #/dataset/<id> 详情 · #/glossary 术语 · #/about 架构
+ * ===================================================================== */
+
+/* ---------------- 全局状态 ---------------- */
+const state = {
+  overview: null, datasets: null, glossary: null, byTerm: {},
+  hw1: null, hw2: null, hw1Sel: null,
+  dataPromise: null, dataError: null,
+};
+const listState = { cat: "全部", q: "" };
+const glossState = { cat: "全部", q: "" };
+let glossIds = {};   // 术语 → 术语表锚点 id（renderList 时重建）
+
+const $ = (sel, root) => (root || document).querySelector(sel);
+const app = document.getElementById("app");
+
+/* ---------------- 工具函数 ---------------- */
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function escRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function fmtBytes(n) {
+  if (n == null || isNaN(n)) return "";
+  const u = ["B", "KB", "MB", "GB", "TB"]; let i = 0, v = n;
+  while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+  return (i === 0 ? v : v.toFixed(1)) + " " + u[i];
+}
+/* 数据集统计的取值格式化（与图表刻度的 fmtTickVal 是两个函数，勿混用） */
+function fmtStatNum(key, v) {
+  if (typeof v !== "number") return String(v);
+  if (/ratio/i.test(key)) return (v * 100).toFixed(2) + "%";
+  return v.toLocaleString("en-US");
+}
+let toastTimer = null;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+function copyText(text) {
+  const done = () => toast("已复制链接到剪贴板");
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done) {
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.cssText = "position:fixed;opacity:0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); done(); } catch (e) { toast("复制失败，请手动复制"); }
+  ta.remove();
+}
+function openUrl(url) { window.open(url, "_blank", "noopener"); }
+
+/* ---------------- 主题（浅色 / 深色） ---------------- */
+function currentTheme() { return document.documentElement.dataset.theme === "dark" ? "dark" : "light"; }
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+/* 图表数据色板：渲染时从 CSS 变量取，切主题后重渲染即跟随 */
+function seriesColors() {
+  return ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7", "--s8"].map(cssVar);
+}
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem("dh-theme", t); } catch (e) { /* 忽略 */ }
+  const btn = document.getElementById("theme-btn");
+  if (btn) {
+    btn.textContent = t === "dark" ? "☀️" : "🌙";
+    btn.title = t === "dark" ? "切换到浅色主题" : "切换到深色主题";
+  }
+}
+function toggleTheme() {
+  setTheme(currentTheme() === "dark" ? "light" : "dark");
+  route();          // 重渲染当前视图：图表颜色在渲染时取 CSS 变量
+}
+
+/* 统一 API 请求：非 2xx 或返回 {error} 时抛出中文错误 */
+async function api(path, opts) {
+  let res;
+  try { res = await fetch(path, opts); }
+  catch (e) { throw new Error("网络错误：无法连接本地服务（" + e.message + "）"); }
+  let body = null;
+  try { body = await res.json(); } catch (e) { /* 非 JSON 响应 */ }
+  if (!res.ok || (body && body.error)) {
+    throw new Error((body && body.error) || ("请求失败（HTTP " + res.status + "）"));
+  }
+  return body;
+}
+
+/* ---------------- 数据加载（启动拉取一次，缓存内存） ---------------- */
+function ensureData() {
+  if (state.dataPromise) return state.dataPromise;
+  state.dataPromise = Promise.all([
+    api("/api/overview"), api("/api/datasets"), api("/api/glossary"),
+    api("/api/hw1").catch(() => null),   // 实验聚合失败不阻塞门户主体
+    api("/api/hw2").catch(() => null),
+  ]).then(([ov, ds, gl, h1, h2]) => {
+    state.overview = ov;
+    state.datasets = ds.datasets;
+    state.glossary = gl;
+    state.hw1 = h1;
+    state.hw2 = h2;
+    state.byTerm = {};
+    gl.terms.forEach(t => { state.byTerm[t.term] = t; });
+    buildTermRegex();
+    setNavStatus();
+  }).catch(err => {
+    state.dataError = err.message || String(err);
+    state.dataPromise = null;
+    throw err;
+  });
+  return state.dataPromise;
+}
+
+/* ---------------- 导航状态点 ---------------- */
+function setNavStatus() {
+  const dot = document.getElementById("status-dot");
+  const lab = document.getElementById("status-lab");
+  const cdot = document.getElementById("chat-dot");
+  const note = document.getElementById("chat-note");
+  const on = !!(state.overview && state.overview.chat_enabled);
+  dot.className = "dot " + (on ? "green" : "yellow");
+  cdot.className = "dot " + (on ? "green" : "yellow");
+  lab.textContent = on ? "AI 助手可用" : "AI 未配置";
+  document.getElementById("nav-status").title = on
+    ? "DeepSeek API 已配置，聊天助手可用"
+    : "未检测到 DEEPSEEK_API_KEY：在 dataset_hub/.env 配置后重启服务（见架构说明页）";
+  note.style.display = on ? "none" : "block";
+  note.innerHTML = "AI 助手未启用：未检测到 <code>DEEPSEEK_API_KEY</code>。请在 <code>dataset_hub/.env</code> 中配置并重启服务，详见「架构说明」页。";
+}
+
+/* ---------------- 术语包裹（悬浮释义） ---------------- */
+let termRegex = null;
+function buildTermRegex() {
+  const names = state.glossary.terms.map(t => t.term)
+    .sort((a, b) => b.length - a.length).map(escRegExp);
+  termRegex = new RegExp("(" + names.join("|") + ")", "g");
+}
+function isTermHit(text, start, end, term) {
+  if (!/[^\u0000-ÿ]/.test(term)) {           // 纯 ASCII 词要求词边界
+    const prev = start > 0 ? text[start - 1] : "";
+    const next = end < text.length ? text[end] : "";
+    if (prev && /[A-Za-z0-9-]/.test(prev)) return false;
+    if (next && /[A-Za-z0-9]/.test(next)) return false;
+  }
+  return true;
+}
+function renderTerms(raw) {
+  if (raw == null) return "";
+  if (!termRegex) return esc(raw);
+  let out = "", last = 0, m;
+  termRegex.lastIndex = 0;
+  while ((m = termRegex.exec(raw)) !== null) {
+    const term = m[0], s = m.index, e = s + term.length;
+    if (!isTermHit(raw, s, e, term)) continue;
+    out += esc(raw.slice(last, s));
+    out += '<span class="term" data-term="' + esc(term) + '">' + esc(term) + "</span>";
+    last = e;
+  }
+  out += esc(raw.slice(last));
+  return out;
+}
+
+/* 术语悬浮卡（事件委托） */
+const tip = document.getElementById("term-tip");
+document.addEventListener("mouseover", e => {
+  const t = e.target.closest(".term");
+  if (!t) return;
+  const info = state.byTerm[t.dataset.term];
+  if (!info) return;
+  const def = info.def.length > 130 ? info.def.slice(0, 130) + "…" : info.def;
+  tip.innerHTML = '<div class="tt-name">' + esc(info.term) +
+    '<span class="tt-en"> · ' + esc(info.en || "") + '</span></div>' +
+    '<div class="tt-def">' + esc(def) + '</div>' +
+    '<div class="tt-go">点击查看术语表 →</div>';
+  tip.style.display = "block";
+  const r = t.getBoundingClientRect();
+  let x = Math.min(r.left, window.innerWidth - 340);
+  let y = r.bottom + 8;
+  if (y + 140 > window.innerHeight) y = r.top - 8 - tip.offsetHeight;
+  tip.style.left = Math.max(8, x) + "px";
+  tip.style.top = Math.max(8, y) + "px";
+});
+document.addEventListener("mouseout", e => {
+  if (e.target.closest && e.target.closest(".term")) tip.style.display = "none";
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest(".term");
+  if (t && state.byTerm[t.dataset.term]) {
+    e.preventDefault();   // 术语在卡片 <a> 内时，阻止默认导航覆盖 hash
+    e.stopPropagation();
+    location.hash = "#/glossary?term=" + encodeURIComponent(t.dataset.term);
+  }
+});
+
+/* ---------------- 通用状态组件 ---------------- */
+const skeletonCards = n => Array.from({ length: n }, () =>
+  '<div class="card skeleton-card"><div class="skel t"></div><div class="skel"></div><div class="skel" style="width:60%"></div></div>').join("");
+const errBox = msg => '<div class="err-box"><span>⚠️ ' + esc(msg) + '</span>' +
+  '<button class="btn sm" onclick="retryData()">重试</button></div>';
+function retryData() {
+  state.dataError = null; state.dataPromise = null;
+  route();
+}
+const emptyBox = (emoji, title, hint) =>
+  '<div class="empty"><div class="emoji">' + emoji + '</div><div style="font-weight:600;color:var(--text);margin-bottom:4px">' + title + '</div><div style="font-size:13px">' + hint + '</div></div>';
+
+/* =====================================================================
+ * 视图
+ * ===================================================================== */
+
+/* ---------------- 首页 ---------------- */
+function datasetCard(d) {
+  return '<a class="card" href="#/dataset/' + esc(d.id) + '">' +
+    '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">' +
+      '<h3>' + esc(d.name) + '</h3>' +
+      '<span class="tag cat">' + esc(d.category) + '</span>' +
+    '</div>' +
+    '<div class="muted" style="margin-bottom:10px">' + renderTerms(d.short) + '</div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">' +
+      '<span class="mono" style="font-size:12px;color:var(--text2)">💾 ' + esc(d.size) + '</span>' +
+      '<span class="lic">' + esc(licenseShort(d.license)) + '</span>' +
+    '</div></a>';
+}
+function licenseShort(lic) {
+  const m = String(lic || "").match(/(CC BY-NC 4\.0|CC BY 4\.0|Apache 2\.0)/);
+  return m ? m[1] : String(lic || "").split("（")[0];
+}
+
+/* 首页「实验观测」摘要卡（融合 hw1/hw2 实时状态） */
+function expSummaryCards() {
+  const card = (title, href, accent, rows, badge) =>
+    '<a class="card" href="' + href + '" style="border-top:3px solid ' + accent + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>' + title + "</h3>" + (badge || "") + "</div>" +
+      rows.map(r => '<div class="muted" style="margin-top:4px">' + r + "</div>").join("") +
+      '<div style="margin-top:10px;color:var(--primary);font-size:13px">进入实验视图 →</div></a>';
+
+  const h1 = state.hw1, h2 = state.hw2;
+  let hw1Rows, hw1Badge = "", hw2Rows, hw2Badge = "";
+  if (h1 && h1.runs && h1.runs.length) {
+    const best = h1.runs.reduce((a, r) => (!a || r.best_val_dice > a.best_val_dice ? r : a), null);
+    const fin = h1.runs.filter(r => r.status === "finished").length;
+    const running = h1.runs.length - fin;
+    hw1Badge = '<span class="badge ' + (running === 0 ? "done" : "running") + '">' +
+      (running === 0 ? "完成 " + fin + "/" + h1.runs.length : "运行中 " + running + " 个") + "</span>";
+    hw1Rows = [
+      "训练运行 " + h1.runs.length + " 个 · 最佳 Val Dice <b class='mono' style='color:var(--primary-dark)'>" + fmt3(best.best_val_dice) + "</b>（" + esc(best.tag) + "）",
+      (running ? running + " 个运行进行中" : "全部运行已完成") + " · checkpoints " + (h1.checkpoints || []).length + " 个",
+    ];
+  } else if (h1) {
+    hw1Rows = ["暂无训练日志 —— 训练启动后此处的状态与曲线实时更新"];
+  } else {
+    hw1Rows = ["实验聚合暂不可用"];
+  }
+  if (h2) {
+    const st = h2.stages || {};
+    const e1 = st.e1 && st.e1.best_eval;
+    const ids = ["e1", "e2", "e3"];
+    const doneN = ids.filter(s => st[s] && st[s].status === "done").length;
+    const runN = ids.filter(s => st[s] && st[s].status === "running").length;
+    hw2Badge = '<span class="badge ' + (runN ? "running" : doneN ? "done" : "pending") + '">' +
+      (runN ? "运行中 · " + doneN + "/3 阶段完成" : doneN + "/3 阶段完成") + "</span>";
+    const pending = ids.filter(s => !st[s] || st[s].status === "pending")
+      .map(s => s.toUpperCase()).join(" / ");
+    const emb = h2.embeddings || {};
+    const embVals = Object.values(emb);
+    const embBytes = embVals.reduce((n, v) => n + (typeof v.size === "number" ? v.size : 0), 0);
+    const embAll = embVals.length && embVals.every(v => v.pct >= 100);
+    hw2Rows = [
+      e1 ? "E1 零样本（GT 框提示）Dice <b class='mono' style='color:var(--primary-dark)'>" + fmt3(e1.dice) + "</b> · IoU " + fmt3(e1.iou) + " · HD95 " + fmt3(e1.hd95)
+         : "E1 零样本评测尚未生成",
+      (pending ? pending + " 待运行 · " : "") + "嵌入缓存 " + (embAll ? "已 100% 预计算" : "预计算中") +
+        (embBytes ? "（" + fmtBytes(embBytes) + "）" : ""),
+    ];
+  } else {
+    hw2Rows = ["实验聚合暂不可用"];
+  }
+  return card("作业 1 · 手写 U-Net 系列", "#/hw1", "var(--primary)", hw1Rows, hw1Badge) +
+         card("作业 2 · SAM 提示分割", "#/hw2", "#7c3aed", hw2Rows, hw2Badge);
+}
+
+function viewHome() {
+  const ov = state.overview;
+  const find = id => state.datasets.find(d => d.id === id);
+  const isic18 = find("isic2018-task1"), sam = find("sam-vitb-weights");
+  const featured = [isic18, sam].filter(Boolean);
+  const strip = [isic18, find("isic2019"), find("sa1b")].filter(Boolean)
+    .map(d => {
+      const lb = (d.leaderboards || [])[0];
+      if (!lb) return "";
+      return '<span class="item"><b>' + esc(d.name) + '</b> · <a href="#/dataset/' + esc(d.id) + '">' +
+        esc(lb.metric) + '</a></span>';
+    }).join('<span style="color:var(--border)">|</span>');
+
+  app.innerHTML =
+    '<section class="view">' +
+      '<div class="hero">' +
+        '<span class="pill">为皮肤病变分割研究项目服务的数据集门户</span>' +
+        '<h1>研究物料，一站看清</h1>' +
+        '<p class="lead">收录皮肤病变分割研究所需的' + renderTerms("数据集") + '、模型权重与官方榜单：每个条目附官方直链与国内镜像、可达性检测、许可证说明与' + renderTerms("术语") + '解释，并内置 AI 研究助手在线答疑。</p>' +
+        '<div class="statrow">' +
+          '<div class="stat"><div class="num">' + ov.datasets + '</div><div class="lab">数据集 / 权重条目</div></div>' +
+          '<div class="stat"><div class="num">' + ov.terms + '</div><div class="lab">术语解释</div></div>' +
+          '<div class="stat"><div class="num">' + ov.leaderboard_sources + '</div><div class="lab">榜单 / 论文来源</div></div>' +
+        '</div>' +
+        '<div class="ctarow">' +
+          '<a class="btn primary" href="#/datasets">浏览数据集 →</a>' +
+          '<button class="btn" onclick="toggleChat(true)">💬 询问 AI 助手</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="sec lb-strip"><span class="t">🏆 榜单速览</span>' + strip + '</div>' +
+
+      '<div class="sec">' +
+        '<div class="sec-head"><h2>精选条目</h2><a class="more" href="#/datasets">查看全部 →</a></div>' +
+        '<div class="grid grid-2">' + featured.map(datasetCard).join("") + '</div>' +
+      '</div>' +
+
+      '<div class="sec">' +
+        '<div class="sec-head"><h2>实验观测</h2><span style="font-size:13px;color:var(--text2)">融合自 hw1 / hw2 监控台 · 实时读取实验产物</span></div>' +
+        '<div class="grid grid-2">' + expSummaryCards() + '</div>' +
+      '</div>' +
+
+      '<div class="sec">' +
+        '<div class="sec-head"><h2>平台能力</h2></div>' +
+        '<div class="grid grid-4">' +
+          '<div class="card"><h3>📥 下载中心</h3><div class="muted">官方直链 + 国内镜像分组，一键复制 / 打开，并在线探测链接可达性与真实体积。</div></div>' +
+          '<div class="card"><h3>📖 术语系统</h3><div class="muted">30+ 条术语带公式与通俗解释，正文悬浮即现释义，点击直达术语表。</div></div>' +
+          '<div class="card"><h3>🏆 官方榜单</h3><div class="muted">ISIC 官方榜单、Papers with Code 与标杆论文入口，只收录可考来源，不编造数字。</div></div>' +
+          '<div class="card"><h3>💬 AI 问答</h3><div class="muted">DeepSeek 流式研究助手：项目结构、数据集对比、指标口径，随问随答。</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</section>';
+}
+
+/* ---------------- 数据集列表 ---------------- */
+function viewDatasets() {
+  const cats = ["全部"].concat([...new Set(state.datasets.map(d => d.category))]);
+  app.innerHTML =
+    '<section class="view">' +
+      '<div class="sec-head" style="margin-top:4px"><h2>数据集与权重</h2>' +
+      '<span class="muted" style="font-size:13px;color:var(--text2)">共 ' + state.datasets.length + ' 个条目</span></div>' +
+      '<div class="toolbar">' +
+        '<div class="chiprow" id="cat-chips">' +
+          cats.map(c => '<button class="chip' + (c === listState.cat ? " active" : "") + '" data-cat="' + esc(c) + '">' + esc(c) + '</button>').join("") +
+        '</div>' +
+        '<div class="search"><span class="ico">🔍</span>' +
+          '<input id="ds-search" type="search" placeholder="搜索名称 / 描述…" value="' + esc(listState.q) + '"></div>' +
+      '</div>' +
+      '<div id="ds-grid"></div>' +
+    '</section>';
+
+  const renderGrid = () => {
+    const q = listState.q.trim().toLowerCase();
+    const items = state.datasets.filter(d =>
+      (listState.cat === "全部" || d.category === listState.cat) &&
+      (!q || (d.name + " " + (d.full_name || "") + " " + d.short + " " + d.description).toLowerCase().includes(q)));
+    const grid = document.getElementById("ds-grid");
+    if (!items.length) {
+      grid.innerHTML = emptyBox("🔍", "没有匹配的数据集", "试试更换关键词，或清除筛选条件。") +
+        '<div style="text-align:center"><button class="btn" onclick="resetListFilter()">清除筛选</button></div>';
+      return;
+    }
+    grid.innerHTML = '<div class="grid grid-3">' + items.map(datasetCard).join("") + '</div>';
+  };
+  renderGrid();
+
+  document.getElementById("cat-chips").addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    listState.cat = b.dataset.cat;
+    document.querySelectorAll("#cat-chips .chip").forEach(c =>
+      c.classList.toggle("active", c.dataset.cat === listState.cat));
+    renderGrid();
+  });
+  document.getElementById("ds-search").addEventListener("input", e => {
+    listState.q = e.target.value; renderGrid();
+  });
+}
+function resetListFilter() {
+  listState.cat = "全部"; listState.q = ""; viewDatasets();
+}
+
+/* ---------------- 数据集详情 ---------------- */
+const STAT_LABELS = {
+  train: "训练集", val: "验证集", test: "测试集", images: "图像总数", classes: "类别数",
+  masks: "掩膜总数", fg_ratio_mean: "前景占比均值", empty_masks: "空掩膜数",
+  multi_component: "多连通域样本", melanoma: "黑色素瘤", nevus: "痣",
+  params_total: "总参数量", params_encoder: "编码器参数", params_decoder: "解码器参数",
+  lora_trainable: "LoRA 可训练参数",
+};
+function srcClass(source) {
+  const s = String(source || "");
+  if (s.includes("镜像") || s.includes("mirror")) return "mirror";
+  if (s.includes("官方") || s.includes("直链") || /official/i.test(s)) return "official";
+  return "other";
+}
+let URLS = {};   // key: "dl-0" / "mir-1" → url（统一走映射，避免内联 onclick 引号转义问题）
+function copyUrl(key) { if (URLS[key]) copyText(URLS[key]); }
+function openByKey(key) { if (URLS[key]) openUrl(URLS[key]); }
+function downloadRow(d, item, i, prefix) {
+  const cls = srcClass(item.source);
+  const badge = cls === "official" ? '<span class="src official">官方直链</span>'
+    : cls === "mirror" ? '<span class="src mirror">镜像</span>'
+    : '<span class="src other">' + esc(item.source) + '</span>';
+  const key = prefix + "-" + i;
+  return '<div class="dl-row">' +
+    '<div class="dl-main">' +
+      '<span class="dl-name">' + esc(item.name) + '</span>' +
+      badge +
+      '<span class="dl-meta">' + esc(item.format || "") + (item.format && item.size ? " · " : "") + esc(item.size || "") + '</span>' +
+      '<span class="dl-btns">' +
+        '<button class="btn sm" onclick="copyUrl(\'' + key + '\')">复制链接</button>' +
+        '<button class="btn sm" onclick="openByKey(\'' + key + '\')">打开下载</button>' +
+        '<button class="btn sm" id="' + prefix + '-btn-' + i + '" onclick="checkLink(\'' + prefix + '\',' + i + ',this)">检测</button>' +
+      '</span>' +
+    '</div>' +
+    '<div class="dl-check" id="' + prefix + '-res-' + i + '"></div>' +
+  '</div>';
+}
+const CHECK_CACHE = {};
+async function checkLink(prefix, i, btn) {
+  const url = URLS[prefix + "-" + i];
+  const box = document.getElementById(prefix + "-res-" + i);
+  if (!url || !box) return;
+  btn.disabled = true;
+  box.className = "dl-check warn"; box.style.display = "block";
+  box.textContent = "⏳ 正在探测（10 秒超时）…";
+  const cacheKey = url;
+  try {
+    const r = CHECK_CACHE[cacheKey] || await api("/api/check_link?url=" + encodeURIComponent(url));
+    CHECK_CACHE[cacheKey] = r;
+    if (r.ok) {
+      box.className = "dl-check ok";
+      box.textContent = "🟢 可达 · HTTP " + r.status + (r.size_bytes ? " · 体积 " + fmtBytes(r.size_bytes) : "") + " · " + r.message;
+    } else {
+      box.className = "dl-check bad";
+      box.textContent = "🔴 不可达 · " + r.message;
+    }
+  } catch (err) {
+    box.className = "dl-check warn";
+    box.textContent = "⚠️ 检测服务出错：" + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function viewDataset(id) {
+  const d = state.datasets.find(x => x.id === id);
+  if (!d) {
+    app.innerHTML = '<section class="view">' + emptyBox("🗂️", "没有找到该条目", "id=" + esc(id)) +
+      '<div style="text-align:center"><a class="btn" href="#/datasets">返回数据集列表</a></div></section>';
+    return;
+  }
+  /* 供复制/打开/检测按钮按 key 取 URL */
+  URLS = {};
+  const dlHtml = (d.downloads || []).map((it, i) => {
+    URLS["dl-" + i] = it.url;
+    return downloadRow(d, it, i, "dl");
+  }).join("");
+  const mirHtml = (d.mirrors || []).length ? (d.mirrors || []).map((it, i) => {
+    URLS["mir-" + i] = it.url;
+    return downloadRow(d, it, i, "mir");
+  }).join("") : '<div class="muted" style="font-size:13px">暂无镜像源 — 官方链接不可达时可参考「相关条目」中的同类镜像。</div>';
+
+  const lbHtml = (d.leaderboards || []).map(lb =>
+    '<div class="lb-row"><div class="name">🏆 ' + esc(lb.name) +
+      '<a href="' + esc(lb.url) + '" target="_blank" rel="noopener">[外链 ↗]</a></div>' +
+      '<div style="margin-top:3px"><span class="tag">排名依据：' + esc(lb.metric) + '</span></div>' +
+      '<div class="note">' + esc(lb.note) + '</div></div>').join("") ||
+    '<div class="muted">暂无收录的榜单来源。</div>';
+
+  const statRows = Object.entries(d.stats || {}).map(([k, v]) =>
+    '<tr><td>' + esc(STAT_LABELS[k] || k) + '</td><td>' + esc(fmtStatNum(k, v)) + '</td></tr>').join("");
+
+  const termChips = (d.terms || []).map(t =>
+    state.byTerm[t]
+      ? '<a class="chip" style="text-decoration:none" href="#/glossary?term=' + encodeURIComponent(t) + '">' + esc(t) + '</a>'
+      : '<span class="chip">' + esc(t) + '</span>').join("");
+
+  const licTerm = Object.keys(state.byTerm).find(k => (d.license || "").startsWith(k));
+  const modalities = (d.modalities || []).map(esc).join(" · ");
+
+  app.innerHTML =
+    '<section class="view">' +
+      '<div class="crumbs"><a href="#/">首页</a> / <a href="#/datasets">数据集</a> / <b style="color:var(--text)">' + esc(d.name) + '</b></div>' +
+      '<div style="margin-bottom:18px">' +
+        '<h1 style="font-size:26px;margin-bottom:6px">' + esc(d.full_name || d.name) + '</h1>' +
+        '<div class="chiprow"><span class="tag cat">' + esc(d.category) + '</span><span class="tag">' + esc(d.role) + '</span></div>' +
+      '</div>' +
+      '<div class="detail-grid">' +
+        '<div style="display:flex;flex-direction:column;gap:16px;min-width:0">' +
+
+          '<div class="card"><h3>简介</h3><p style="margin:0;line-height:1.8">' + renderTerms(d.description) + '</p></div>' +
+
+          (Object.keys(d.stats || {}).length ?
+          '<div class="card"><h3>关键统计</h3><table class="stat-table">' + statRows + '</table></div>' : "") +
+
+          '<div class="card"><h3>📥 下载中心</h3><div class="muted" style="font-size:12.5px;margin-bottom:6px">先「检测」确认可达与真实体积，再「打开下载」；大文件建议用命令行断点续传。</div>' +
+            dlHtml + '</div>' +
+
+          '<div class="card"><h3>🔁 镜像源</h3><div class="muted" style="font-size:12.5px;margin-bottom:6px">官方链路不可达时按场景选用：</div>' + mirHtml + '</div>' +
+
+          '<div class="card"><h3>🏆 官方榜单与论文对标</h3>' + lbHtml + '</div>' +
+        '</div>' +
+
+        '<aside class="side">' +
+          '<div class="card"><h3>条目信息</h3><table class="info-table">' +
+            '<tr><td>许可证</td><td>' + (licTerm
+              ? '<span class="lic term" data-term="' + esc(licTerm) + '">' + esc(licTerm) + '</span>'
+              : '<span class="lic">' + esc(licenseShort(d.license)) + '</span>') + '</td></tr>' +
+            '<tr><td>说明</td><td style="font-size:12.5px">' + esc(d.license) + '</td></tr>' +
+            '<tr><td>格式</td><td>' + esc((d.formats || []).join(" · ")) + '</td></tr>' +
+            '<tr><td>大小</td><td class="mono">' + esc(d.size) + '</td></tr>' +
+            (modalities ? '<tr><td>模态</td><td>' + modalities + '</td></tr>' : "") +
+            (d.homepage ? '<tr><td>主页</td><td><a href="' + esc(d.homepage) + '" target="_blank" rel="noopener">官方页面 ↗</a></td></tr>' : "") +
+          '</table></div>' +
+          '<div class="card"><h3>关联术语</h3><div class="chiprow">' + (termChips || '<span class="muted">无</span>') + '</div></div>' +
+        '</aside>' +
+      '</div>' +
+    '</section>';
+}
+
+/* ---------------- 术语表 ---------------- */
+function viewGlossary(query) {
+  const target = query ? query.get("term") : null;
+  if (target && state.byTerm[target]) { glossState.cat = "全部"; glossState.q = ""; }
+  const cats = ["全部"].concat(state.glossary.categories || []);
+  app.innerHTML =
+    '<section class="view">' +
+      '<div class="sec-head" style="margin-top:4px"><h2>术语表</h2>' +
+      '<span style="font-size:13px;color:var(--text2)">共 ' + state.glossary.terms.length + ' 条 · 正文中的虚线词悬浮可看释义</span></div>' +
+      '<div class="toolbar">' +
+        '<div class="chiprow" id="g-chips">' +
+          cats.map(c => '<button class="chip' + (c === glossState.cat ? " active" : "") + '" data-cat="' + esc(c) + '">' + esc(c) + '</button>').join("") +
+        '</div>' +
+        '<div class="search"><span class="ico">🔍</span>' +
+          '<input id="g-search" type="search" placeholder="搜索术语 / 英文 / 定义…" value="' + esc(glossState.q) + '"></div>' +
+      '</div>' +
+      '<div id="g-list"></div>' +
+    '</section>';
+
+  const renderList = () => {
+    const q = glossState.q.trim().toLowerCase();
+    const match = t => (glossState.cat === "全部" || t.cat === glossState.cat) &&
+      (!q || (t.term + " " + (t.en || "") + " " + t.def).toLowerCase().includes(q));
+    const terms = state.glossary.terms.filter(match);
+    const box = document.getElementById("g-list");
+    if (!terms.length) {
+      box.innerHTML = emptyBox("📖", "没有匹配的术语", "换个关键词，或清除筛选。") +
+        '<div style="text-align:center"><button class="btn" onclick="resetGlossFilter()">清除筛选</button></div>';
+      return;
+    }
+    /* 按分类分组：声明顺序优先，未在 categories 中声明的分类兜底追加（防止数据漏声明时静默丢词条） */
+    const groups = {};
+    terms.forEach(t => { (groups[t.cat] = groups[t.cat] || []).push(t); });
+    const declared = state.glossary.categories || [];
+    const order = declared.concat(Object.keys(groups).filter(c => !declared.includes(c)));
+    /* 锚点 id 清洗（HTML id 不允许空白字符），建 term → id 映射供跳转查询 */
+    glossIds = {};
+    box.innerHTML = order.filter(c => groups[c] && groups[c].length).map(c =>
+      '<div class="g-group card"><h3 style="margin-bottom:4px">' + esc(c) +
+        '<span style="font-weight:400;color:var(--text2);font-size:12.5px"> · ' + groups[c].length + ' 条</span></h3>' +
+        groups[c].map(t => {
+          const gid = "g-" + t.term.replace(/[^A-Za-z0-9一-鿿]+/g, "_");
+          glossIds[t.term] = gid;
+          return '<div class="g-term" id="' + gid + '">' +
+            '<div class="head"><span class="name">' + esc(t.term) + '</span>' +
+              '<span class="en">' + esc(t.en || "") + '</span><span class="tag cat">' + esc(t.cat) + '</span></div>' +
+            '<div class="def">' + esc(t.def) + '</div>' +
+            (t.formula ? '<div class="formula">' + esc(t.formula) + '</div>' : "") +
+          '</div>';
+        }).join("") +
+      '</div>').join("");
+    if (target && state.byTerm[target] && glossIds[target]) {
+      const el = document.getElementById(glossIds[target]);
+      if (el) {
+        el.scrollIntoView({ block: "center" });
+        el.classList.add("flash");
+      }
+    }
+  };
+  renderList();
+
+  document.getElementById("g-chips").addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    glossState.cat = b.dataset.cat;
+    document.querySelectorAll("#g-chips .chip").forEach(c =>
+      c.classList.toggle("active", c.dataset.cat === glossState.cat));
+    renderList();
+  });
+  document.getElementById("g-search").addEventListener("input", e => {
+    glossState.q = e.target.value; renderList();
+  });
+}
+function resetGlossFilter() {
+  glossState.cat = "全部"; glossState.q = ""; viewGlossary(null);
+}
+
+/* ---------------- 架构说明 ---------------- */
+function viewAbout() {
+  app.innerHTML =
+    '<section class="view">' +
+      '<div class="sec-head" style="margin-top:4px"><h2>架构说明</h2>' +
+      '<span style="font-size:13px;color:var(--text2)">零依赖 · Python 标准库后端 + 原生单文件 SPA</span></div>' +
+
+      '<div class="card" style="padding:22px">' +
+        '<h3>分层架构图</h3>' +
+        '<svg class="arch-svg" viewBox="0 0 940 400" xmlns="http://www.w3.org/2000/svg">' +
+          '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
+            '<path d="M 0 0 L 10 5 L 0 10 z" fill="#9aa0a6"/></marker></defs>' +
+
+          /* 浏览器 */
+          '<rect class="svg-box blue" x="20" y="140" width="220" height="110" rx="10" stroke-width="1.5"/>' +
+          '<text class="svg-txt b" x="130" y="172" text-anchor="middle">浏览器（SPA）</text>' +
+          '<text class="svg-txt s" x="130" y="194" text-anchor="middle">static/index.html · 单文件</text>' +
+          '<text class="svg-txt s" x="130" y="212" text-anchor="middle">hash 路由 · 七视图 · 聊天面板</text>' +
+          '<text class="svg-txt s" x="130" y="230" text-anchor="middle">术语 tooltip · 无构建/CDN</text>' +
+
+          /* server.py */
+          '<rect class="svg-box blue" x="360" y="130" width="230" height="130" rx="10" stroke-width="1.5"/>' +
+          '<text class="svg-txt b" x="475" y="158" text-anchor="middle">server.py（:8800）</text>' +
+          '<text class="svg-txt s" x="475" y="180" text-anchor="middle">ThreadingHTTPServer · 标准库</text>' +
+          '<text class="svg-txt s" x="475" y="198" text-anchor="middle">静态服务 · JSON API</text>' +
+          '<text class="svg-txt s" x="475" y="216" text-anchor="middle">链接检测（HEAD, 10s）</text>' +
+          '<text class="svg-txt s" x="475" y="234" text-anchor="middle">DeepSeek SSE 透传代理</text>' +
+
+          /* 数据文件 */
+          '<rect class="svg-box green" x="700" y="24" width="220" height="58" rx="10" stroke-width="1.5"/>' +
+          '<text class="svg-txt b" x="810" y="48" text-anchor="middle">data/datasets.json</text>' +
+          '<text class="svg-txt s" x="810" y="68" text-anchor="middle">6 条目 · 下载/镜像/榜单</text>' +
+          '<rect class="svg-box green" x="700" y="96" width="220" height="58" rx="10" stroke-width="1.5"/>' +
+          '<text class="svg-txt b" x="810" y="120" text-anchor="middle">data/glossary.json</text>' +
+          '<text class="svg-txt s" x="810" y="140" text-anchor="middle">33 条术语 · 15 分类</text>' +
+          '<rect class="svg-box dashed" x="700" y="168" width="220" height="52" rx="10" stroke-width="1.4"/>' +
+          '<text class="svg-txt b" x="810" y="190" text-anchor="middle">.env（密钥）</text>' +
+          '<text class="svg-txt s" x="810" y="208" text-anchor="middle">仅服务端读取 · 不入 git</text>' +
+
+          /* DeepSeek */
+          '<rect class="svg-box" x="700" y="244" width="220" height="58" rx="10" stroke-width="1.5"/>' +
+          '<text class="svg-txt b" x="810" y="268" text-anchor="middle">api.deepseek.com</text>' +
+          '<text class="svg-txt s" x="810" y="288" text-anchor="middle">chat/completions · stream=true</text>' +
+
+          /* 磁盘 */
+          '<rect class="svg-box dashed" x="700" y="316" width="220" height="58" rx="10" stroke-width="1.4"/>' +
+          '<text class="svg-txt b" x="810" y="340" text-anchor="middle">磁盘项目文件（只读）</text>' +
+          '<text class="svg-txt s" x="810" y="360" text-anchor="middle">hw1_unet/ · hw2_sam/</text>' +
+
+          /* 链路 1：数据 */
+          '<line class="svg-line" x1="240" y1="175" x2="354" y2="175"/>' +
+          '<line class="svg-line" x1="356" y1="205" x2="242" y2="205"/>' +
+          '<text class="svg-lab" x="297" y="166" text-anchor="middle">① GET / · /api/*</text>' +
+          '<text class="svg-lab" x="297" y="224" text-anchor="middle">JSON · SSE 流</text>' +
+
+          /* 链路 2：读文件 */
+          '<line class="svg-line" x1="590" y1="165" x2="694" y2="60"/>' +
+          '<text class="svg-lab" x="618" y="100">② 读 JSON</text>' +
+          /* 链路 3：读密钥 */
+          '<line class="svg-line" x1="590" y1="185" x2="694" y2="190"/>' +
+          '<text class="svg-lab" x="642" y="180">③ 读 .env</text>' +
+          /* 链路 4：SSE 代理 */
+          '<line class="svg-line" x1="590" y1="240" x2="694" y2="272"/>' +
+          '<text class="svg-lab" x="618" y="270">④ SSE 透传</text>' +
+        '</svg>' +
+      '</div>' +
+
+      '<div class="sec grid grid-2" style="gap:16px">' +
+        '<div class="card"><h3>模块划分</h3>' +
+          '<table class="about-table" style="border:none">' +
+            '<tr><th>模块</th><th>职责</th></tr>' +
+            '<tr><td class="mono">server.py</td><td>静态服务 + JSON API + 链接检测（HEAD/GET 退化、跟随 2 次重定向、错误分类）+ DeepSeek SSE 代理；绑定 127.0.0.1:8800，防目录穿越，Cache-Control: no-store</td></tr>' +
+            '<tr><td class="mono">static/index.html</td><td>hash 路由七视图（首页/数据集/详情/作业1/作业2/术语/架构）+ 术语悬浮释义 + 聊天面板；启动时拉取一次数据缓存内存；全部状态（loading/空/错误）内置</td></tr>' +
+            '<tr><td class="mono">data/*.json</td><td>唯一事实来源：数据集条目（含官方直链、镜像、榜单、术语关联）与术语表；服务端只读透出</td></tr>' +
+            '<tr><td class="mono">.env</td><td>DEEPSEEK_API_KEY / DEEPSEEK_MODEL；环境变量优先于文件（setdefault 不覆盖）；被 .gitignore 排除</td></tr>' +
+          '</table></div>' +
+        '<div class="card"><h3>四条前后端链路（时序）</h3><ol class="chain">' +
+          '<li><b>数据加载</b>：路由切换 → 若未缓存 → GET /api/overview · /api/datasets · /api/glossary → 内存缓存 → 渲染；之后导航零请求。</li>' +
+          '<li><b>链接检测</b>：详情页【检测】→ GET /api/check_link?url=… → 服务端 HEAD 上游（10s 超时，跟随 ≤2 次重定向，403/405/501 退化 Range GET）→ {ok, status, size_bytes, message} → 🟢/🔴。</li>' +
+          '<li><b>聊天 SSE</b>：POST /api/chat（多轮历史，服务端截留最近 20 条并注入系统提示词）→ DeepSeek stream=true → 服务端逐行透传 → 前端 ReadableStream 逐行解析 data:，增量渲染至 [DONE]。</li>' +
+          '<li><b>实验聚合</b>：作业 1 / 作业 2 视图 → GET /api/hw1 · /api/hw2 → 服务端实时扫描两作业 outputs/logs（CSV+摘要 JSON）、嵌入缓存、figures → 只读 JSON；图片走 /exp/&lt;proj&gt;/figures/，权重下载流式输出。</li>' +
+        '</ol></div>' +
+      '</div>' +
+
+      '<div class="sec">' +
+        '<div class="sec-head"><h2>单一门户架构（三服务已合并为一）</h2></div>' +
+        '<div class="grid grid-3">' +
+          '<div class="card svc-card"><h3>本平台（一站式门户）</h3><div class="port">127.0.0.1:8800 · 本页</div><div class="muted" style="margin-top:6px">数据集、术语、榜单、AI 问答，加上两个作业的<b>完整实验观测</b>——<a href="#/hw1">#/hw1</a> · <a href="#/hw2">#/hw2</a>。一个端口看完整个作业。</div></div>' +
+          '<div class="card svc-card" style="border-top-color:var(--text2);opacity:.75"><h3>hw1 监控仪表盘</h3><div class="port">~~127.0.0.1:8801~~ · 已废弃</div><div class="muted" style="margin-top:6px">功能已全部并入 <a href="#/hw1">#/hw1</a>（运行表、曲线、评测、权重、源码、画廊、实时刷新），迁移对照见 <code>hw1_unet/dashboard/DEPRECATED.md</code>。</div></div>' +
+          '<div class="card svc-card" style="border-top-color:var(--text2);opacity:.75"><h3>hw2 监控仪表盘</h3><div class="port">~~127.0.0.1:8802~~ · 已废弃</div><div class="muted" style="margin-top:6px">功能已全部并入 <a href="#/hw2">#/hw2</a>，并新增提示类型对比与鲁棒性曲线，见 <code>hw2_sam/dashboard/DEPRECATED.md</code>。</div></div>' +
+        '</div>' +
+        '<div class="card" style="margin-top:16px"><b>为什么合并</b>：原先三个服务要开三个端口、三套主题（两个暗色 + 一个浅色），查一次实验要在门户与监控台之间来回跳。现在统一为一个门户：<b>浅色 / 深色一键切换</b>、实验观测与数据物料同屏、实时刷新内建。三者共用同一份磁盘数据（ISIC 原始数据、SAM 权重、嵌入缓存），本平台对实验代码零改动。</div>' +
+      '</div>' +
+
+      '<div class="sec">' +
+        '<div class="sec-head"><h2>图表引擎（对标 Grafana）</h2>' +
+          '<span style="font-size:13px;color:var(--text2)">纯 SVG · 零依赖 · 主题自适应</span></div>' +
+        '<div class="grid grid-2">' +
+          '<div class="card"><h3>折线 / 面积图</h3><div class="muted" style="font-size:13px">面积渐变填充、Catmull-Rom 平滑曲线、<b>悬停十字线 + 共享 tooltip</b>（一次显示所有序列在该 x 的取值）、图例可点击隐藏/恢复、nice 刻度（1/2/5×10ⁿ）、阈值参考线（如 Dice 目标 0.75）、末值标注点。</div></div>' +
+          '<div class="card"><h3>柱状图与统计面板</h3><div class="muted" style="font-size:13px">分组柱状图用于模型对比、消融对比、提示类型对比（带数值标签与悬停提示）；统计面板（Stat panel）用于关键指标大字显示 + 迷你趋势线（sparkline）。</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</section>';
+}
+
+/* ---------------- 实验观测（融合 hw1 / hw2 监控台数据） ---------------- */
+function fmt3(v) { return (v == null || isNaN(v)) ? "—" : Number(v).toFixed(3); }
+
+/* ==================== 图表引擎（对标 Grafana · 纯 SVG · 无依赖） ====================
+ * 特性：nice 刻度 / 面积渐变 / 平滑曲线 / 悬停十字线 + 共享 tooltip /
+ *       图例可点击隐藏 / 阈值参考线 / 末值标注 / 主题自适应（颜色取自 CSS 变量）
+ * 用法：gchart([{name, pts:[[x,y],…], color?}], {h, yLabel, xLabel, smooth, area, threshold}) */
+const CHARTS = {};
+let chartSeq = 0;
+
+/* 把区间切成「好看」的刻度：步长取 1/2/5 × 10^n */
+function niceTicks(lo, hi, want) {
+  if (!(hi > lo)) { hi = lo + 1; }
+  const raw = (hi - lo) / Math.max(1, want);
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const n = raw / mag;
+  const step = (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * mag;
+  const start = Math.ceil(lo / step) * step;
+  const ticks = [];
+  for (let v = start; v <= hi + step * 1e-6; v += step) ticks.push(Number(v.toPrecision(12)));
+  return { ticks: ticks, step: step };
+}
+function fmtNum(v, step) {
+  const a = Math.abs(v);
+  if (a >= 1e6) return (v / 1e6).toFixed(1) + "M";
+  if (a >= 1e4) return (v / 1e3).toFixed(0) + "k";
+  if (a >= 1e3 && step >= 100) return (v / 1e3).toFixed(1) + "k";
+  const d = step >= 1 ? 0 : step >= 0.1 ? 1 : step >= 0.01 ? 2 : 3;
+  return v.toFixed(d);
+}
+/* Catmull-Rom → 三次贝塞尔：比折线柔和，又不会像样条那样过冲 */
+function smoothPath(pts, tension) {
+  if (pts.length < 3) return "M" + pts.map(p => p[0] + "," + p[1]).join(" L");
+  const t = tension == null ? 0.18 : tension;
+  let d = "M" + pts[0][0] + "," + pts[0][1];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    const c1x = p1[0] + (p2[0] - p0[0]) * t, c1y = p1[1] + (p2[1] - p0[1]) * t;
+    const c2x = p2[0] - (p3[0] - p1[0]) * t, c2y = p2[1] - (p3[1] - p1[1]) * t;
+    d += " C" + c1x.toFixed(1) + "," + c1y.toFixed(1) + " " + c2x.toFixed(1) + "," +
+         c2y.toFixed(1) + " " + p2[0].toFixed(1) + "," + p2[1].toFixed(1);
+  }
+  return d;
+}
+
+function gchart(series, opt) {
+  const id = "gc" + (++chartSeq);
+  CHARTS[id] = {
+    series: series.map(s => ({ name: s.name, pts: s.pts.slice(), color: s.color })),
+    opt: opt || {}, hidden: series.map(() => false), hoverX: null,
+  };
+  return '<div class="gchart" data-chart="' + id + '">' + chartSVG(id) + "</div>";
+}
+
+function chartSVG(id) {
+  const st = CHARTS[id], opt = st.opt;
+  const pal = seriesColors();
+  st.series.forEach((s, i) => { if (!s.color) s.color = pal[i % pal.length]; });
+  const vis = st.series.filter((s, i) => !st.hidden[i] && s.pts.length);
+  if (!vis.length) {
+    return '<div class="chart-legend">' + chartLegend(id) + "</div>" +
+      '<div class="empty" style="padding:26px"><div class="emoji">📈</div>没有可显示的序列</div>';
+  }
+  const w = 720, h = opt.h || 260, pl = 56, pr = 18, pt = 26, pb = 36;
+  const xs = [].concat.apply([], vis.map(s => s.pts.map(p => p[0])));
+  const ys = [].concat.apply([], vis.map(s => s.pts.map(p => p[1])));
+  let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+  let y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+  if (opt.yMin != null) y0 = Math.min(y0, opt.yMin);
+  if (opt.yMax != null) y1 = Math.max(y1, opt.yMax);
+  /* 阈值参考线要可见：把它的取值纳入 y 轴范围 */
+  if (opt.threshold && typeof opt.threshold.value === "number") {
+    y0 = Math.min(y0, opt.threshold.value);
+    y1 = Math.max(y1, opt.threshold.value);
+  }
+  if (x0 === x1) { x0 -= 1; x1 += 1; }
+  if (y0 === y1) { y0 -= 0.5; y1 += 0.5; }
+  const pad = (y1 - y0) * 0.1; y0 -= pad; y1 += pad;
+  if (opt.yMin != null) y0 = opt.yMin;
+  if (opt.yMax != null) y1 = opt.yMax;
+  const X = v => pl + (v - x0) / (x1 - x0) * (w - pl - pr);
+  const Y = v => pt + (1 - (v - y0) / (y1 - y0)) * (h - pt - pb);
+  st.geom = { X: X, Y: Y, x0: x0, x1: x1, w: w, h: h, pl: pl, pt: pt, pb: pb, pr: pr };
+
+  /* y 轴网格 + 刻度 */
+  const tk = niceTicks(y0, y1, 5);
+  let grid = "";
+  tk.ticks.forEach(v => {
+    if (v < y0 || v > y1) return;
+    const yy = Y(v).toFixed(1);
+    grid += '<line x1="' + pl + '" y1="' + yy + '" x2="' + (w - pr) + '" y2="' + yy + '" style="stroke:var(--chart-grid)" stroke-width="1"/>';
+    grid += '<text class="c-tick" x="' + (pl - 9) + '" y="' + (Number(yy) + 4) + '" text-anchor="end">' + fmtNum(v, tk.step) + "</text>";
+  });
+  /* x 轴刻度 */
+  const xt = niceTicks(x0, x1, 6);
+  let xlab = "";
+  xt.ticks.forEach(v => {
+    if (v < x0 || v > x1) return;
+    xlab += '<text class="c-tick" x="' + X(v).toFixed(1) + '" y="' + (h - pb + 18) + '" text-anchor="middle">' + fmtNum(v, xt.step) + "</text>";
+  });
+  /* 面积渐变 defs */
+  let defs = "<defs>";
+  vis.forEach((s, i) => {
+    defs += '<linearGradient id="' + id + "g" + i + '" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="' + s.color + '" stop-opacity="' + cssVar("--chart-area") + '"/>' +
+      '<stop offset="100%" stop-color="' + s.color + '" stop-opacity="0"/></linearGradient>';
+  });
+  defs += "</defs>";
+  /* 阈值参考线 */
+  let thr = "";
+  if (opt.threshold && opt.threshold.value >= y0 && opt.threshold.value <= y1) {
+    const ty = Y(opt.threshold.value).toFixed(1);
+    thr = '<line x1="' + pl + '" y1="' + ty + '" x2="' + (w - pr) + '" y2="' + ty +
+      '" style="stroke:' + (opt.threshold.color || "var(--accent)") + '" stroke-width="1.4" stroke-dasharray="6 4" opacity=".85"/>' +
+      '<text class="c-tick" x="' + (w - pr - 2) + '" y="' + (Number(ty) - 5) + '" text-anchor="end" style="fill:' +
+      (opt.threshold.color || "var(--accent)") + '">' + esc(opt.threshold.label || "") + "</text>";
+  }
+  /* 数据系列：面积 + 曲线 + 末值点 */
+  let body = "";
+  vis.forEach((s, i) => {
+    const P = s.pts.map(p => [X(p[0]), Y(p[1])]);
+    const line = opt.smooth === false
+      ? "M" + P.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L")
+      : smoothPath(P.map(p => [Number(p[0].toFixed(1)), Number(p[1].toFixed(1))]));
+    if (s.pts.length > 1) {
+      body += '<path d="' + line + " L" + P[P.length - 1][0].toFixed(1) + "," + (h - pb) +
+        " L" + P[0][0].toFixed(1) + "," + (h - pb) + ' Z" fill="url(#' + id + "g" + i + ')"/>';
+    }
+    body += '<path d="' + line + '" fill="none" stroke="' + s.color +
+      '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    const last = P[P.length - 1];
+    body += '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) +
+      '" r="3.2" fill="' + s.color + '" stroke="var(--card)" stroke-width="1.5"/>';
+    if (s.pts.length === 1) {
+      body += '<circle cx="' + P[0][0].toFixed(1) + '" cy="' + P[0][1].toFixed(1) + '" r="4" fill="' + s.color + '"/>';
+    }
+  });
+  const yLab = opt.yLabel ? '<text class="c-axlabel" x="4" y="11" text-anchor="start">' + esc(opt.yLabel) + "</text>" : "";
+  const xLab = opt.xLabel ? '<text class="c-axlabel" x="' + (w - pr) + '" y="' + (h - 2) + '" text-anchor="end">' + esc(opt.xLabel) + "</text>" : "";
+  return '<div class="chart-legend">' + chartLegend(id) + "</div>" +
+    '<svg class="gc-svg" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="none" style="width:100%;height:' + h + 'px;display:block;overflow:visible">' +
+      defs + grid + thr +
+      '<line x1="' + pl + '" y1="' + (h - pb) + '" x2="' + (w - pr) + '" y2="' + (h - pb) + '" style="stroke:var(--chart-axis)"/>' +
+      xlab + body +
+      '<g class="gc-hover" style="display:none">' +
+        '<line class="gc-cross" y1="' + pt + '" y2="' + (h - pb) + '" style="stroke:var(--chart-axis)" stroke-width="1" stroke-dasharray="3 3"/>' +
+      "</g>" +
+      yLab + xLab +
+    "</svg>" +
+    '<div class="gc-tip"></div>';
+}
+function chartLegend(id) {
+  const st = CHARTS[id];
+  return st.series.map((s, i) =>
+    '<button class="lg' + (st.hidden[i] ? " off" : "") + '" data-chart="' + id + '" data-i="' + i + '">' +
+      '<span class="dot" style="background:' + (s.color || seriesColors()[i % 8]) + '"></span>' + esc(s.name) + "</button>").join("");
+}
+function toggleSeries(id, i) {
+  const st = CHARTS[id];
+  if (!st) return;
+  st.hidden[i] = !st.hidden[i];
+  const wrap = document.querySelector('.gchart[data-chart="' + id + '"]');
+  if (!wrap) return;
+  const legendHtml = chartLegend(id);
+  wrap.innerHTML = chartSVG(id);
+  // 图例位置在 SVG 之前，chartSVG 已重新生成，这里无需额外处理
+}
+function rerenderCharts() {
+  Object.keys(CHARTS).forEach(id => {
+    const wrap = document.querySelector('.gchart[data-chart="' + id + '"]');
+    if (wrap) wrap.innerHTML = chartSVG(id);
+  });
+}
+
+/* ---- 悬停：十字线 + 共享 tooltip（事件委托，视图重渲染后依然有效） ---- */
+function chartHover(e) {
+  const wrap = e.target.closest ? e.target.closest(".gchart") : null;
+  if (!wrap) { hideChartTips(); return; }
+  const st = CHARTS[wrap.dataset.chart];
+  if (!st || !st.geom) return;
+  const svg = wrap.querySelector("svg.gc-svg");
+  const tip = wrap.querySelector(".gc-tip");
+  if (!svg || !tip) return;
+  const r = svg.getBoundingClientRect();
+  if (!r.width) return;
+  const g = st.geom;
+  const mx = (e.clientX - r.left) / r.width * g.w;
+  /* 在所有可见序列的 x 里找最近的 */
+  const vis = st.series.filter((s, i) => !st.hidden[i] && s.pts.length);
+  if (!vis.length) return;
+  let best = null, bestD = Infinity;
+  vis.forEach(s => s.pts.forEach(p => {
+    const d = Math.abs(g.X(p[0]) - mx);
+    if (d < bestD) { bestD = d; best = p[0]; }
+  }));
+  if (best == null) return;
+  st.hoverX = best;
+  const cx = g.X(best);
+  const hov = wrap.querySelector(".gc-hover");
+  hov.style.display = "";
+  hov.querySelector(".gc-cross").setAttribute("x1", cx.toFixed(1));
+  hov.querySelector(".gc-cross").setAttribute("x2", cx.toFixed(1));
+  /* 每个序列在该 x 的取值（取最近点） */
+  const rows = vis.map(s => {
+    let pt = null, d = Infinity;
+    s.pts.forEach(p => { const dd = Math.abs(p[0] - best); if (dd < d) { d = dd; pt = p; } });
+    return { name: s.name, color: s.color, x: pt[0], y: pt[1] };
+  });
+  const step = (niceTicks(g.x0, g.x1, 6).step) || 1;
+  tip.innerHTML = '<div class="tip-x">' + esc(st.opt.xLabel || "x") + " = " + fmtNum(best, step) + "</div>" +
+    rows.map(r2 => '<div class="tip-row"><span class="dot" style="background:' + r2.color + '"></span>' +
+      "<span class='tip-n'>" + esc(r2.name) + "</span><b>" + fmtNum(r2.y, 0.001) + "</b></div>").join("");
+  tip.style.display = "block";
+  tipVisible = true;
+  const px = cx / g.w * r.width;
+  tip.style.left = Math.max(4, Math.min(r.width - tip.offsetWidth - 4, px + 12)) + "px";
+  tip.style.top = "8px";
+  /* 高亮圆点 */
+  let dots = "";
+  rows.forEach(r2 => { dots += '<circle cx="' + g.X(r2.x).toFixed(1) + '" cy="' + g.Y(r2.y).toFixed(1) + '" r="3.6" fill="' + r2.color + '" stroke="var(--card)" stroke-width="1.5"/>'; });
+  let dotG = hov.querySelector(".gc-dots");
+  if (!dotG) { dotG = document.createElementNS("http://www.w3.org/2000/svg", "g"); dotG.setAttribute("class", "gc-dots"); hov.appendChild(dotG); }
+  dotG.innerHTML = dots;
+}
+let tipVisible = false;
+function hideChartTips() {
+  if (!tipVisible) return;                 // 未显示时直接返回：mousemove 高频触发，避免每次全文档查询
+  tipVisible = false;
+  document.querySelectorAll(".gchart .gc-tip").forEach(t => { t.style.display = "none"; });
+  document.querySelectorAll(".gchart .gc-hover").forEach(t => { t.style.display = "none"; });
+}
+document.addEventListener("mousemove", chartHover);
+/* 只有指针真正离开图表容器才隐藏；用 mouseout + relatedTarget 判断，
+ * 否则在图表内部元素之间移动会不断触发 mouseleave 导致 tooltip 闪烁 */
+document.addEventListener("mouseout", e => {
+  const wrap = e.target.closest ? e.target.closest(".gchart") : null;
+  if (!wrap) return;
+  const to = e.relatedTarget;
+  if (!to || !wrap.contains(to)) hideChartTips();
+}, true);
+document.addEventListener("click", e => {
+  const lg = e.target.closest ? e.target.closest(".lg") : null;
+  if (lg) { toggleSeries(lg.dataset.chart, Number(lg.dataset.i)); }
+});
+
+/* ---- 柱状图（分组对比，对标 Grafana Bar chart） ---- */
+function gbar(cats, series, opt) {
+  opt = opt || {};
+  const pal = seriesColors();
+  const w = 720, h = opt.h || 240, pl = 56, pr = 18, pt = 22, pb = 46;
+  series.forEach((s, i) => { if (!s.color) s.color = pal[i % pal.length]; });
+  const all = [].concat.apply([], series.map(s => s.values));
+  if (!all.length) return '<div class="empty" style="padding:24px"><div class="emoji">📊</div>暂无数据</div>';
+  let y0 = 0, y1 = Math.max.apply(null, all);
+  if (opt.yMax != null) y1 = Math.max(y1, opt.yMax);
+  if (y1 <= 0) y1 = 1;
+  y1 *= 1.14;
+  const Y = v => pt + (1 - (v - y0) / (y1 - y0)) * (h - pt - pb);
+  const bandW = (w - pl - pr) / Math.max(1, cats.length);
+  const barW = Math.min(38, bandW * 0.68 / series.length);
+  const tk = niceTicks(y0, y1, 4);
+  let grid = "";
+  tk.ticks.forEach(v => {
+    if (v < y0 || v > y1) return;
+    const yy = Y(v).toFixed(1);
+    grid += '<line x1="' + pl + '" y1="' + yy + '" x2="' + (w - pr) + '" y2="' + yy + '" style="stroke:var(--chart-grid)"/>';
+    grid += '<text class="c-tick" x="' + (pl - 9) + '" y="' + (Number(yy) + 4) + '" text-anchor="end">' + fmtNum(v, tk.step) + "</text>";
+  });
+  let bars = "";
+  cats.forEach((c, ci) => {
+    const cx = pl + bandW * ci + bandW / 2;
+    const groupW = barW * series.length + 3 * (series.length - 1);
+    series.forEach((s, si) => {
+      const v = s.values[ci];
+      if (v == null || isNaN(v)) return;
+      const bx = cx - groupW / 2 + si * (barW + 3);
+      const by = Y(v), bh = Math.max(1, h - pb - by);
+      bars += '<rect x="' + bx.toFixed(1) + '" y="' + by.toFixed(1) + '" width="' + barW.toFixed(1) +
+        '" height="' + bh.toFixed(1) + '" rx="2.5" fill="' + s.color + '"><title>' + esc(c) + " · " + esc(s.name) +
+        " = " + (opt.fmt ? opt.fmt(v) : v.toFixed(3)) + "</title></rect>";
+      if (barW >= 20) {
+        bars += '<text class="c-tick" x="' + (bx + barW / 2).toFixed(1) + '" y="' + (by - 4).toFixed(1) +
+          '" text-anchor="middle" style="fill:var(--text)">' + (opt.fmt ? opt.fmt(v) : v.toFixed(3)) + "</text>";
+      }
+    });
+    bars += '<text class="c-tick" x="' + cx.toFixed(1) + '" y="' + (h - pb + 18) + '" text-anchor="middle" style="fill:var(--text2)">' + esc(c) + "</text>";
+  });
+  const legend = series.map((s, i) =>
+    '<span class="lg" style="cursor:default"><span class="dot" style="background:' + s.color + '"></span>' + esc(s.name) + "</span>").join("");
+  return '<div class="chart-legend">' + legend + "</div>" +
+    '<svg viewBox="0 0 ' + w + " " + h + '" style="width:100%;height:' + h + 'px;display:block">' + grid +
+    '<line x1="' + pl + '" y1="' + (h - pb) + '" x2="' + (w - pr) + '" y2="' + (h - pb) + '" style="stroke:var(--chart-axis)"/>' +
+    bars + "</svg>";
+}
+
+/* ---- 统计面板（对标 Grafana Stat panel：大数字 + 副标题 + 迷你趋势） ---- */
+function gstat(label, value, opt) {
+  opt = opt || {};
+  const color = opt.color || "var(--text)";
+  let spark = "";
+  if (opt.spark && opt.spark.length > 1) {
+    const pts = opt.spark.filter(v => typeof v === "number" && !isNaN(v));
+    if (pts.length > 1) {
+      const w = 120, h = 30, lo = Math.min.apply(null, pts), hi = Math.max.apply(null, pts);
+      const X = i => (i / (pts.length - 1)) * w;
+      const Y = v => h - 2 - (hi === lo ? 0.5 : (v - lo) / (hi - lo)) * (h - 6);
+      const P = pts.map((v, i) => [Number(X(i).toFixed(1)), Number(Y(v).toFixed(1))]);
+      const c = opt.sparkColor || "var(--primary)";
+      spark = '<svg viewBox="0 0 ' + w + " " + h + '" style="width:100%;height:30px;display:block;margin-top:6px">' +
+        '<path d="' + smoothPath(P) + " L" + w + "," + h + " L0," + h + ' Z" fill="' + c + '" opacity=".13"/>' +
+        '<path d="' + smoothPath(P) + '" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round"/></svg>';
+    }
+  }
+  return '<div class="gstat">' +
+    '<div class="gs-lab">' + esc(label) + "</div>" +
+    '<div class="gs-val" style="color:' + color + '">' + esc(String(value)) +
+      (opt.unit ? '<span class="gs-unit">' + esc(opt.unit) + "</span>" : "") + "</div>" +
+    (opt.sub ? '<div class="gs-sub">' + opt.sub + "</div>" : "") + spark + "</div>";
+}
+function toPts(rows, xKey, yKey) {
+  return (rows || []).map(r => [r[xKey], r[yKey]])
+    .filter(p => typeof p[0] === "number" && typeof p[1] === "number");
+}
+function statusBadge(st) {
+  if (st === "finished" || st === "done") return '<span class="badge done">已完成</span>';
+  if (st === "running") return '<span class="badge running">运行中</span>';
+  return '<span class="badge pending">待运行</span>';
+}
+function fileRows(files, proj, emptyHint) {
+  if (!files || !files.length) return '<div class="muted" style="font-size:13px">' + emptyHint + "</div>";
+  return files.map(f =>
+    '<div class="file-row"><span class="nm" title="' + esc(f.path) + '">' + esc(f.name) + "</span>" +
+      '<span class="dl-meta">' + esc(f.size_h) + " · " + esc(f.mtime) + "</span>" +
+      '<a class="btn sm" href="/exp/' + proj + "/download?proj=" + proj + "&path=" + encodeURIComponent(f.path) + '" download>下载</a></div>').join("");
+}
+async function loadHwReport(proj, path, boxId) {
+  const box = document.getElementById(boxId);
+  box.style.display = "block";
+  box.textContent = "加载中…";
+  try {
+    const r = await api("/api/hw_report?proj=" + proj + "&path=" + encodeURIComponent(path));
+    box.textContent = r.content;
+  } catch (e) {
+    box.textContent = "加载失败：" + e.message;
+  }
+}
+
+/* ==================== 弹窗系统（运行详情 / 评测档案 / 源码 / 图片灯箱） ==================== */
+function openModal(title, bodyHtml, opt) {
+  opt = opt || {};
+  let m = document.getElementById("modal");
+  if (!m) {
+    m = document.createElement("div");
+    m.id = "modal";
+    m.addEventListener("click", e => { if (e.target === m) closeModal(); });
+    document.body.appendChild(m);
+  }
+  m.className = "modal" + (opt.wide ? " wide" : "");
+  m.innerHTML = '<div class="modal-card">' +
+    '<div class="modal-head"><b>' + esc(title) + "</b>" +
+      '<button class="modal-x" onclick="closeModal()" aria-label="关闭">✕</button></div>' +
+    '<div class="modal-body">' + bodyHtml + "</div></div>";
+  m.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeModal() {
+  const m = document.getElementById("modal");
+  if (m) { m.style.display = "none"; m.innerHTML = ""; }
+  document.body.style.overflow = "";
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+/* 运行详情：指标 + 逐 epoch 曲线 + 原始日志表 */
+function showRunDetail(proj, tag) {
+  const d = proj === "hw1" ? state.hw1 : state.hw2;
+  const r = ((d && d.runs) || []).find(x => x.tag === tag);
+  if (!r) return;
+  const cols = Object.keys((r.series && r.series[0]) || {});
+  const yKey = cols.indexOf("val_dice") >= 0 ? "val_dice" : "dice";
+  const chart = (r.series || []).length
+    ? gchart([
+        { name: yKey, pts: toPts(r.series, "epoch", yKey) },
+        { name: "train_loss", pts: toPts(r.series, "epoch", "train_loss") },
+      ], { h: 220, smooth: true, xLabel: "epoch" })
+    : '<div class="muted">无曲线数据</div>';
+  const table = '<div class="table-scroll"><table class="stat-table num-table"><tr>' +
+    cols.map(c => "<td>" + esc(c) + "</td>").join("") + "</tr>" +
+    (r.series || []).map(row => "<tr>" + cols.map(c => "<td>" + esc(row[c]) + "</td>").join("") + "</tr>").join("") +
+    "</table></div>";
+  openModal("运行详情 · " + tag,
+    '<div class="chiprow" style="margin-bottom:12px">' +
+      '<span class="tag cat">' + esc(r.model || "") + "</span>" + statusBadge(r.status) +
+      '<span class="badge done">best Dice ' + fmt3(r.best_val_dice) + "</span>" +
+      '<span class="run-metric">epoch ' + r.epochs_done + (r.total_epochs ? "/" + r.total_epochs : "") + "</span>" +
+      '<span class="run-metric">' + esc(r.cum_min) + " min</span>" +
+      '<span class="run-metric">' + esc(r.updated) + "</span>" +
+    "</div>" + chart + '<div style="margin-top:14px">' + table + "</div>", { wide: true });
+}
+
+/* 评测档案：原始 JSON */
+async function showEvalDetail(proj, file) {
+  openModal("评测档案 · " + file, '<div class="muted">加载中…</div>', { wide: true });
+  try {
+    const r = await api("/api/hw_eval?proj=" + proj + "&file=" + encodeURIComponent(file));
+    const d = r.data || {};
+    const m = d.metrics || d;
+    const rows = Object.keys(m).map(k => {
+      const v = m[k];
+      const shown = v == null ? "—" : (typeof v === "number" ? v : JSON.stringify(v));
+      return "<tr><td>" + esc(k) + '</td><td class="mono">' + esc(shown) + "</td></tr>";
+    }).join("");
+    const head = '<div class="chiprow" style="margin-bottom:12px">' +
+      (d.stage ? '<span class="tag">' + esc(d.stage) + "</span>" : "") +
+      (d.prompt ? '<span class="tag cat">提示 ' + esc(d.prompt) + "</span>" : "") +
+      (d.split ? '<span class="tag cat">' + esc(d.split) + "</span>" : "") +
+      (d.n ? '<span class="run-metric">n=' + esc(d.n) + "</span>" : "") + "</div>";
+    openModal("评测档案 · " + file,
+      head + '<div class="table-scroll"><table class="stat-table num-table">' + rows + "</table></div>" +
+      '<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--text2);font-size:12.5px">查看原始 JSON</summary>' +
+      '<pre class="report-pre" style="margin-top:8px">' + esc(JSON.stringify(d, null, 2)) + "</pre></details>", { wide: true });
+  } catch (e) {
+    openModal("评测档案 · " + file, '<div class="err-box">加载失败：' + esc(e.message) + "</div>", { wide: true });
+  }
+}
+
+/* 源码查看 */
+async function showCode(proj, path) {
+  openModal("源码 · " + path, '<div class="muted">加载中…</div>', { wide: true });
+  try {
+    const r = await api("/api/hw_code?proj=" + proj + "&path=" + encodeURIComponent(path));
+    openModal("源码 · " + r.path + "（" + r.lines + " 行）",
+      '<pre class="report-pre code-view">' + esc(r.content) + "</pre>", { wide: true });
+  } catch (e) {
+    openModal("源码 · " + path, '<div class="err-box">加载失败：' + esc(e.message) + "</div>", { wide: true });
+  }
+}
+
+/* 图片灯箱 */
+function showFigure(src, title) {
+  openModal(title || "图片", '<img class="lightbox-img" src="' + esc(src) + '" alt="' + esc(title || "") + '">', { wide: true });
+}
+
+/* 图表画廊：缩略图网格，点击放大 */
+function figureGallery(files, proj, emptyHint) {
+  if (!files || !files.length) return '<div class="muted" style="font-size:13px">' + emptyHint + "</div>";
+  return '<div class="gallery">' + files.map(f => {
+    const src = "/exp/" + proj + "/figures/" + encodeURIComponent(f.name);
+    return '<figure class="gal-item" onclick="showFigure(\'' + esc(src) + "','" + esc(f.name) + "')\">" +
+      '<img src="' + esc(src) + '" loading="lazy" alt="' + esc(f.name) + '">' +
+      '<figcaption title="' + esc(f.name) + '">' + esc(f.name) + "</figcaption></figure>";
+  }).join("") + "</div>";
+}
+
+/* 源码浏览器：文件列表 */
+function codeList(files, proj) {
+  if (!files || !files.length) return '<div class="muted" style="font-size:13px">暂无源码文件</div>';
+  return '<div class="code-list">' + files.map(f =>
+    '<button class="code-item" onclick="showCode(\'' + proj + "','" + esc(f.path) + "')\">" +
+      '<span class="mono">' + esc(f.name) + "</span>" +
+      '<span class="dl-meta">' + esc(f.size_h) + "</span></button>").join("") + "</div>";
+}
+
+/* ==================== 自动刷新（训练进行中实时看进度） ==================== */
+const autoRefresh = { on: false, timer: null, proj: null };
+function toggleAutoRefresh(proj) {
+  if (autoRefresh.proj !== proj) autoRefresh.on = false;
+  autoRefresh.proj = proj;
+  autoRefresh.on = !autoRefresh.on;
+  if (autoRefresh.timer) { clearInterval(autoRefresh.timer); autoRefresh.timer = null; }
+  if (autoRefresh.on) {
+    autoRefresh.timer = setInterval(async () => {
+      try {
+        const fresh = await api("/api/" + proj);
+        if (proj === "hw1") state.hw1 = fresh; else state.hw2 = fresh;
+        const y = window.scrollY;
+        if (proj === "hw1") viewHw1(); else viewHw2();
+        window.scrollTo(0, y);
+      } catch (e) { /* 刷新失败保持旧数据 */ }
+    }, 10000);
+  }
+  const btn = document.getElementById("auto-refresh-btn");
+  if (btn) {
+    btn.textContent = autoRefresh.on ? "⏸ 停止自动刷新（10s）" : "▶ 自动刷新（10s）";
+    btn.classList.toggle("primary", autoRefresh.on);
+  }
+}
+function stopAutoRefresh() {
+  if (autoRefresh.timer) { clearInterval(autoRefresh.timer); autoRefresh.timer = null; }
+  autoRefresh.on = false;
+}
+
+/* ==================== 作业 1 实验视图 ==================== */
+function hw1Stats(d) {
+  const runs = d.runs || [];
+  const best = runs.reduce((a, r) => (!a || r.best_val_dice > a.best_val_dice ? r : a), null);
+  const evals = (d.evals || []).filter(e => e.metrics);
+  const bestEval = evals.reduce((a, e) => (!a || e.metrics.dice > a.metrics.dice ? e : a), null);
+  const totalMin = runs.reduce((n, r) => n + (Number(r.cum_min) || 0), 0);
+  const m = bestEval ? bestEval.metrics : null;
+  return '<div class="grid-stats">' +
+    gstat("最佳 Val Dice", best ? fmt3(best.best_val_dice) : "—",
+      { sub: best ? esc(best.tag) : "暂无运行", color: "var(--accent)", spark: best ? best.series.map(r => r.dice) : null }) +
+    gstat("测试集 Dice", m ? fmt3(m.dice) : "—",
+      { sub: m ? "n=" + m.n + " · " + esc(bestEval.tag) : "尚未评测", color: "var(--primary)" }) +
+    gstat("测试集 HD95", m ? Number(m.hd95).toFixed(1) : "—", { unit: "px", sub: m ? "越低越好" : "—", color: "var(--warn)" }) +
+    gstat("训练运行", runs.length, { sub: runs.filter(r => r.status === "finished").length + " 个已完成" }) +
+    gstat("累计训练时长", totalMin.toFixed(0), { unit: "min", sub: (totalMin / 60).toFixed(1) + " 小时" }) +
+    gstat("Checkpoints", (d.checkpoints || []).length, { sub: "可下载" }) +
+  "</div>";
+}
+function hw1ModelBars(d) {
+  const evals = (d.evals || []).filter(e => e.metrics && e.split === "test");
+  if (!evals.length) return "";
+  const byModel = {};
+  evals.forEach(e => {
+    const tag = e.tag || "";
+    const model = /^attn/.test(tag) ? "Attention U-Net" : /^res/.test(tag) ? "ResUNet" : /^unet/.test(tag) ? "U-Net" : tag;
+    (byModel[model] = byModel[model] || []).push(e.metrics.dice);
+  });
+  const cats = Object.keys(byModel);
+  const avg = cats.map(c => byModel[c].reduce((a, b) => a + b, 0) / byModel[c].length);
+  return gbar(cats, [{ name: "测试集 Dice（均值）", values: avg }], { h: 230, yMax: 1, fmt: v => v.toFixed(3) });
+}
+function hw1AblationBars(d) {
+  const ab = d.ablation || {};
+  const groups = Object.keys(ab);
+  if (!groups.length) return "";
+  return groups.map(g => {
+    const items = ab[g];
+    const cats = Object.keys(items);
+    return '<div style="margin-bottom:16px"><div class="muted" style="font-size:12.5px;margin-bottom:4px">' + esc(g) + "</div>" +
+      gbar(cats, [
+        { name: "Dice", values: cats.map(c => items[c].dice) },
+        { name: "HD95(px)", values: cats.map(c => items[c].hd95) },
+      ], { h: 200, fmt: v => v.toFixed(2) }) + "</div>";
+  }).join("");
+}
+/* ---------- 聚合小工具 ---------- */
+function nmean(arr) {
+  const v = (arr || []).filter(x => typeof x === "number" && !isNaN(x));
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+}
+function diceCell(v) {
+  if (v == null || isNaN(v)) return '<span class="muted">—</span>';
+  const cls = v >= 0.8 ? "vt-good" : v >= 0.6 ? "vt-mid" : "vt-bad";
+  return '<b class="' + cls + '">' + Number(v).toFixed(4) + "</b>";
+}
+function hw1AggByModel(evals) {
+  const CN = { unet: "U-Net", resunet: "ResUNet", attn_unet: "Attention U-Net" };
+  const out = {};
+  (evals || []).filter(e => e.metrics && e.split === "test").forEach(e => {
+    const tag = e.tag || "";
+    const k = /^attn/.test(tag) ? "attn_unet" : /^res/.test(tag) ? "resunet" : /^unet/.test(tag) ? "unet" : tag;
+    (out[k] = out[k] || []).push(e);
+  });
+  return Object.entries(out).map(([k, es]) => ({
+    key: k, name: CN[k] || k, n: es.length,
+    dice: nmean(es.map(e => e.metrics.dice)), iou: nmean(es.map(e => e.metrics.iou)),
+    hd95: nmean(es.map(e => e.metrics.hd95)), sens: nmean(es.map(e => e.metrics.sensitivity)),
+    spec: nmean(es.map(e => e.metrics.specificity)), acc: nmean(es.map(e => e.metrics.pixel_acc)),
+    params: es[0].params_M || "", tag: es.reduce((a, e) => (!a || e.metrics.dice > a.metrics.dice ? e : a)).tag,
+  }));
+}
+
+/* ==================== 作业 1 实验视图（Grafana 12 列仪表盘） ==================== */
+function viewHw1() {
+  if (!state.hw1) {
+    app.innerHTML = '<section class="view">' + errBox("作业 1 实验数据不可用（/api/hw1 聚合失败）") + "</section>";
+    return;
+  }
+  for (const k in CHARTS) delete CHARTS[k];
+  const d = state.hw1;
+  const runs = d.runs || [];
+  const finished = runs.filter(r => r.status === "finished").length;
+  const bestRun = runs.reduce((a, r) => (!a || r.best_val_dice > a.best_val_dice ? r : a), null);
+  if (!state.hw1Sel && bestRun) state.hw1Sel = bestRun.tag;
+  const sel = runs.find(r => r.tag === state.hw1Sel) || bestRun || runs[0];
+  const models = hw1AggByModel(d.evals);
+  const bestTest = models.reduce((a, m) => (!a || m.dice > a.dice ? m : a), null);
+  const bestTestEval = (d.evals || []).filter(e => e.metrics && e.split === "test")
+    .reduce((a, e) => (!a || e.metrics.dice > a.metrics.dice ? e : a), null);
+  const totalMin = runs.reduce((n, r) => n + (Number(r.cum_min) || 0), 0);
+
+  const diceSeries = runs.map((r, i) => ({ name: r.tag, pts: toPts(r.series, "epoch", "dice") }));
+  const lossSeries = sel ? [
+    { name: "train_loss", pts: toPts(sel.series, "epoch", "train_loss") },
+    { name: "val_loss", pts: toPts(sel.series, "epoch", "val_loss") },
+  ] : [];
+  const lrSeries = sel ? [{ name: "lr", pts: toPts(sel.series, "epoch", "lr") }] : [];
+  const secSeries = sel ? [{ name: "秒", pts: toPts(sel.series, "epoch", "epoch_sec") }] : [];
+
+  const runRows = runs.map(r =>
+    '<div class="run-row row-click" onclick="showRunDetail(\'hw1\',\'' + esc(r.tag) + '\')" title="点击查看逐 epoch 明细">' +
+      '<span class="run-tag">' + esc(r.tag) + "</span>" +
+      '<span class="tag cat">' + esc(r.model) + "</span>" +
+      statusBadge(r.status) +
+      '<span class="run-metric">epoch ' + r.epochs_done + (r.total_epochs ? "/" + r.total_epochs : "") + "</span>" +
+      '<span class="run-metric">best Dice <b style="color:var(--primary-dark)">' + fmt3(r.best_val_dice) + "</b></span>" +
+      '<span class="run-metric">loss ' + fmt3(r.last && r.last.train_loss) + "</span>" +
+      '<span class="run-metric">' + esc(r.cum_min) + " min</span>" +
+      '<span class="run-metric">' + esc(r.updated) + "</span>" +
+    "</div>").join("") || '<div class="muted" style="font-size:13px">暂无训练日志</div>';
+
+  const selChips = runs.map(r =>
+    '<button class="chip' + (sel && r.tag === sel.tag ? " active" : "") + '" data-run="' + esc(r.tag) + '">' + esc(r.tag) + "</button>").join("");
+
+  const ds = d.data_stats || {};
+  const numCell = v => (typeof v === "number" ? v.toLocaleString("en-US") : (v == null ? "—" : esc(String(v))));
+  const pctCell = v => (typeof v === "number" ? (v * 100).toFixed(2) + "%" : "—");
+  const dsRows = Object.entries(ds).filter(([, s]) => s && typeof s === "object").map(([split, s]) =>
+    "<tr><td>" + esc(split) + "</td><td>" + numCell(s.count) + "</td><td>" + pctCell(s.fg_ratio_mean) + "</td><td>" +
+    pctCell(s.fg_ratio_median) + "</td><td>" + numCell(s.multi_component) + "</td><td>" + numCell(s.empty_masks) + "</td></tr>").join("");
+  const dsBar = Object.keys(ds).length ? gbar(Object.keys(ds), [
+      { name: "前景占比均值 %", values: Object.values(ds).map(s => (s.fg_ratio_mean || 0) * 100) },
+      { name: "前景占比中位 %", values: Object.values(ds).map(s => (s.fg_ratio_median || 0) * 100) },
+    ], { h: 220, fmt: v => v.toFixed(1) + "%" }) : "";
+  const dsRowsHtml = dsRows ? '<div class="table-scroll"><table class="stat-table num-table">' +
+    '<tr><td style="color:var(--text2)">split</td><td style="color:var(--text2)">样本</td><td style="color:var(--text2)">前景均值</td><td style="color:var(--text2)">前景中位</td><td style="color:var(--text2)">多连通域</td><td style="color:var(--text2)">空掩膜</td></tr>' +
+    dsRows + "</table></div>" : "";
+
+  /* 评测档案（阈值着色 + 点击详情） */
+  const evalRows = (d.evals || []).map(e => {
+    const m = e.metrics || {};
+    return '<tr class="row-click" onclick="showEvalDetail(\'hw1\',\'' + esc(e.file) + '\')">' +
+      '<td class="mono">' + esc(e.file) + "</td>" +
+      '<td style="text-align:right">' + numCell(m.n) + "</td>" +
+      '<td style="text-align:right">' + diceCell(m.dice) + "</td>" +
+      '<td style="text-align:right">' + (m.iou != null ? Number(m.iou).toFixed(4) : "—") + "</td>" +
+      '<td style="text-align:right">' + (m.hd95 != null ? Number(m.hd95).toFixed(1) : "—") + "</td>" +
+      '<td style="text-align:right">' + (m.sensitivity != null ? Number(m.sensitivity).toFixed(4) : "—") + "</td>" +
+      '<td style="text-align:right">' + (m.specificity != null ? Number(m.specificity).toFixed(4) : "—") + "</td>" +
+      '<td style="text-align:right">' + numCell(m.empty_pred) + "</td>" +
+    "</tr>";
+  }).join("");
+  const evalTable = '<div class="table-scroll"><table class="stat-table num-table">' +
+    '<tr><td style="color:var(--text2)">文件</td><td style="color:var(--text2)">n</td><td style="color:var(--text2)">Dice</td><td style="color:var(--text2)">IoU</td><td style="color:var(--text2)">HD95</td><td style="color:var(--text2)">Sens</td><td style="color:var(--text2)">Spec</td><td style="color:var(--text2)">空预测</td></tr>' +
+    (evalRows || '<tr><td colspan="8" style="color:var(--text2)">暂无评测</td></tr>') + "</table></div>";
+
+  const repBtns = (d.reports || []).map(r =>
+    '<button class="btn sm" data-report="' + esc(r.path) + '">' + esc(r.name) + "</button>").join(" ");
+  const dsFig = (d.figures || []).filter(f => /data_stats|dist/.test(f.name));
+
+  app.innerHTML =
+    '<section class="view">' +
+      '<div class="sec-head" style="margin-top:4px"><h2>' + esc(d.project.title) + "</h2>" +
+        '<span style="font-size:13px;color:var(--text2)">' + esc(d.project.subtitle) + "</span></div>" +
+      '<div class="chiprow" style="margin-bottom:16px">' +
+        '<span class="badge ' + (finished === runs.length && runs.length ? "done" : "running") + '">运行 ' + runs.length + " · 完成 " + finished + "</span>" +
+        '<button class="btn sm" id="auto-refresh-btn" onclick="toggleAutoRefresh(\'hw1\')">▶ 自动刷新（10s）</button>' +
+      "</div>" +
+
+      /* —— 统计面板行 —— */
+      '<div class="grid-stats">' +
+        gstat("最佳 Val Dice", bestRun ? fmt3(bestRun.best_val_dice) : "—",
+          { sub: bestRun ? esc(bestRun.tag) : "暂无", color: "var(--accent)",
+            spark: bestRun ? bestRun.series.map(r => r.dice) : null }) +
+        gstat("测试集 Dice（最佳）", bestTest ? fmt3(bestTest.dice) : "—",
+          { sub: bestTest ? "n=1000 · " + esc(bestTest.tag) : "尚未评测", color: "var(--primary)" }) +
+        gstat("测试集 IoU", bestTest ? fmt3(bestTest.iou) : "—", { sub: bestTest ? esc(bestTest.tag) : "—", color: "var(--violet)" }) +
+        gstat("测试集 HD95", bestTest ? Number(bestTest.hd95).toFixed(1) : "—",
+          { unit: "px", sub: "越低越好", color: "var(--warn)" }) +
+        gstat("训练运行", runs.length, { sub: finished + " 个已完成" }) +
+        gstat("累计训练时长", totalMin.toFixed(0), { unit: "min", sub: (totalMin / 60).toFixed(1) + " 小时" }) +
+      "</div>" +
+
+      /* —— 曲线区 —— */
+      '<div class="g12" style="margin-top:16px">' +
+        '<div class="card col-8"><div class="ph"><h3>Val Dice 曲线对比（全部运行）</h3><span class="p-meta">悬停看数值 · 点图例隐藏</span></div>' +
+          gchart(diceSeries, { yLabel: "val dice", xLabel: "epoch", smooth: true, h: 300,
+            threshold: { value: 0.75, label: "目标 0.75" } }) + "</div>" +
+        '<div class="card col-4"><div class="ph"><h3>学习率调度 · <span id="hw1-loss-title" class="mono">' + (sel ? esc(sel.tag) : "—") + "</span></h3></div>" +
+          gchart(lrSeries, { yLabel: "lr", xLabel: "epoch", h: 132 }) +
+          '<div class="ph" style="margin:12px 0 10px"><h3>每 epoch 耗时</h3></div>' +
+          gchart(secSeries, { yLabel: "秒", xLabel: "epoch", h: 132 }) + "</div>" +
+        '<div class="card col-12"><div class="ph"><h3>损失曲线 · <span id="hw1-loss-title2" class="mono">' + (sel ? esc(sel.tag) : "—") + "</span></h3>" +
+          '<span class="p-meta">点击下方运行切换</span></div>' +
+          '<div id="hw1-loss-chart">' + gchart(lossSeries, { yLabel: "loss", xLabel: "epoch", smooth: true, h: 240 }) + "</div>" +
+          '<div class="chiprow" style="margin-top:10px" id="hw1-run-chips">' + selChips + "</div></div>" +
+      "</div>" +
+
+      /* —— 对比区 —— */
+      '<div class="g12" style="margin-top:16px">' +
+        (models.length ? '<div class="card col-4"><div class="ph"><h3>模型对比 · Dice / IoU</h3><span class="p-meta">测试集均值</span></div>' +
+          gbar(models.map(m => m.name), [
+            { name: "Dice", values: models.map(m => m.dice) },
+            { name: "IoU", values: models.map(m => m.iou) },
+          ], { h: 240, yMax: 1, fmt: v => v.toFixed(3) }) + "</div>" : "") +
+        (models.length ? '<div class="card col-4"><div class="ph"><h3>模型对比 · HD95</h3><span class="p-meta">px · 越低越好</span></div>' +
+          gbar(models.map(m => m.name), [{ name: "HD95", values: models.map(m => m.hd95) }],
+            { h: 240, fmt: v => v.toFixed(1) }) + "</div>" : "") +
+        (dsBar ? '<div class="card col-4"><div class="ph"><h3>数据分布（ISIC 2018）</h3></div>' + dsBar + "</div>" : "") +
+      "</div>" +
+
+      /* —— 训练运行表 —— */
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>训练运行</h3>' +
+        '<span class="p-meta">点击任意行查看逐 epoch 明细</span></div>' + runRows + "</div>" +
+
+      /* —— 评测档案 + 数据统计 —— */
+      '<div class="g12" style="margin-top:16px">' +
+        '<div class="card col-7"><div class="ph"><h3>测试集评测档案</h3><span class="p-meta">Dice 阈值着色 · 点击行看完整指标</span></div>' + evalTable + "</div>" +
+        '<div class="card col-5"><div class="ph"><h3>数据统计（data_stats）</h3></div>' + dsRowsHtml +
+          (dsFig.length ? '<div style="margin-top:10px">' + figureGallery(dsFig, "hw1", "") + "</div>" : "") + "</div>" +
+      "</div>" +
+
+      /* —— 消融 / Checkpoints / 预测框 —— */
+      '<div class="g12" style="margin-top:16px">' +
+        '<div class="card col-4"><div class="ph"><h3>消融实验</h3><span class="p-meta">Dice 对比</span></div>' +
+          (d.ablation && Object.keys(d.ablation).length ? gbar(
+            Object.keys(d.ablation),
+            [{ name: "Dice", values: Object.values(d.ablation).map(g => {
+                const k = Object.keys(g)[0];
+                return k ? g[k].dice : null; }) }],
+            { h: 220, yMax: 1, fmt: v => v.toFixed(3) }) + '<div class="muted" style="font-size:12px;margin-top:6px">各组首项对比；完整数据见 reports/tables.md</div>'
+            : '<div class="muted" style="font-size:13px">消融实验尚未运行（run_all --only ablation）</div>') + "</div>" +
+        '<div class="card col-4"><div class="ph"><h3>Checkpoints（' + (d.checkpoints || []).length + '）</h3></div>' +
+          fileRows(d.checkpoints, "hw1", "暂无模型权重") + "</div>" +
+        '<div class="card col-4"><div class="ph"><h3>预测框导出（级联用）</h3></div>' +
+          fileRows(d.predictions, "hw1", "暂无预测框") + "</div>" +
+      "</div>" +
+
+      /* —— 画廊 / 源码 / 报告 —— */
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>图表产物（' + (d.figures || []).length + '）</h3>' +
+        '<span class="p-meta">点击放大</span></div>' + figureGallery(d.figures, "hw1", "暂无图表") + "</div>" +
+      '<div class="g12" style="margin-top:16px">' +
+        '<div class="card col-6"><div class="ph"><h3>源码（src/）</h3></div>' + codeList(d.code, "hw1") + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>报告文档</h3></div>' +
+          '<div class="chiprow" id="hw1-report-btns">' + (repBtns || '<span class="muted">暂无报告</span>') + "</div>" +
+          '<pre class="report-pre" id="hw1-report-box" style="display:none"></pre></div>' +
+      "</div>" +
+    "</section>";
+
+  bindReportButtons("hw1-report-btns", "hw1", "hw1-report-box");
+  const chipsBox = document.getElementById("hw1-run-chips");
+  if (chipsBox) chipsBox.addEventListener("click", e => {
+    const b = e.target.closest(".chip");
+    if (b && b.dataset.run) selectHw1Run(b.dataset.run);
+  });
+}
+function bindReportButtons(containerId, proj, boxId) {
+  const box = document.getElementById(containerId);
+  if (!box) return;
+  box.addEventListener("click", e => {
+    const b = e.target.closest("[data-report]");
+    if (b) loadHwReport(proj, b.dataset.report, boxId);
+  });
+}
+/* 局部更新损失曲线与选中态：不重绘整页 */
+function selectHw1Run(tag) {
+  const runs = (state.hw1 && state.hw1.runs) || [];
+  const sel = runs.find(r => r.tag === tag);
+  if (!sel) return;
+  state.hw1Sel = tag;
+  const chart = document.getElementById("hw1-loss-chart");
+  if (chart) chart.innerHTML = gchart([
+    { name: "train_loss", pts: toPts(sel.series, "epoch", "train_loss") },
+    { name: "val_loss", pts: toPts(sel.series, "epoch", "val_loss") },
+  ], { yLabel: "loss", xLabel: "epoch", smooth: true, h: 240 });
+  const t1 = document.getElementById("hw1-loss-title2");
+  if (t1) t1.textContent = tag;
+  document.querySelectorAll("#hw1-run-chips .chip").forEach(c =>
+    c.classList.toggle("active", c.dataset.run === tag));
+}
+
+/* ==================== 作业 2 实验视图 ==================== */
+function hw2PromptBars(d) {
+  const evals = (d.evals || []).filter(e => e.dice != null && e.split === "test");
+  if (!evals.length) return "";
+  const stages = ["e1", "e2", "e3"].filter(s => evals.some(e => e.stage === s));
+  if (!stages.length) return "";
+  const prompts = [...new Set(evals.map(e => e.prompt))];
+  const series = stages.map(s => ({
+    name: s.toUpperCase(),
+    values: prompts.map(p => {
+      const hit = evals.find(e => e.stage === s && e.prompt === p);
+      return hit && hit.dice != null ? hit.dice : null;
+    }),
+  }));
+  return gbar(prompts, series, { h: 280, yMax: 1, fmt: v => v.toFixed(3) });
+}
+function hw2Robustness(d) {
+  const order = ["pert-20", "pert-10", "gt", "pert10", "pert20"];
+  const evals = (d.evals || []).filter(e => e.dice != null && e.split === "test" && order.indexOf(e.prompt) >= 0);
+  if (!evals.length) return "";
+  const stages = ["e1", "e2", "e3"].filter(s => evals.some(e => e.stage === s));
+  const series = stages.map(s => ({
+    name: s.toUpperCase(),
+    pts: order.map((p, i) => {
+      const hit = evals.find(e => e.stage === s && e.prompt === p);
+      return hit && hit.dice != null ? [i, hit.dice] : null;
+    }).filter(Boolean),
+  })).filter(s => s.pts.length);
+  if (!series.length) return "";
+  return '<div class="muted" style="font-size:12.5px;margin-bottom:6px">横轴为提示框相对 GT 外接框的扰动幅度；曲线越平说明对提示误差越不敏感。</div>' +
+    gchart(series, { h: 280, yLabel: "Dice", xLabel: "提示扰动", smooth: true });
+}
+function hw2LatencyBars(d) {
+  const evals = (d.evals || []).filter(e => e.latency_ms != null && e.split === "test");
+  if (!evals.length) return "";
+  const cats = evals.map(e => e.stage + "/" + e.prompt);
+  return gbar(cats, [{ name: "单图延迟", values: evals.map(e => e.latency_ms / 1000) }],
+    { h: 240, fmt: v => v.toFixed(2) + "s" });
+}
+function hw2SensSpecBars(d) {
+  const evals = (d.evals || []).filter(e => e.dice != null && e.split === "test");
+  if (!evals.length) return "";
+  const cats = evals.map(e => e.stage + "/" + e.prompt);
+  return gbar(cats, [
+    { name: "Sensitivity", values: evals.map(e => e.sensitivity) },
+    { name: "Specificity", values: evals.map(e => e.specificity) },
+  ], { h: 240, yMax: 1, fmt: v => v.toFixed(3) });
+}
+function hw2CascadeBars(d) {
+  const test = (d.evals || []).filter(e => e.dice != null && e.split === "test");
+  const pick = (stage, prompt) => {
+    const hit = test.find(e => e.stage === stage && e.prompt === prompt);
+    return hit ? hit.dice : null;
+  };
+  const cats = ["E1 零样本", "E2 微调"];
+  const series = [
+    { name: "GT 框提示", values: [pick("e1", "gt"), pick("e2", "gt")] },
+    { name: "自动框（U-Net 级联）", values: [pick("e1", "auto"), pick("e2", "auto")] },
+    { name: "自动框外扩 10%", values: [pick("e1", "auto10"), pick("e2", "auto10")] },
+  ].filter(s => s.values.some(v => v != null));
+  if (!series.length) return "";
+  return gbar(cats, series, { h: 240, yMax: 1, fmt: v => v.toFixed(3) });
+}
+function viewHw2() {
+  if (!state.hw2) {
+    app.innerHTML = '<section class="view">' + errBox("作业 2 实验数据不可用（/api/hw2 聚合失败）") + "</section>";
+    return;
+  }
+  for (const k in CHARTS) delete CHARTS[k];
+  const d = state.hw2;
+  const stages = d.stages || {};
+  const emb = d.embeddings || {};
+  const test = (d.evals || []).filter(e => e.dice != null && e.split === "test");
+  const pick = (stage, prompt) => {
+    const hit = test.find(e => e.stage === stage && e.prompt === prompt);
+    return hit ? hit.dice : null;
+  };
+  const e1d = pick("e1", "gt"), e2d = pick("e2", "gt"), e3d = pick("e3", "gt");
+  const gain = (e1d != null && e2d != null) ? e2d - e1d : null;
+  const doneN = ["e1", "e2", "e3"].filter(s => stages[s] && stages[s].status === "done").length;
+  const embVals = Object.values(emb);
+  const embAll = embVals.length && embVals.every(v => v.pct >= 100);
+  const embBytes = embVals.reduce((n, v) => n + (typeof v.size === "number" ? v.size : 0), 0);
+
+  const stageCards = ["e1", "e2", "e3"].map(sid => {
+    const s = stages[sid] || { status: "pending", name: sid, desc: "", best_eval: null };
+    const best = s.best_eval;
+    return '<div class="card stage-card ' + (s.status === "done" ? "done" : s.status === "running" ? "running" : "") + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center"><h3>' + esc(s.name) + "</h3>" + statusBadge(s.status) + "</div>" +
+      '<div class="muted" style="font-size:12.5px;margin-bottom:8px">' + esc(s.desc) + "</div>" +
+      (best ? '<div class="metric-big">Dice ' + fmt3(best.dice) + "</div>" +
+        '<div class="run-metric">IoU ' + fmt3(best.iou) + " · HD95 " + fmt3(best.hd95) + " · n=" + esc(best.n) + "</div>"
+        : '<div class="muted" style="font-size:13px">评测尚未生成</div>') +
+      "</div>";
+  }).join("");
+
+  const embRows = Object.entries(emb).map(([split, v]) =>
+    '<div class="prog-row"><span class="lab">' + esc(split) + "</span>" +
+      '<div class="prog"><i style="width:' + Math.min(100, v.pct) + '%"></i></div>' +
+      '<span class="val">' + Number(v.done).toLocaleString("en-US") + " / " + Number(v.target).toLocaleString("en-US") + " · " + v.pct + "% · " + esc(v.size_h) + "</span></div>").join("");
+
+  const evalRows = (d.evals || []).map(e =>
+    '<tr class="row-click" onclick="showEvalDetail(\'hw2\',\'' + esc(e.file) + '\')">' +
+      '<td class="mono">' + esc(e.stage) + "/" + esc(e.prompt) + "</td>" +
+      '<td style="text-align:right">' + esc(e.split) + "</td>" +
+      '<td style="text-align:right">' + esc(e.n) + "</td>" +
+      '<td style="text-align:right">' + diceCell(e.dice) + "</td>" +
+      '<td style="text-align:right">' + (e.iou != null ? Number(e.iou).toFixed(4) : "—") + "</td>" +
+      '<td style="text-align:right">' + (e.hd95 != null ? Number(e.hd95).toFixed(1) : "—") + "</td>" +
+      '<td style="text-align:right">' + (e.sensitivity != null ? Number(e.sensitivity).toFixed(4) : "—") + "</td>" +
+      '<td style="text-align:right">' + (e.specificity != null ? Number(e.specificity).toFixed(4) : "—") + "</td>" +
+      '<td style="text-align:right">' + (e.latency_ms ? (e.latency_ms / 1000).toFixed(2) + "s" : "—") + "</td>" +
+    "</tr>").join("");
+  const evalTable = '<div class="table-scroll"><table class="stat-table num-table">' +
+    '<tr><td style="color:var(--text2)">阶段/提示</td><td style="color:var(--text2)">split</td><td style="color:var(--text2)">n</td><td style="color:var(--text2)">Dice</td><td style="color:var(--text2)">IoU</td><td style="color:var(--text2)">HD95</td><td style="color:var(--text2)">Sens</td><td style="color:var(--text2)">Spec</td><td style="color:var(--text2)">延迟</td></tr>' +
+    (evalRows || '<tr><td colspan="9" style="color:var(--text2)">暂无评测结果</td></tr>') + "</table></div>";
+
+  const runSeries = (d.runs || []).map((r, i) => {
+    const s0 = (r.series && r.series[0]) || {};
+    const yKey = s0.val_dice != null ? "val_dice" : "dice";
+    return { name: r.tag, pts: toPts(r.series, "epoch", yKey) };
+  });
+  const promptBars = hw2PromptBars(d);
+  const robust = hw2Robustness(d);
+
+  const repBtns = (d.reports || []).map(r =>
+    '<button class="btn sm" data-report="' + esc(r.path) + '">' + esc(r.name) + "</button>").join(" ");
+
+  app.innerHTML =
+    '<section class="view">' +
+      '<div class="sec-head" style="margin-top:4px"><h2>' + esc(d.project.title) + "</h2>" +
+        '<span style="font-size:13px;color:var(--text2)">' + esc(d.project.subtitle) + "</span></div>" +
+      '<div class="chiprow" style="margin-bottom:16px">' +
+        '<button class="btn sm" id="auto-refresh-btn" onclick="toggleAutoRefresh(\'hw2\')">▶ 自动刷新（10s）</button>' +
+        '<a class="btn sm" href="#/hw1">查看作业 1（级联上游）→</a>' +
+      "</div>" +
+
+      /* —— 统计面板行 —— */
+      '<div class="grid-stats">' +
+        gstat("E1 零样本 Dice", e1d != null ? fmt3(e1d) : "—", { sub: "GT 框提示 · n=1000", color: "var(--primary)" }) +
+        gstat("E2 冻结微调 Dice", e2d != null ? fmt3(e2d) : "—",
+          { sub: gain != null ? "较 E1 " + (gain >= 0 ? "+" : "") + fmt3(gain) : "尚未评测", color: "var(--violet)" }) +
+        gstat("E3 LoRA Dice", e3d != null ? fmt3(e3d) : "—", { sub: "训练中/待运行", color: "var(--accent)" }) +
+        gstat("阶段完成", doneN + " / 3", { sub: "E1 → E2 → E3 流水线" }) +
+        gstat("嵌入缓存", embAll ? "100%" : "预计算中",
+          { sub: embBytes ? fmtBytes(embBytes) : "—", color: embAll ? "var(--accent)" : "var(--warn)" }) +
+        gstat("评测档案", (d.evals || []).length, { sub: "test 1000 张/提示" }) +
+      "</div>" +
+
+      /* —— 三阶段卡 —— */
+      '<div class="grid grid-3" style="margin-top:16px">' + stageCards + "</div>" +
+
+      /* —— 图表区 —— */
+      '<div class="g12" style="margin-top:16px">' +
+        (promptBars ? '<div class="card col-7"><div class="ph"><h3>提示类型对比（各阶段 Dice）</h3><span class="p-meta">test 1000 张 · 悬停看数值</span></div>' + promptBars + "</div>" : "") +
+        (robust ? '<div class="card col-5"><div class="ph"><h3>扰动框鲁棒性曲线</h3></div>' + robust + "</div>" : "") +
+      "</div>" +
+
+      '<div class="g12" style="margin-top:16px">' +
+        (hw2LatencyBars(d) ? '<div class="card col-4"><div class="ph"><h3>单图推理延迟</h3><span class="p-meta">秒 · 越低越好</span></div>' + hw2LatencyBars(d) + "</div>" : "") +
+        (hw2SensSpecBars(d) ? '<div class="card col-4"><div class="ph"><h3>Sensitivity / Specificity</h3></div>' + hw2SensSpecBars(d) + "</div>" : "") +
+        (hw2CascadeBars(d) ? '<div class="card col-4"><div class="ph"><h3>级联对比 · GT 框 vs 自动框</h3></div>' + hw2CascadeBars(d) + "</div>" : "") +
+      "</div>" +
+
+      '<div class="g12" style="margin-top:16px">' +
+        '<div class="card col-6"><div class="ph"><h3>图像嵌入缓存（E2/E3 训练加速）</h3></div>' + embRows + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>级联系统叙事</h3></div><p style="font-size:13.5px;line-height:1.8;margin:0">' +
+          renderTerms("作业 1 的 U-Net 小模型全自动分割出病灶粗框，作为提示输入 SAM 掩膜解码器精修——小模型提框、大模型精修，分工而非替代。E1 已量化零样本域差距，E2/E3 训练完成后可对比微调收益。") +
+          '</p><div style="margin-top:10px"><span class="tag">U-Net 出框 → SAM 精修</span></div></div>' +
+      "</div>" +
+
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>评测档案（' + (d.evals || []).length + '）</h3>' +
+        '<span class="p-meta">Dice 阈值着色 · 点击行看完整指标与原始 JSON</span></div>' + evalTable + "</div>" +
+
+      (runSeries.length ? '<div class="card" style="margin-top:16px"><div class="ph"><h3>训练曲线（E2/E3 运行）</h3></div>' +
+        gchart(runSeries, { yLabel: "val dice", xLabel: "epoch", smooth: true }) + "</div>" : "") +
+
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>图表产物（' + (d.figures || []).length + '）</h3>' +
+        '<span class="p-meta">点击放大</span></div>' + figureGallery(d.figures, "hw2", "figures 尚无输出") + "</div>" +
+
+      '<div class="g12" style="margin-top:16px">' +
+        '<div class="card col-6"><div class="ph"><h3>Checkpoints</h3></div>' +
+          fileRows(d.checkpoints, "hw2", "暂无模型权重（E2/E3 训练后生成）") + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>源码（src/）</h3></div>' + codeList(d.code, "hw2") + "</div>" +
+      "</div>" +
+
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>报告文档</h3></div>' +
+        '<div class="chiprow" id="hw2-report-btns">' + (repBtns || '<span class="muted">暂无报告</span>') + "</div>" +
+        '<pre class="report-pre" id="hw2-report-box" style="display:none"></pre></div>' +
+    "</section>";
+
+  bindReportButtons("hw2-report-btns", "hw2", "hw2-report-box");
+}
+
+/* ---------------- 404 ---------------- */
+function viewNotFound(path) {
+  app.innerHTML = '<section class="view">' + emptyBox("🧭", "页面不存在", "路由：" + esc(path)) +
+    '<div style="text-align:center"><a class="btn primary" href="#/">回到首页</a></div></section>';
+}
+
+/* =====================================================================
+ * 路由
+ * ===================================================================== */
+function parseHash() {
+  const h = location.hash.replace(/^#/, "") || "/";
+  const qi = h.indexOf("?");
+  const path = qi >= 0 ? h.slice(0, qi) : h;
+  const query = new URLSearchParams(qi >= 0 ? h.slice(qi + 1) : "");
+  return { path, query };
+}
+function markNav(path) {
+  const key = path.startsWith("/dataset/") ? "/datasets" : path;
+  document.querySelectorAll("#nav-links a").forEach(a =>
+    a.classList.toggle("active", a.dataset.route === key));
+}
+function route() {
+  const { path, query } = parseHash();
+  markNav(path);
+  document.getElementById("nav").classList.remove("open");
+  window.scrollTo(0, 0);
+  tip.style.display = "none";
+
+  if (state.dataError) { app.innerHTML = '<section class="view" style="padding-top:60px">' + errBox(state.dataError) + '</section>'; return; }
+  if (!state.datasets) {
+    app.innerHTML = '<section class="view">' +
+      '<div class="skel t" style="width:40%;height:28px"></div>' +
+      '<div class="skel" style="width:70%"></div>' +
+      '<div class="grid grid-3" style="margin-top:22px">' + skeletonCards(6) + '</div></section>';
+    ensureData().then(route).catch(err => { app.innerHTML = '<section class="view" style="padding-top:60px">' + errBox((err && (err.stack || err.message)) || String(err)) + '</section>'; });
+    return;
+  }
+
+  if (path === "/") return viewHome();
+  if (path === "/datasets") return viewDatasets();
+  if (path.startsWith("/dataset/")) return viewDataset(decodeURIComponent(path.slice("/dataset/".length)));
+  if (path === "/hw1") return viewHw1();
+  if (path === "/hw2") return viewHw2();
+  if (path === "/glossary") return viewGlossary(query);
+  if (path === "/about") return viewAbout();
+  return viewNotFound(path);
+}
+window.addEventListener("hashchange", route);
+
+/* ---------------- 导航折叠 ---------------- */
+document.getElementById("nav-burger").addEventListener("click", () =>
+  document.getElementById("nav").classList.toggle("open"));
+
+/* =====================================================================
+ * AI 聊天助手（DeepSeek SSE 流式）
+ * ===================================================================== */
+const chat = { open: false, messages: [], busy: false, ctrl: null };
+const QUICK_QS = [
+  "ISIC 2018 数据集怎么下载？",
+  "Dice 和 IoU 有什么区别？",
+  "E1/E2/E3 三阶段分别在做什么？",
+];
+
+function toggleChat(force) {
+  chat.open = force != null ? force : !chat.open;
+  document.getElementById("chat-panel").classList.toggle("open", chat.open);
+  document.getElementById("chat-fab").textContent = chat.open ? "✕" : "💬";
+  if (chat.open && !chat.messages.length) chatWelcome();
+  if (chat.open) document.getElementById("chat-text").focus();
+}
+function chatWelcome() {
+  addBubble("bot",
+    "你好！我是本平台的研究助手 🤖<br>可以问我：<b>数据集怎么下载</b>、<b>指标/术语解释</b>（Dice、IoU、LoRA…）、<b>项目结构</b>（hw1 三模型、hw2 E1/E2/E3、级联系统）。下方有快捷问题，直接点即可。");
+}
+function addBubble(kind, html) {
+  const body = document.getElementById("chat-body");
+  const div = document.createElement("div");
+  div.className = "msg " + (kind === "user" ? "user" : kind === "err" ? "err" : "bot");
+  const b = document.createElement("div");
+  b.className = "bubble";
+  b.innerHTML = html;
+  div.appendChild(b); body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  return b;
+}
+function mdInline(s) {
+  let out = esc(s);
+  out = out.replace(/`([^`]+)`/g, "<code>$1</code>");
+  out = out.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
+  out = out.replace(/\n/g, "<br>");
+  return out;
+}
+function scrollChat() {
+  const body = document.getElementById("chat-body");
+  body.scrollTop = body.scrollHeight;
+}
+function setBusy(busy) {
+  chat.busy = busy;
+  document.getElementById("chat-send").style.display = busy ? "none" : "";
+  document.getElementById("chat-stop").style.display = busy ? "" : "none";
+  document.getElementById("chat-text").disabled = busy;
+}
+async function sendChat(text) {
+  text = (text || "").trim();
+  if (!text || chat.busy) return;
+  if (!(state.overview && state.overview.chat_enabled)) {
+    addBubble("err", "AI 助手未配置：请在 dataset_hub/.env 设置 DEEPSEEK_API_KEY 并重启服务。");
+    return;
+  }
+  addBubble("user", esc(text));
+  chat.messages.push({ role: "user", content: text });
+
+  const bubble = addBubble("bot", '<span class="cursor"></span>');
+  const bodyEl = () => bubble;
+  setBusy(true);
+  chat.ctrl = new AbortController();
+  let full = "", errored = false;
+
+  const handlePayload = payload => {
+    if (payload === "[DONE]") return;
+    let obj = null;
+    try { obj = JSON.parse(payload); } catch (e) { return; }
+    if (obj.error) {
+      errored = true;
+      bubble.innerHTML = "⚠️ " + esc(obj.error);
+      return;
+    }
+    const delta = obj.choices && obj.choices[0] && obj.choices[0].delta && obj.choices[0].delta.content;
+    if (delta) {
+      full += delta;
+      bubble.innerHTML = mdInline(full) + '<span class="cursor"></span>';
+      scrollChat();
+    }
+  };
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: chat.messages }),
+      signal: chat.ctrl.signal,
+    });
+    if (!res.ok || !res.body) {
+      let msg = "请求失败（HTTP " + res.status + "）";
+      try { const j = await res.json(); if (j.error) msg = j.error; } catch (e) { /* keep default */ }
+      throw new Error(msg);
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let idx;
+      while ((idx = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, idx).trim();
+        buf = buf.slice(idx + 1);
+        if (line.startsWith("data:")) handlePayload(line.slice(5).trim());
+        if (errored) break;
+      }
+      if (errored) break;
+    }
+    if (!errored) {
+      bubble.innerHTML = full ? mdInline(full) : "（空回复，请重试）";
+      if (full) chat.messages.push({ role: "assistant", content: full });
+    }
+  } catch (err) {
+    if (err.name === "AbortError") {
+      bubble.innerHTML = (full ? mdInline(full) : "") + "<br><span style='color:var(--text2);font-size:12px'>（已停止生成）</span>";
+      if (full) chat.messages.push({ role: "assistant", content: full });
+    } else {
+      bubble.innerHTML = "⚠️ " + esc(err.message || "网络错误，请重试");
+    }
+  } finally {
+    setBusy(false);
+    chat.ctrl = null;
+    scrollChat();
+  }
+}
+
+/* 聊天控件绑定 */
+document.getElementById("chat-fab").addEventListener("click", () => toggleChat());
+document.getElementById("chat-close").addEventListener("click", () => toggleChat(false));
+document.getElementById("chat-send").addEventListener("click", () => {
+  const ta = document.getElementById("chat-text");
+  sendChat(ta.value); ta.value = "";
+});
+document.getElementById("chat-stop").addEventListener("click", () => {
+  if (chat.ctrl) chat.ctrl.abort();
+});
+document.getElementById("chat-text").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    const ta = e.target;
+    sendChat(ta.value); ta.value = "";
+  }
+});
+document.getElementById("chat-chips").innerHTML = QUICK_QS.map(q =>
+  '<button class="chip" data-q="' + esc(q) + '">' + esc(q) + '</button>').join("");
+document.getElementById("chat-chips").addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (b) sendChat(b.dataset.q);
+});
+
+/* ---------------- 启动 ---------------- */
+setTheme(currentTheme());                      // 同步按钮图标与当前主题
+document.getElementById("theme-btn").addEventListener("click", toggleTheme);
+route();
+
+</script>
+</body>
+</html>

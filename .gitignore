@@ -1,0 +1,37 @@
+# ================= 数据与权重（体积巨大，不入库） =================
+# 原始数据 / 预处理 npy / SAM 嵌入缓存：按各项目 README 的下载与预处理脚本重建
+hw1_unet/data/
+hw2_sam/data/
+
+# 训练权重（每个 ~350MB，共数十 GB）
+hw1_unet/outputs/checkpoints/
+hw2_sam/outputs/checkpoints/
+
+# 保留并提交：outputs/logs（CSV/评测 JSON）、outputs/figures（报告用图）、outputs/predictions（级联用框）
+
+# ================= conda 环境（可重建） =================
+**/.conda/
+.conda/
+
+# ================= 密钥 =================
+.env
+**/.env
+# 注意：.env.example 只有占位符，允许入库
+
+# ================= Python =================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.ipynb_checkpoints/
+
+# ================= 系统 / 编辑器 =================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ================= 运行时杂项 =================
+*.log
+# 但保留文档目录（.md 不受上面规则影响）

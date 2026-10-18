@@ -1,0 +1,28 @@
+{
+  "stage": "e2",
+  "tag": "e2_box",
+  "prompt": "auto10",
+  "split": "test",
+  "n": 1000,
+  "metrics": {
+    "n": 1000,
+    "dice": 0.6415777521801711,
+    "dice_std": 0.26953967339855295,
+    "iou": 0.5269420489193648,
+    "iou_std": 0.2791577646540538,
+    "hd95": 56.702676457653055,
+    "hd95_std": 36.29305266231414,
+    "hd95_valid": 1000,
+    "sensitivity": 0.9658162646995697,
+    "sens_valid": 1000,
+    "specificity": 0.6617848583021367,
+    "spec_valid": 998,
+    "pixel_acc": 0.7378157806396485,
+    "empty_pred": 0,
+    "empty_gt": 0,
+    "spec_undefined": 2,
+    "sens_undefined": 0,
+    "latency_ms_per_img": 13.623796463012695,
+    "no_prompt_fallback": 0
+  }
+}

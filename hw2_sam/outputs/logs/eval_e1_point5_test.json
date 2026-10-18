@@ -1,0 +1,28 @@
+{
+  "stage": "e1",
+  "tag": "e1",
+  "prompt": "point5",
+  "split": "test",
+  "n": 1000,
+  "metrics": {
+    "n": 1000,
+    "dice": 0.7902352815071463,
+    "dice_std": 0.18478344343295683,
+    "iou": 0.6861658534028285,
+    "iou_std": 0.21820444223563984,
+    "hd95": 39.35539606753742,
+    "hd95_std": 34.85138759989409,
+    "hd95_valid": 1000,
+    "sensitivity": 0.8808717315247869,
+    "sens_valid": 1000,
+    "specificity": 0.7266879442929888,
+    "spec_valid": 998,
+    "pixel_acc": 0.8257728118896485,
+    "empty_pred": 0,
+    "empty_gt": 0,
+    "spec_undefined": 2,
+    "sens_undefined": 0,
+    "latency_ms_per_img": 15.89948296546936,
+    "no_prompt_fallback": 0
+  }
+}

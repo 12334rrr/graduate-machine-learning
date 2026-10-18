@@ -1,0 +1,158 @@
+{
+  "datasets": [
+    {
+      "id": "isic2018-task1",
+      "name": "ISIC 2018 Task 1",
+      "full_name": "ISIC 2018 Challenge Task 1: Lesion Boundary Segmentation",
+      "category": "医学图像分割",
+      "role": "主数据集（作业1、作业2 共用）",
+      "short": "皮肤镜图像病灶边界分割基准数据集，国际皮肤影像协作组（ISIC）2018 年挑战赛分割任务官方数据。",
+      "description": "ISIC 2018 Task 1 是皮肤病变边界分割的经典基准。输入为皮肤镜 RGB 图像，标注为逐像素二值掩膜（病灶/背景）。官方划分：训练 2594 例、验证 100 例、测试 1000 例，掩膜齐全。前景像素占比均值约 23%，存在极小病灶与多连通域样本，是检验分割模型类别不平衡鲁棒性的好场景。",
+      "stats": {"train": 2594, "val": 100, "test": 1000, "fg_ratio_mean": 0.2333, "empty_masks": 0, "multi_component": 882},
+      "modalities": ["皮肤镜 RGB 图像", "二值分割掩膜"],
+      "formats": ["JPEG（图像）", "PNG（掩膜）"],
+      "size": "约 13.8 GB（原始分辨率压缩包合计）",
+      "license": "CC BY-NC 4.0（须遵守 ISIC Archive 使用条款，仅限非商业研究）",
+      "homepage": "https://challenge.isic-archive.com/data/#2018",
+      "downloads": [
+        {"name": "Training Input（训练图像 2594）", "url": "https://isic-challenge-data.s3.amazonaws.com/2018/ISIC2018_Task1-2_Training_Input.zip", "size": "11.2 GB", "format": "ZIP/JPEG", "source": "ISIC 官方 S3 直链"},
+        {"name": "Training GroundTruth（训练掩膜）", "url": "https://isic-challenge-data.s3.amazonaws.com/2018/ISIC2018_Task1_Training_GroundTruth.zip", "size": "23.5 MB", "format": "ZIP/PNG", "source": "ISIC 官方 S3 直链"},
+        {"name": "Validation Input（验证图像 100）", "url": "https://isic-challenge-data.s3.amazonaws.com/2018/ISIC2018_Task1-2_Validation_Input.zip", "size": "408 MB", "format": "ZIP/JPEG", "source": "ISIC 官方 S3 直链"},
+        {"name": "Validation GroundTruth（验证掩膜）", "url": "https://isic-challenge-data.s3.amazonaws.com/2018/ISIC2018_Task1_Validation_GroundTruth.zip", "size": "1.1 MB", "format": "ZIP/PNG", "source": "ISIC 官方 S3 直链"},
+        {"name": "Test Input（测试图像 1000）", "url": "https://isic-challenge-data.s3.amazonaws.com/2018/ISIC2018_Task1-2_Test_Input.zip", "size": "2.2 GB", "format": "ZIP/JPEG", "source": "ISIC 官方 S3 直链"},
+        {"name": "Test GroundTruth（测试掩膜）", "url": "https://isic-challenge-data.s3.amazonaws.com/2018/ISIC2018_Task1_Test_GroundTruth.zip", "size": "9.3 MB", "format": "ZIP/PNG", "source": "ISIC 官方 S3 直链"}
+      ],
+      "mirrors": [
+        {"name": "Hugging Face 镜像（hf-mirror 可达）", "url": "https://hf-mirror.com/datasets/surajbijjahalli/ISIC2018", "note": "社区重打包版本，适合官方 S3 不可达时备用"}
+      ],
+      "leaderboards": [
+        {"name": "ISIC 2018 Challenge 官方榜单", "url": "https://challenge.isic-archive.com/leaderboards/2018/", "metric": "Jaccard 指数（IoU）", "note": "官方竞赛排名依据为阈值化 Jaccard；Top 队伍 IoU 约 0.80+"},
+        {"name": "Papers with Code · ISIC 2018", "url": "https://paperswithcode.com/dataset/isic-2018", "metric": "Dice / IoU", "note": "论文榜单，按发表方法汇总，注意各论文划分口径可能不同"},
+        {"name": "MedSAM（Nature Communications 2024）", "url": "https://www.nature.com/articles/s41467-024-44824-z", "metric": "Dice", "note": "SAM 医学微调的标杆工作，本作业 E2 实验的对标对象"}
+      ],
+      "terms": ["Dice", "IoU", "HD95", "皮肤镜", "类别不平衡", "掩膜"]
+    },
+    {
+      "id": "isic2019",
+      "name": "ISIC 2019",
+      "full_name": "ISIC 2019 Challenge（分类 + 分割）",
+      "category": "医学图像分类/分割",
+      "role": "扩展数据集（泛化性验证候选）",
+      "short": "ISIC 2019 挑战赛数据，25,331 张皮肤镜图像，含 8 类诊断标签，可与 2018 合并做更大规模训练。",
+      "description": "ISIC 2019 合并了 HAM10000、BCN_20000 等来源，主打病灶分类，同时保留分割掩膜子集。体量更大、来源更多样，适合作为模型跨年份泛化能力的验证集。",
+      "stats": {"images": 25331, "classes": 8},
+      "modalities": ["皮肤镜 RGB 图像", "诊断标签", "分割掩膜（子集）"],
+      "formats": ["JPEG", "CSV", "PNG"],
+      "size": "约 9.5 GB",
+      "license": "CC BY-NC 4.0",
+      "homepage": "https://challenge.isic-archive.com/data/#2019",
+      "downloads": [
+        {"name": "ISIC 2019 Training Input", "url": "https://isic-challenge-data.s3.amazonaws.com/2019/ISIC_2019_Training_Input.zip", "size": "9.1 GB", "format": "ZIP/JPEG", "source": "ISIC 官方 S3 直链"},
+        {"name": "ISIC 2019 Training GroundTruth", "url": "https://isic-challenge-data.s3.amazonaws.com/2019/ISIC_2019_Training_GroundTruth.zip", "size": "2.3 MB", "format": "ZIP/CSV", "source": "ISIC 官方 S3 直链"}
+      ],
+      "mirrors": [],
+      "leaderboards": [
+        {"name": "ISIC 2019 Challenge 官方榜单", "url": "https://challenge.isic-archive.com/leaderboards/2019/", "metric": "Balanced Accuracy", "note": "分类任务官方指标为平衡多类别准确率"}
+      ],
+      "terms": ["类别不平衡", "Balanced Accuracy"]
+    },
+    {
+      "id": "ham10000",
+      "name": "HAM10000",
+      "full_name": "Human Against Machine with 10000 training images",
+      "category": "医学图像分类",
+      "role": "关联数据集（ISIC 2019 的组成部分之一）",
+      "short": "10,015 张皮肤镜图像、7 类色素性皮损，Tschandl et al. 2018 发布，皮肤 AI 研究最常用的公开集之一。",
+      "description": "HAM10000 收集了奥地利与澳大利亚两大临床中心 20 年的皮肤镜图像，涵盖 7 种常见色素性皮损类别。 dermatoscopic 图像经人工校验，标签质量高。常作为分类与分割方法的预训练/对照数据。",
+      "stats": {"images": 10015, "classes": 7},
+      "modalities": ["皮肤镜 RGB 图像", "诊断标签", "分割掩膜（部分）"],
+      "formats": ["JPEG", "CSV"],
+      "size": "约 5.2 GB",
+      "license": "CC BY-NC 4.0",
+      "homepage": "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DBW86T",
+      "downloads": [
+        {"name": "HAM10000 Harvard Dataverse 主页", "url": "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DBW86T", "size": "5.2 GB", "format": "ZIP/JPEG", "source": "Harvard Dataverse 官方"},
+        {"name": "Kaggle 镜像", "url": "https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000", "size": "5.2 GB", "format": "ZIP/JPEG", "source": "Kaggle 社区镜像（需登录）"}
+      ],
+      "mirrors": [],
+      "leaderboards": [
+        {"name": "Papers with Code · HAM10000", "url": "https://paperswithcode.com/dataset/ham10000", "metric": "Accuracy / Balanced Accuracy", "note": "分类榜单，SOTA 约 90%+ 平衡准确率"}
+      ],
+      "terms": ["类别不平衡", "SOTA"]
+    },
+    {
+      "id": "ph2",
+      "name": "PH²",
+      "full_name": "PH² Database（Pedro Hispano Hospital）",
+      "category": "医学图像分割/分类",
+      "role": "小样本对照数据集",
+      "short": "200 张皮肤镜图像（40 黑色素瘤 + 160 痣），含精细分割掩膜，常用于小样本与跨库泛化实验。",
+      "description": "PH² 由葡萄牙 Pedro Hispano 医院发布，规模小但标注精细，是验证小样本学习与跨数据集迁移（train on ISIC → test on PH²）的经典对照集。",
+      "stats": {"images": 200, "melanoma": 40, "nevus": 160},
+      "modalities": ["皮肤镜 RGB 图像", "分割掩膜", "临床诊断"],
+      "formats": ["BMP", "TXT"],
+      "size": "约 440 MB",
+      "license": "免费用于学术研究（需署名引用）",
+      "homepage": "https://www.fc.up.pt/addi/ph2%20database.html",
+      "downloads": [
+        {"name": "PH² Database 官方主页", "url": "https://www.fc.up.pt/addi/ph2%20database.html", "size": "440 MB", "format": "ZIP/BMP", "source": "ADDI 项目官方"}
+      ],
+      "mirrors": [],
+      "leaderboards": [
+        {"name": "Papers with Code · PH²", "url": "https://paperswithcode.com/dataset/ph2", "metric": "Dice / IoU", "note": "小规模分割榜单"}
+      ],
+      "terms": ["小样本学习", "跨域泛化"]
+    },
+    {
+      "id": "sa1b",
+      "name": "SA-1B（SAM 训练集）",
+      "full_name": "Segment Anything 1 Billion mask dataset",
+      "category": "通用图像分割",
+      "role": "背景知识（SAM 预训练数据来源）",
+      "short": "Meta 为训练 SAM 构建的 1100 万张图、11 亿掩膜数据集，迄今为止最大的分割数据集。",
+      "description": "SA-1B 是 Segment Anything 项目配套发布的超大规模分割数据集：11M 张高分辨率图像、1.1B 个自动标注掩膜。SAM 的零样本泛化能力正来源于此数据规模。本项目不直接使用 SA-1B 训练，但理解它有助于理解 E1 零样本实验的域差距来源（SA-1B 几乎不含皮肤镜图像）。",
+      "stats": {"images": 11000000, "masks": 1100000000},
+      "modalities": ["自然图像", "自动标注掩膜"],
+      "formats": ["JPEG", "JSON（RLE 掩膜）"],
+      "size": "约 10 TB（分 tar 分卷）",
+      "license": "CC BY 4.0（图像另有各自许可，须逐张核查）",
+      "homepage": "https://segment-anything.com/dataset/index.html",
+      "downloads": [
+        {"name": "SA-1B 官方下载页", "url": "https://segment-anything.com/dataset/index.html", "size": "10 TB", "format": "TAR 分卷", "source": "Meta AI 官方"}
+      ],
+      "mirrors": [
+        {"name": "Hugging Face 镜像", "url": "https://hf-mirror.com/datasets/segment-anything/SA-1B", "note": "HF 社区托管分卷"}
+      ],
+      "leaderboards": [
+        {"name": "Segment Anything 论文（ICCV 2023 Best Paper）", "url": "https://arxiv.org/abs/2304.02643", "metric": "零样本 mIoU", "note": "23 个下游数据集上的零样本评测"}
+      ],
+      "terms": ["零样本", "提示分割", "域差距", "RLE"]
+    },
+    {
+      "id": "sam-vitb-weights",
+      "name": "SAM ViT-B 预训练权重",
+      "full_name": "Segment Anything Model · ViT-Base checkpoint",
+      "category": "模型权重",
+      "role": "作业2 全部实验的基础权重",
+      "short": "SAM 官方 ViT-B 骨干权重（375 MB，91M 参数），E1 零样本直接加载，E2/E3 在其上微调。",
+      "description": "sam_vit_b_01ec64.pth 是 Meta 官方发布的 SAM ViT-B 检查点，包含 ViT-B 图像编码器（86M）、提示编码器与掩膜解码器（约 4M）。E2 冻结编码器只训练约 4% 参数；E3 用 LoRA(r=8) 给 q/v 投影注入约 0.5M 可训练参数。本项目已将其下载到 hw2_sam/data/raw/ 供离线复现。",
+      "stats": {"params_total": "91M", "params_encoder": "86M", "params_decoder": "4M", "lora_trainable": "0.5M"},
+      "modalities": ["PyTorch checkpoint"],
+      "formats": ["PTH"],
+      "size": "375 MB",
+      "license": "Apache 2.0",
+      "homepage": "https://github.com/facebookresearch/segment-anything",
+      "downloads": [
+        {"name": "sam_vit_b_01ec64.pth", "url": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth", "size": "375 MB", "format": "PTH", "source": "Meta 官方 CDN 直链"},
+        {"name": "ModelScope 镜像", "url": "https://www.modelscope.cn/models/AI-ModelScope/sam-vit-base", "size": "375 MB", "format": "PTH", "source": "ModelScope 镜像（国内可达）"}
+      ],
+      "mirrors": [
+        {"name": "hf-mirror · facebook/sam-vit-base", "url": "https://hf-mirror.com/facebook/sam-vit-base", "note": "HF Transformers 格式"}
+      ],
+      "leaderboards": [
+        {"name": "Segment Anything 官方模型卡", "url": "https://github.com/facebookresearch/segment-anything#model-checkpoints", "metric": "零样本 mIoU", "note": "ViT-H > ViT-L > ViT-B，本项目受单卡显存约束选 ViT-B"}
+      ],
+      "terms": ["ViT", "LoRA", "提示编码器", "掩膜解码器", "Apache 2.0"]
+    }
+  ]
+}

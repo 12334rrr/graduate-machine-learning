@@ -1,0 +1,26 @@
+{
+  "tag": "resunet_s42",
+  "split": "test",
+  "ckpt": "best",
+  "size": 256,
+  "params_M": 30.35,
+  "metrics": {
+    "n": 1000,
+    "dice": 0.5857074699822679,
+    "dice_std": 0.29308596517307406,
+    "iou": 0.4720857285831491,
+    "iou_std": 0.2837695383497105,
+    "hd95": 82.94967125936633,
+    "hd95_std": 41.362667675487565,
+    "hd95_valid": 993,
+    "sensitivity": 0.6303628531323517,
+    "sens_valid": 1000,
+    "specificity": 0.8633850245234707,
+    "spec_valid": 998,
+    "pixel_acc": 0.7852317199707032,
+    "empty_pred": 7,
+    "empty_gt": 0,
+    "spec_undefined": 2,
+    "sens_undefined": 0
+  }
+}

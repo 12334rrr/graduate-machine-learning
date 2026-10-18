@@ -1,0 +1,28 @@
+{
+  "stage": "e3",
+  "tag": "e3_lora",
+  "prompt": "gt",
+  "split": "test",
+  "n": 30,
+  "metrics": {
+    "n": 30,
+    "dice": 0.8965601868921326,
+    "dice_std": 0.06506325907117522,
+    "iou": 0.8183620426232527,
+    "iou_std": 0.09968192685728736,
+    "hd95": 10.807297242803088,
+    "hd95_std": 6.6337789119495705,
+    "hd95_valid": 30,
+    "sensitivity": 0.9836619742440177,
+    "sens_valid": 30,
+    "specificity": 0.9658564021527164,
+    "spec_valid": 30,
+    "pixel_acc": 0.9720804850260417,
+    "empty_pred": 0,
+    "empty_gt": 0,
+    "spec_undefined": 0,
+    "sens_undefined": 0,
+    "latency_ms_per_img": 919.4190740585327,
+    "no_prompt_fallback": 0
+  }
+}
