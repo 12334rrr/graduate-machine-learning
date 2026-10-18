@@ -29,7 +29,7 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from tqdm import tqdm
 
-from common import (CKPT_DIR, LOG_DIR, CSVLogger, autocast_ctx, get_device,
+from common import (CKPT_DIR, LOG_DIR, CSVLogger, autocast_ctx, get_device, write_progress,
                     set_seed, supports_amp)
 from dataset import build_loaders
 from losses import build_loss
@@ -166,6 +166,8 @@ def main():
         print(f"  epoch {epoch:3d} | loss {train_loss:.4f}/{val_loss:.4f} | "
               f"dice {vsum['dice']:.4f} | iou {vsum['iou']:.4f} | hd95 {vsum['hd95']:.2f} | "
               f"{ep_sec:.0f}s")
+        write_progress(tag, phase="train", epoch=epoch, epochs_total=args.epochs,
+                       detail=f"epoch {epoch}/{args.epochs} · val dice {vsum['dice']:.4f}")
 
         # —— 每个 epoch 都存盘（硬性要求）——
         state = {"epoch": epoch, "model": model.state_dict(), "optim": optimizer.state_dict(),
@@ -200,6 +202,7 @@ def main():
         indent=2, ensure_ascii=False),
         encoding="utf-8")
     print(f"[结束] {tag}  原因={stop_reason}  最佳验证 Dice={best_dice:.4f}")
+    write_progress(tag, phase="done", detail=f"{stop_reason} · best {best_dice:.4f}")
 
 
 if __name__ == "__main__":

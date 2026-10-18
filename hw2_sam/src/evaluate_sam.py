@@ -18,7 +18,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from common import (CKPT_DIR, EVAL_SIZE, EMB_DIR, FIG_DIR, HW1_ROOT, LOG_DIR,
+from common import (CKPT_DIR, EVAL_SIZE, EMB_DIR, FIG_DIR, HW1_ROOT, LOG_DIR, write_progress,
                     PRED_DIR, autocast_ctx, get_device, set_seed, supports_amp)
 from sam_dataset import ISICRaw
 from metrics import MetricAccumulator, dice_score
@@ -146,6 +146,11 @@ def main():
 
         acc.add(pred, mask, compute_hd=True)
         per_sample.append({"id": sid, "dice": float(dice_score(pred, mask))})
+        if (i + 1) % 10 == 0 or i + 1 == n:
+            write_progress(f"{args.stage}-{args.prompt}-{args.split}", phase="eval",
+                           stage=args.stage, prompt=args.prompt, split=args.split,
+                           it=i + 1, total=n,
+                           detail=f"{args.stage}/{args.prompt} {i + 1}/{n}")
 
     summary = acc.summary()
     summary["latency_ms_per_img"] = float(np.mean(latencies))
@@ -160,6 +165,7 @@ def main():
                                           encoding="utf-8")
     print(json.dumps(summary, indent=2, ensure_ascii=False))
     print(f"[保存] {LOG_DIR / (name + '.json')}")
+    write_progress(name, phase="done", detail=f"{args.stage}/{args.prompt} n={n} dice={summary.get('dice', float('nan')):.4f}")
 
 
 if __name__ == "__main__":

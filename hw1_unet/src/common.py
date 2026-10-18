@@ -88,3 +88,23 @@ class CSVLogger:
 
     def close(self):
         self._fp.close()
+
+
+# ---------------------------------------------------------------- 实时进度心跳
+# 供 dataset_hub 门户的「实时运行」面板读取：每个训练/评测进程周期性写一个
+# tiny JSON（几 KB），服务端扫描 outputs/progress/*.json 判断谁在跑、跑到哪。
+# 设计原则：失败绝不影响训练（任何异常都吞掉）。
+def write_progress(tag: str, **fields) -> None:
+    """原子写入 outputs/progress/{tag}.json。"""
+    import json as _json
+    import os as _os
+    import time as _time
+    try:
+        d = ROOT / "outputs" / "progress"
+        d.mkdir(parents=True, exist_ok=True)
+        payload = {"tag": tag, "ts": _time.time(), **fields}
+        tmp = d / f".{tag}.tmp"
+        tmp.write_text(_json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        _os.replace(tmp, d / f"{tag}.json")
+    except Exception:
+        pass

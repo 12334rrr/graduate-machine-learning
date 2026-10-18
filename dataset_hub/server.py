@@ -422,6 +422,32 @@ def _hw_stages(runs, evals):
     return stages
 
 
+def live_state():
+    """实时进度：扫描两作业 outputs/progress/*.json（训练/评测进程每 epoch/每 25 张写一次）。
+
+    只返回 10 分钟内还有心跳的条目；phase=done 的保留 10 分钟用于展示"刚完成"。
+    """
+    now = time.time()
+    items = []
+    for proj, root in (("hw1", HW1_DIR), ("hw2", HW2_DIR)):
+        d = root / "outputs" / "progress"
+        if not d.exists():
+            continue
+        for p in sorted(d.glob("*.json")):
+            data = _read_json_file(p)
+            if not isinstance(data, dict):
+                continue
+            age = now - float(data.get("ts") or 0)
+            if age > 600:
+                continue
+            item = {"proj": proj, "age_sec": round(age, 1)}
+            item.update({k: v for k, v in data.items() if k != "ts"})
+            items.append(item)
+    # 活跃的排前面，然后按更新时间倒序
+    items.sort(key=lambda x: (x.get("phase") == "done", -float(x.get("age_sec", 0))))
+    return {"now": now, "count": len(items), "items": items}
+
+
 def hw1_state():
     logs = HW1_DIR / "outputs" / "logs"
     runs = _agg_runs(logs)
@@ -529,6 +555,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send_json(hw1_state())
             if path == "/api/hw2":
                 return self._send_json(hw2_state())
+            if path == "/api/live":
+                return self._send_json(live_state())
             if path == "/api/hw_report":
                 return self._api_hw_report(parsed)
             if path == "/api/hw_code":

@@ -31,7 +31,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from common import (CKPT_DIR, CSVLogger, EVAL_SIZE, LOG_DIR, autocast_ctx, get_device,
+from common import (CKPT_DIR, CSVLogger, EVAL_SIZE, LOG_DIR, autocast_ctx, get_device, write_progress,
                     set_seed, supports_amp)
 from sam_dataset import ISICRaw
 from losses import SegLoss
@@ -179,6 +179,8 @@ def main():
                "epoch_sec": round(time.time() - ep_t, 1),
                "cum_min": round((time.time() - t0) / 60, 1)}
         logger.log(row); history.append(row)
+        write_progress(args.tag, phase="train", epoch=epoch, epochs_total=args.epochs,
+                       detail=f"epoch {epoch}/{args.epochs} · val dice {vs['dice']:.4f}")
         print(f"  epoch {epoch:3d} | loss {tl:.4f} | dice {vs['dice']:.4f} | "
               f"hd95 {vs['hd95']:.2f} | {row['epoch_sec']:.0f}s")
 
@@ -198,6 +200,7 @@ def main():
             break
     logger.close()
     print(f"[结束] {args.tag}  最佳 Dice={best:.4f}")
+    write_progress(args.tag, phase="done", detail="finished")
 
 
 if __name__ == "__main__":

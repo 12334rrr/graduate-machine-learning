@@ -138,76 +138,146 @@ def draw_decoder_flow(save_path: Path):
 
 
 def draw_robustness(save_path: Path):
-    """扰动框鲁棒性曲线 + 各提示类型对比（读 outputs/logs/eval_*.json）。"""
+    """扰动框鲁棒性曲线 + 各提示类型对比（读 outputs/logs/eval_*.json）。
+
+    视觉规范：与门户同一套配色（E1 蓝 / E2 紫 / E3 绿），
+    左图用阴影标出两阶段之间的「鲁棒性差距」，右图按阶段着色。
+    """
     files = sorted(LOG_DIR.glob("eval_*.json"))
     if not files:
         print("[跳过] 还没有评测结果")
         return
     records = [json.loads(f.read_text(encoding="utf-8")) for f in files]
+    # 只取 test 划分（val 冒烟不混入）
+    records = [r for r in records if r.get("split") == "test"] or records
 
+    C = {"e1": "#1a73e8", "e2": "#7c3aed", "e3": "#188038"}
+    NAME = {"e1": "E1 零样本", "e2": "E2 冻结微调", "e3": "E3 LoRA"}
     order = {"pert-20": -20, "pert-10": -10, "gt": 0, "pert10": 10, "pert20": 20}
-    fig, axes = plt.subplots(1, 2, figsize=(13, 4.6))
 
-    # 左：扰动曲线（按 stage 分组）
+    fig, axes = plt.subplots(1, 2, figsize=(13.5, 4.8),
+                             gridspec_kw={"width_ratios": [1.15, 1]})
+    for ax in axes:
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+    # ---------- 左：扰动曲线 ----------
+    curves = {}
     for stage in ["e1", "e2", "e3"]:
-        pts = []
-        for r in records:
-            if r["stage"] != stage or r["prompt"] not in order:
-                continue
-            pts.append((order[r["prompt"]], r["metrics"]["dice"], r["metrics"].get("hd95", np.nan)))
-        if not pts:
+        pts = sorted(
+            (order[r["prompt"]], r["metrics"]["dice"])
+            for r in records
+            if r["stage"] == stage and r["prompt"] in order
+        )
+        if len(pts) < 2:
             continue
-        pts.sort()
         x = [p[0] for p in pts]
-        axes[0].plot(x, [p[1] for p in pts], marker="o", label=f"{stage.upper()} Dice")
-    axes[0].axvline(0, color="#999", ls=":", lw=1)
-    axes[0].set_xlabel("框扰动幅度（%） 负=内缩 正=外扩")
-    axes[0].set_ylabel("Dice")
-    axes[0].set_title("提示框扰动鲁棒性曲线")
-    axes[0].grid(alpha=0.3); axes[0].legend(fontsize=9)
+        y = [p[1] for p in pts]
+        curves[stage] = (x, y)
+        axes[0].plot(x, y, marker="o", ms=6, lw=2.2, color=C[stage],
+                     label=NAME[stage], zorder=3)
 
-    # 右：提示类型对比（GT 框 / 点 / 自动框）
-    names, dices, hds = [], [], []
-    for r in records:
-        if r["prompt"] not in ("gt", "point1", "point3", "point5", "auto", "auto10"):
-            continue
-        names.append(f"{r['stage'].upper()}\n{r['prompt']}")
-        dices.append(r["metrics"]["dice"])
-        hds.append(r["metrics"].get("hd95", np.nan))
-    if names:
-        x = np.arange(len(names))
-        axes[1].bar(x, dices, 0.6, color="#2980b9", label="Dice")
-        axes[1].set_xticks(x); axes[1].set_xticklabels(names, fontsize=8)
-        for i, v in enumerate(dices):
-            axes[1].text(i, v + 0.01, f"{v:.3f}", ha="center", fontsize=8)
+    # 用阴影标出 E1 与 E2 之间的差距（微调到底买到了什么）
+    if "e1" in curves and "e2" in curves and curves["e1"][0] == curves["e2"][0]:
+        xs = curves["e1"][0]
+        axes[0].fill_between(xs, curves["e1"][1], curves["e2"][1],
+                             color=C["e2"], alpha=0.10, zorder=1,
+                             label="微调带来的鲁棒性增益")
+
+    axes[0].axvline(0, color="#9aa0a6", ls=":", lw=1.2)
+    axes[0].text(0.6, axes[0].get_ylim()[0] + 0.01, "GT 框", color="#5f6470", fontsize=9, va="bottom")
+
+    # 在最差扰动处标注两阶段差值
+    if "e1" in curves and "e2" in curves:
+        x1, y1 = curves["e1"][0], curves["e1"][1]
+        x2, y2 = curves["e2"][0], curves["e2"][1]
+        i = x1.index(min(x1))
+        gap = y2[i] - y1[i]
+        axes[0].annotate("", xy=(x1[i], y2[i]), xytext=(x1[i], y1[i]),
+                         arrowprops=dict(arrowstyle="<->", color="#b06000", lw=1.3))
+        axes[0].text(x1[i] + 1.2, (y1[i] + y2[i]) / 2, f"+{gap:.3f}", color="#b06000",
+                     fontsize=10, fontweight="bold", va="center")
+
+    axes[0].set_xlabel("框扰动幅度（%）  负 = 内缩，正 = 外扩", fontsize=11)
+    axes[0].set_ylabel("Dice", fontsize=11)
+    axes[0].set_title("提示框扰动鲁棒性：微调买到的是「不怕提示不准」", fontsize=12.5, pad=10)
+    axes[0].set_xticks([-20, -10, 0, 10, 20])
+    axes[0].grid(alpha=0.25)
+    axes[0].legend(fontsize=9, frameon=False, loc="upper left", bbox_to_anchor=(0.02, 0.98))
+
+    # ---------- 右：提示类型对比 ----------
+    prompts = ["gt", "pert10", "pert20", "point1", "point3", "point5", "auto", "auto10"]
+    PNAME = {"gt": "GT 框", "pert10": "框+10%", "pert20": "框+20%", "point1": "1 点",
+             "point3": "3 点", "point5": "5 点", "auto": "自动框", "auto10": "自动框+10%"}
+    stages = [st for st in ["e1", "e2", "e3"]
+              if any(r["stage"] == st and r["prompt"] in prompts for r in records)]
+    if stages:
+        x = np.arange(len(prompts))
+        w = 0.8 / len(stages)
+        for k, st in enumerate(stages):
+            vals = []
+            for p in prompts:
+                hit = next((r for r in records if r["stage"] == st and r["prompt"] == p), None)
+                vals.append(hit["metrics"]["dice"] if hit else np.nan)
+            bars = axes[1].bar(x + (k - (len(stages) - 1) / 2) * w, vals, w * 0.92,
+                               color=C[st], label=NAME[st], zorder=3)
+            for b, v in zip(bars, vals):
+                if not np.isnan(v):
+                    axes[1].text(b.get_x() + b.get_width() / 2, v + 0.012, f"{v:.2f}",
+                                 ha="center", fontsize=7.4, color="#3c4043")
+        axes[1].set_xticks(x)
+        axes[1].set_xticklabels([PNAME[p] for p in prompts], fontsize=9, rotation=20, ha="right")
+        axes[1].axhline(0.8, color="#9aa0a6", ls="--", lw=1)
+        axes[1].text(len(prompts) - 0.4, 0.805, "0.80", color="#5f6470", fontsize=8, ha="right")
         axes[1].set_ylim(0, 1.0)
-        axes[1].set_ylabel("Dice"); axes[1].set_title("不同提示形式的效果")
+        axes[1].set_ylabel("Dice", fontsize=11)
+        axes[1].set_title("不同提示形式的效果（test 1000 张）", fontsize=12.5, pad=10)
         axes[1].grid(axis="y", alpha=0.25)
-    fig.tight_layout(); fig.savefig(save_path, dpi=150); plt.close(fig)
+        axes[1].legend(fontsize=9, frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3)
+
+    fig.tight_layout()
+    fig.savefig(save_path, dpi=170, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
     print(f"[图] {save_path}")
 
 
 def draw_cascade(save_path: Path):
-    """级联系统图（作业 1 + 作业 2 共用的那一张）。"""
-    fig, ax = plt.subplots(figsize=(13, 4.2))
-    ax.set_xlim(0, 14); ax.set_ylim(0, 5); ax.axis("off")
+    """级联系统图（作业 1 + 作业 2 共用的那一张）。
+
+    布局按内容动态计算，避免固定坐标导致边缘框被裁、底部大片留白。
+    """
     blocks = [
-        (1.4, "① 皮肤镜图像\n256×256", C_IO),
-        (4.2, "② U-Net 自动分割\n（作业 1，31 M，~10 ms）\n→ 粗掩膜", "#E8F5E9"),
-        (7.0, "③ 掩膜 → 外接矩形框\n（自动提示生成）", C_PE),
-        (10.0, "④ SAM 交互式精修\n（作业 2，91 M，~0.5 s）\n→ 精细掩膜", C_VIT),
-        (12.8, "⑤ 输出\n给医生复核", C_IO),
+        ("① 皮肤镜图像\n256×256", C_IO),
+        ("② U-Net 自动分割\n（作业 1，29 M，~10 ms）\n→ 粗掩膜", "#E8F5E9"),
+        ("③ 掩膜 → 外接矩形框\n（自动提示生成）", C_PE),
+        ("④ SAM 交互式精修\n（作业 2，94 M，0.02–0.9 s）\n→ 精细掩膜", C_VIT),
+        ("⑤ 输出\n给医生复核", C_IO),
     ]
-    for i, (x, t, c) in enumerate(blocks):
-        _box(ax, x, 2.6, 2.4, 2.0, t, c, fs=9)
+    n = len(blocks)
+    w, h, gap, margin = 2.3, 1.9, 0.62, 0.55
+    total_w = margin * 2 + n * w + (n - 1) * gap
+
+    fig, ax = plt.subplots(figsize=(13.6, 3.3))
+    ax.set_xlim(0, total_w)
+    ax.set_ylim(0, 3.75)
+    ax.axis("off")
+
+    yc = 1.95
+    xs = [margin + w / 2 + i * (w + gap) for i in range(n)]
+    for i, ((text, color), x) in enumerate(zip(blocks, xs)):
+        _box(ax, x, yc, w, h, text, color, fs=8.8)
         if i > 0:
-            _arrow(ax, blocks[i - 1][0] + 1.25, 2.6, x - 1.25, 2.6)
-    ax.text(1.4, 0.9, "无需人工", fontsize=9, ha="center", color="#2E7D32")
-    ax.text(7.0, 0.9, "把两个作业缝成一条系统", fontsize=9.5, ha="center", color="#1565C0")
-    ax.text(10.0, 0.9, "可再叠加点提示迭代", fontsize=9, ha="center", color="#6A1B9A")
-    ax.text(0.05, 4.6, "级联系统：小模型出粗框 → 大模型做精修（分工而非替代）",
-            fontsize=12.5, fontweight="bold")
-    fig.tight_layout(); fig.savefig(save_path, dpi=160); plt.close(fig)
+            _arrow(ax, xs[i - 1] + w / 2 + 0.06, yc, x - w / 2 - 0.06, yc)
+
+    ax.text(xs[0], 0.62, "无需人工", fontsize=9.5, ha="center", color="#2E7D32")
+    ax.text(xs[2], 0.62, "把两个作业缝成一条系统", fontsize=9.5, ha="center", color="#1565C0")
+    ax.text(xs[3], 0.62, "可再叠加点提示迭代", fontsize=9.5, ha="center", color="#6A1B9A")
+    ax.text(margin, 3.42, "级联系统：小模型出粗框 → 大模型做精修（分工而非替代）",
+            fontsize=12.5, fontweight="bold", va="center")
+
+    fig.tight_layout()
+    fig.savefig(save_path, dpi=170, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
     print(f"[图] {save_path}")
 
 

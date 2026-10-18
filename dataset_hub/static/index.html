@@ -374,13 +374,34 @@ a.card:hover,.card.lift:hover{transform:translateY(-2px);box-shadow:var(--shadow
 .code-view{max-height:64vh;font-size:11.5px;line-height:1.65;white-space:pre;overflow:auto}
 
 /* ---- 图表画廊 ---- */
-.gallery{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
-.gal-item{margin:0;cursor:zoom-in;border:1px solid var(--border);border-radius:8px;overflow:hidden;
-  background:var(--surface-2);transition:transform .16s ease,box-shadow .16s ease}
-.gal-item:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
-.gal-item img{width:100%;height:132px;object-fit:cover;display:block}
-.gal-item figcaption{padding:6px 9px;font-size:11.5px;color:var(--text2);font-family:var(--mono);
+.gallery{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.gal-item{margin:0;cursor:zoom-in;border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  background:var(--card);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.gal-item:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--primary)}
+/* contain 而不是 cover：图表类图片裁掉边缘就等于毁掉可读性 */
+.gal-item img{width:100%;height:172px;object-fit:contain;background:var(--surface-2);display:block;padding:8px}
+.gal-item figcaption{padding:7px 10px;font-size:11.5px;color:var(--text2);font-family:var(--mono);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid var(--border)}
+.lb-wrap{background:var(--surface-2);border-radius:10px;padding:10px;text-align:center}
+.lb-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+/* ---- 实时运行面板 ---- */
+.live-panel{padding:12px 16px}
+.live-empty{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);
+  margin-right:5px;animation:livepulse 1.4s ease-in-out infinite}
+@keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.72)}}
+.live-item{padding:10px 0;border-bottom:1px dashed var(--border)}
+.live-item:last-child{border-bottom:none}
+.live-item.done{opacity:.7}
+.live-item.stale{opacity:.55}
+.live-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.live-age{margin-left:auto;font-size:11.5px;color:var(--text2);font-family:var(--mono)}
+.live-bar{position:relative;height:18px;background:var(--skeleton);border-radius:5px;margin-top:7px;overflow:hidden}
+.live-bar i{display:block;height:100%;border-radius:5px;transition:width .6s ease;
+  background:linear-gradient(90deg,var(--primary),var(--violet))}
+.live-bar span{position:absolute;right:8px;top:0;font-size:10.5px;line-height:18px;color:var(--text);font-family:var(--mono)}
+.live-detail{font-size:12px;color:var(--text2);margin-top:5px;font-family:var(--mono)}
 
 /* ---- 源码浏览器 ---- */
 .code-list{display:flex;flex-direction:column;gap:2px;max-height:330px;overflow-y:auto}
@@ -1325,13 +1346,20 @@ function chartSVG(id) {
     grid += '<line x1="' + pl + '" y1="' + yy + '" x2="' + (w - pr) + '" y2="' + yy + '" style="stroke:var(--chart-grid)" stroke-width="1"/>';
     grid += '<text class="c-tick" x="' + (pl - 9) + '" y="' + (Number(yy) + 4) + '" text-anchor="end">' + fmtNum(v, tk.step) + "</text>";
   });
-  /* x 轴刻度 */
-  const xt = niceTicks(x0, x1, 6);
+  /* x 轴刻度：类别轴优先（opt.xTicks），否则用 nice 刻度 */
   let xlab = "";
-  xt.ticks.forEach(v => {
-    if (v < x0 || v > x1) return;
-    xlab += '<text class="c-tick" x="' + X(v).toFixed(1) + '" y="' + (h - pb + 18) + '" text-anchor="middle">' + fmtNum(v, xt.step) + "</text>";
-  });
+  if (Array.isArray(opt.xTicks) && opt.xTicks.length) {
+    opt.xTicks.forEach((label, i) => {
+      if (i < x0 || i > x1) return;
+      xlab += '<text class="c-tick" x="' + X(i).toFixed(1) + '" y="' + (h - pb + 18) + '" text-anchor="middle">' + esc(label) + "</text>";
+    });
+  } else {
+    const xt = niceTicks(x0, x1, 6);
+    xt.ticks.forEach(v => {
+      if (v < x0 || v > x1) return;
+      xlab += '<text class="c-tick" x="' + X(v).toFixed(1) + '" y="' + (h - pb + 18) + '" text-anchor="middle">' + fmtNum(v, xt.step) + "</text>";
+    });
+  }
   /* 面积渐变 defs */
   let defs = "<defs>";
   vis.forEach((s, i) => {
@@ -1671,7 +1699,12 @@ async function showCode(proj, path) {
 
 /* 图片灯箱 */
 function showFigure(src, title) {
-  openModal(title || "图片", '<img class="lightbox-img" src="' + esc(src) + '" alt="' + esc(title || "") + '">', { wide: true });
+  openModal(title || "图片",
+    '<div class="lb-wrap"><img class="lightbox-img" src="' + esc(src) + '" alt="' + esc(title || "") + '"></div>' +
+    '<div class="lb-actions">' +
+      '<a class="btn sm" href="' + esc(src) + '" target="_blank" rel="noopener">新标签打开原图 ↗</a>' +
+      '<a class="btn sm" href="' + esc(src) + '" download>下载</a>' +
+    "</div>", { wide: true });
 }
 
 /* 图表画廊：缩略图网格，点击放大 */
@@ -1722,6 +1755,59 @@ function stopAutoRefresh() {
   if (autoRefresh.timer) { clearInterval(autoRefresh.timer); autoRefresh.timer = null; }
   autoRefresh.on = false;
 }
+
+/* ==================== 实时运行面板（3s 轮询 /api/live） ====================
+ * 训练/评测进程每 epoch / 每 25 张向 outputs/progress/*.json 写心跳，
+ * 这里只更新面板本身，不重绘整个视图（避免打断图表悬停与滚动位置）。 */
+let liveTimer = null;
+function livePct(it) {
+  if (it.epoch != null && it.epochs_total) return Math.min(100, it.epoch / it.epochs_total * 100);
+  if (it.it != null && it.total) return Math.min(100, it.it / it.total * 100);
+  return null;
+}
+function renderLive(items) {
+  if (!items.length) {
+    return '<div class="live-empty"><span class="live-dot"></span>实时监控中 · 当前没有运行中的任务</div>';
+  }
+  return items.map(it => {
+    const pct = livePct(it);
+    const done = it.phase === "done";
+    const kind = done ? "已完成" : (it.phase === "eval" ? "评测中" : "训练中");
+    const stale = !done && it.age_sec > 90;
+    const age = it.age_sec < 60 ? Math.round(it.age_sec) + "s 前" : Math.round(it.age_sec / 60) + " 分钟前";
+    if (stale) {
+      return '<div class="live-item stale">' +
+        '<div class="live-head"><span class="badge pending">心跳超时</span>' +
+        '<b class="mono">' + esc(it.tag || it.stage || "") + "</b>" +
+        '<span class="live-age">' + age + "（可能已停止）</span></div>" +
+        (it.detail ? '<div class="live-detail">' + esc(it.detail) + "</div>" : "") + "</div>";
+    }
+    return '<div class="live-item ' + (done ? "done" : "running") + '">' +
+      '<div class="live-head">' +
+        '<span class="badge ' + (done ? "done" : "running") + '">' + (done ? "" : '<span class="live-dot"></span>') + kind + "</span>" +
+        '<b class="mono">' + esc(it.tag || it.stage || "") + "</b>" +
+        (it.stage && it.prompt ? '<span class="tag cat">' + esc(it.stage) + "/" + esc(it.prompt) + "</span>" : "") +
+        '<span class="live-age">' + age + "</span>" +
+      "</div>" +
+      (pct != null
+        ? '<div class="live-bar"><i style="width:' + pct.toFixed(1) + '%"></i><span>' + pct.toFixed(0) + "%</span></div>"
+        : "") +
+      (it.detail ? '<div class="live-detail">' + esc(it.detail) + "</div>" : "") +
+    "</div>";
+  }).join("");
+}
+async function pollLive() {
+  const panel = document.getElementById("live-panel");
+  if (!panel) { stopLivePoll(); return; }
+  const proj = panel.dataset.proj;
+  try {
+    const d = await api("/api/live");
+    const items = (d.items || []).filter(x => x.proj === proj);
+    panel.innerHTML = renderLive(items);
+  } catch (e) { /* 轮询失败静默，保留上次内容 */ }
+}
+function startLivePoll() { stopLivePoll(); liveTimer = setInterval(pollLive, 3000); pollLive(); }
+function stopLivePoll() { if (liveTimer) { clearInterval(liveTimer); liveTimer = null; } }
 
 /* ==================== 作业 1 实验视图 ==================== */
 function hw1Stats(d) {
@@ -1882,6 +1968,7 @@ function viewHw1() {
         '<span class="badge ' + (finished === runs.length && runs.length ? "done" : "running") + '">运行 ' + runs.length + " · 完成 " + finished + "</span>" +
         '<button class="btn sm" id="auto-refresh-btn" onclick="toggleAutoRefresh(\'hw1\')">▶ 自动刷新（10s）</button>' +
       "</div>" +
+      '<div class="card live-panel" id="live-panel" data-proj="hw1" style="margin-bottom:16px"></div>' +
 
       /* —— 统计面板行 —— */
       '<div class="grid-stats">' +
@@ -1964,6 +2051,7 @@ function viewHw1() {
     "</section>";
 
   bindReportButtons("hw1-report-btns", "hw1", "hw1-report-box");
+  startLivePoll();
   const chipsBox = document.getElementById("hw1-run-chips");
   if (chipsBox) chipsBox.addEventListener("click", e => {
     const b = e.target.closest(".chip");
@@ -2001,7 +2089,10 @@ function hw2PromptBars(d) {
   if (!evals.length) return "";
   const stages = ["e1", "e2", "e3"].filter(s => evals.some(e => e.stage === s));
   if (!stages.length) return "";
-  const prompts = [...new Set(evals.map(e => e.prompt))];
+  const PORDER = ["gt", "pert-20", "pert-10", "pert10", "pert20",
+                  "point1", "point3", "point5", "auto", "auto10"];
+  const prompts = PORDER.filter(p => evals.some(e => e.prompt === p))
+    .concat([...new Set(evals.map(e => e.prompt))].filter(p => PORDER.indexOf(p) < 0));
   const series = stages.map(s => ({
     name: s.toUpperCase(),
     values: prompts.map(p => {
@@ -2025,7 +2116,8 @@ function hw2Robustness(d) {
   })).filter(s => s.pts.length);
   if (!series.length) return "";
   return '<div class="muted" style="font-size:12.5px;margin-bottom:6px">横轴为提示框相对 GT 外接框的扰动幅度；曲线越平说明对提示误差越不敏感。</div>' +
-    gchart(series, { h: 280, yLabel: "Dice", xLabel: "提示扰动", smooth: true });
+    gchart(series, { h: 280, yLabel: "Dice", xLabel: "", smooth: true,
+                     xTicks: ["-20%", "-10%", "GT", "+10%", "+20%"] });
 }
 function hw2LatencyBars(d) {
   const evals = (d.evals || []).filter(e => e.latency_ms != null && e.split === "test");
@@ -2131,6 +2223,7 @@ function viewHw2() {
         '<button class="btn sm" id="auto-refresh-btn" onclick="toggleAutoRefresh(\'hw2\')">▶ 自动刷新（10s）</button>' +
         '<a class="btn sm" href="#/hw1">查看作业 1（级联上游）→</a>' +
       "</div>" +
+      '<div class="card live-panel" id="live-panel" data-proj="hw2" style="margin-bottom:16px"></div>' +
 
       /* —— 统计面板行 —— */
       '<div class="grid-stats">' +
@@ -2187,6 +2280,7 @@ function viewHw2() {
     "</section>";
 
   bindReportButtons("hw2-report-btns", "hw2", "hw2-report-box");
+  startLivePoll();
 }
 
 /* ---------------- 404 ---------------- */
@@ -2211,6 +2305,7 @@ function markNav(path) {
     a.classList.toggle("active", a.dataset.route === key));
 }
 function route() {
+  stopLivePoll();                      // 离开实验视图时停掉实时轮询
   const { path, query } = parseHash();
   markNav(path);
   document.getElementById("nav").classList.remove("open");
