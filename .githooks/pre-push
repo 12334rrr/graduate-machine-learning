@@ -1,0 +1,11 @@
+#!/bin/bash
+# 推送门禁：任何 git push 前自动跑完整测试；失败则拒绝推送。
+set -e
+ROOT="$(git rev-parse --show-toplevel)"
+echo "[pre-push] 运行测试门禁：bash tests/run_all.sh"
+if ! bash "$ROOT/tests/run_all.sh" > /tmp/pre-push-tests.log 2>&1; then
+  echo "[pre-push] ✗ 测试失败，已阻止推送。日志：/tmp/pre-push-tests.log"
+  tail -30 /tmp/pre-push-tests.log
+  exit 1
+fi
+echo "[pre-push] ✓ 全部测试通过，允许推送"
