@@ -491,8 +491,18 @@ def _tracked_eta(key, data):
 
 def _eta_seconds(data, created_ts, now, proj=None):
     """训练：用最近 epoch 实测耗时（优先）或平均耗时估算剩余秒数。"""
-    elapsed = max(0.0, now - created_ts)
+    start = float(data.get("started_ts") or created_ts)
+    elapsed = max(0.0, now - start)
     phase = data.get("phase")
+    if phase == "job":
+        # run_cv.py 用已完成 fold 的实测中位数算出更可靠的 ETA，优先采用
+        if data.get("eta_sec") is not None:
+            return float(data["eta_sec"])
+        done = float(data.get("folds_done") or 0)
+        total = float(data.get("folds_total") or 0)
+        if done > 0 and total > done:
+            return elapsed * (total - done) / done
+        return None
     if phase == "train":
         done = float(data.get("epoch") or 0)
         total = float(data.get("epochs_total") or 0)
@@ -537,7 +547,13 @@ def live_state():
             item = {"proj": proj, "age_sec": round(age, 1), "file": p.name,
                     "created_ts": created, "elapsed_sec": round(max(0.0, now - created), 1)}
             item.update({k: v for k, v in data.items() if k != "ts"})
-            if item.get("phase") == "train" and item.get("tag"):
+            if item.get("phase") == "job":
+                if item.get("started_ts"):
+                    created = float(item["started_ts"])
+                    item["created_ts"] = created
+                    item["elapsed_sec"] = round(max(0.0, now - created), 1)
+                eta = _eta_seconds(item, created, now, proj)
+            elif item.get("phase") == "train" and item.get("tag"):
                 start = _log_birth(proj, item["tag"])
                 if start and start < created:
                     created = start
@@ -563,8 +579,9 @@ def live_state():
         it.get("phase") != "done"
         and (it["proj"], it.get("stage"), it.get("prompt")) in done_keys)]
 
-    # 活跃的排前面，然后按更新时间倒序
-    items.sort(key=lambda x: (x.get("phase") == "done", -float(x.get("age_sec", 0))))
+    # 作业级总进度排最前，其次活跃任务，最后 done；同组按更新时间倒序
+    items.sort(key=lambda x: (x.get("phase") == "done", x.get("phase") != "job",
+                              -float(x.get("age_sec", 0))))
 
     # 清理长时间不用的 ETA 采样，避免内存无界增长
     if len(_LIVE_TRACK) > 200:

@@ -2474,15 +2474,23 @@ function fmtDur(sec) {
   return h + " 小时" + (r ? " " + r + " 分钟" : "");
 }
 function livePct(it) {
+  if (it.folds_done != null && it.folds_total) return Math.min(100, it.folds_done / it.folds_total * 100);
   if (it.epoch != null && it.epochs_total) return Math.min(100, it.epoch / it.epochs_total * 100);
   if (it.it != null && it.total) return Math.min(100, it.it / it.total * 100);
   return null;
 }
 function liveKind(it) {
   if (it.phase === "done") return "已完成";
+  if (it.phase === "job") return "总进度";
   return it.phase === "eval" ? "评测中" : "训练中";
 }
+function liveTitle(it) {
+  if (it.tag === "cv-job") return "五折交叉验证";
+  return it.tag || it.stage || "";
+}
 function liveProgressText(it) {
+  if (it.phase === "job" && it.folds_done != null && it.folds_total)
+    return it.folds_done + " / " + it.folds_total + " 折";
   if (it.phase === "eval" && it.it != null && it.total) return it.it + " / " + it.total;
   if (it.phase === "train" && it.epoch != null && it.epochs_total) return "epoch " + it.epoch + " / " + it.epochs_total;
   return "";
@@ -2495,13 +2503,14 @@ function renderLive(items) {
     const pct = livePct(it);
     const done = it.phase === "done";
     const kind = liveKind(it);
-    /* 训练按 epoch 写心跳（约 5 分钟一次），阈值放宽；评测每 10 张写一次，150s 无心跳才算异常 */
-    const stale = !done && (it.phase === "train" ? it.age_sec > 420 : it.age_sec > 150);
+    /* 训练按 epoch 写心跳（约 5 分钟一次），阈值放宽；作业级心跳每 60s 刷新；评测每 10 张一次 */
+    const stale = !done && (it.phase === "train" ? it.age_sec > 420
+      : it.phase === "job" ? it.age_sec > 180 : it.age_sec > 150);
     const age = it.age_sec < 60 ? Math.round(it.age_sec) + "s 前" : Math.round(it.age_sec / 60) + " 分钟前";
     if (stale) {
       return '<div class="live-item stale">' +
         '<div class="live-head"><span class="badge pending">心跳超时</span>' +
-        '<b class="mono">' + esc(it.tag || it.stage || "") + "</b>" +
+        '<b class="mono">' + esc(liveTitle(it)) + "</b>" +
         '<span class="live-age">' + age + "（可能已停止）</span></div>" +
         (it.detail ? '<div class="live-detail">' + esc(it.detail) + "</div>" : "") + "</div>";
     }
@@ -2512,7 +2521,7 @@ function renderLive(items) {
     return '<div class="live-item ' + (done ? "done" : "running") + '">' +
       '<div class="live-head">' +
         '<span class="badge ' + (done ? "done" : "running") + '">' + (done ? "" : '<span class="live-dot"></span>') + kind + "</span>" +
-        '<b class="mono">' + esc(it.tag || it.stage || "") + "</b>" +
+        '<b class="mono">' + esc(liveTitle(it)) + "</b>" +
         (it.stage && it.prompt ? '<span class="tag cat">' + esc(stageCN(it.stage)) + " · " + esc(promptCN(it.prompt)) + "</span>" : "") +
         '<span class="live-age">' + age + (done ? "（完成后保留 10 分钟）" : "") + "</span>" +
       "</div>" +
@@ -2527,7 +2536,7 @@ function renderLive(items) {
 function renderOtherLive(others) {
   if (!others.length) return "";
   return '<div class="live-other">其他项目也在运行：' + others.map(it =>
-    '<a href="#/' + esc(it.proj) + '">' + esc(it.proj) + " · " + esc(it.tag || it.stage || "") +
+    '<a href="#/' + esc(it.proj) + '">' + esc(it.proj) + " · " + esc(liveTitle(it)) +
     " " + esc(liveKind(it)) + (it.eta_sec != null ? " · 预计还需 " + fmtDur(it.eta_sec) : "") +
     "</a>").join("；") + "</div>";
 }
@@ -2569,11 +2578,11 @@ function renderGlobalLive() {
     return;
   }
   const f = run[0];
-  txt.textContent = run.length + " 个任务运行中 · " + f.proj + " " + (f.tag || f.stage || "");
+  txt.textContent = run.length + " 个任务运行中 · " + f.proj + " " + liveTitle(f);
   box.classList.add("busy");
   dot.className = "dot yellow";
   box.title = run.map(it =>
-    it.proj + " · " + (it.tag || it.stage || "") + " · " + liveKind(it) +
+    it.proj + " · " + liveTitle(it) + " · " + liveKind(it) +
     (liveProgressText(it) ? " · " + liveProgressText(it) : "") +
     (it.eta_sec != null ? " · 预计还需 " + fmtDur(it.eta_sec) : "")).join("\n");
   updateExpLive();
@@ -2581,6 +2590,13 @@ function renderGlobalLive() {
 function updateExpLive() {
   const el = document.getElementById("exp-cv-eta");
   if (!el) return;
+  const job = globalLiveItems.find(x => x.tag === "cv-job" && x.phase !== "done");
+  if (job) {
+    el.textContent = "总进度 " + (job.folds_done != null ? job.folds_done : "?") + "/" +
+      (job.folds_total || 10) + " 折 · 已运行 " + fmtDur(job.elapsed_sec) +
+      (job.eta_sec != null ? " · 预计还需 " + fmtDur(job.eta_sec) : "");
+    return;
+  }
   const it = globalLiveItems.find(x =>
     x.proj === "hw1" && x.phase !== "done" && /^cv_/.test(x.tag || ""));
   el.textContent = it

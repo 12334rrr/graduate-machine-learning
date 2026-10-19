@@ -16,10 +16,11 @@ import math
 import statistics
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
-from common import CKPT_DIR, LOG_DIR, REPORT_DIR, ROOT
+from common import CKPT_DIR, LOG_DIR, REPORT_DIR, ROOT, write_progress
 
 EPOCHS = 12
 FOLDS = 5
@@ -30,8 +31,62 @@ CONFIGS = [
 ]
 
 
+JOB_START = time.time()
+JOB_TOTAL = len(CONFIGS) * FOLDS
+
+
 def fold_tag(prefix: str, fold: int) -> str:
     return f"{prefix}_f{fold}"
+
+
+_JOB_STATE = {"done": 0, "current": ""}
+_JOB_STOP = threading.Event()
+
+
+def _cv_csvs():
+    for cfg in CONFIGS:
+        for k in range(FOLDS):
+            yield fold_tag(cfg["prefix"], k), LOG_DIR / f"{fold_tag(cfg['prefix'], k)}.csv"
+
+
+def _job_started_ts() -> float:
+    """整个 CV 作业的真实起点：已有 fold CSV 的最早创建时间（跨进程续跑也成立）。"""
+    starts = [JOB_START]
+    for tag, p in _cv_csvs():
+        if p.exists():
+            st = p.stat()
+            starts.append(float(getattr(st, "st_birthtime", st.st_ctime)))
+    return min(starts)
+
+
+def _job_eta(done: int):
+    """用已完成 fold 的实际墙钟时长中位数 × 剩余折数。"""
+    vals = []
+    for tag, p in _cv_csvs():
+        if is_finished(tag) and p.exists():
+            st = p.stat()
+            vals.append(max(1.0, st.st_mtime - float(getattr(st, "st_birthtime", st.st_ctime))))
+    remaining = JOB_TOTAL - done
+    if vals and remaining > 0:
+        return statistics.median(vals) * remaining
+    return None
+
+
+def job_heartbeat(done: int, current: str = "") -> None:
+    """作业级心跳：跨 fold / 评测空窗持续显示总进度与总 ETA。"""
+    eta = _job_eta(done)
+    write_progress(
+        "cv-job", phase="job", folds_done=done, folds_total=JOB_TOTAL,
+        current=current, started_ts=_job_started_ts(),
+        eta_sec=round(eta, 1) if eta is not None else None,
+        detail=f"五折 CV · {done}/{JOB_TOTAL} 折完成" + (f" · 当前 {current}" if current else ""),
+    )
+
+
+def _job_keepalive() -> None:
+    """训练/评测子进程运行期间每 60s 刷新一次作业心跳（否则 10 分钟后会被门户判过期）。"""
+    while not _JOB_STOP.wait(60):
+        job_heartbeat(_JOB_STATE["done"], _JOB_STATE["current"])
 
 
 def train_cmd(cfg: dict, fold: int, resume: bool) -> list:
@@ -154,12 +209,31 @@ def main():
     ap.add_argument("--skip-eval", action="store_true")
     args = ap.parse_args()
 
+    completed = sum(1 for cfg in CONFIGS for k in range(FOLDS)
+                    if is_finished(fold_tag(cfg["prefix"], k)))
+    _JOB_STATE.update(done=completed, current="")
+    threading.Thread(target=_job_keepalive, daemon=True).start()
+    job_heartbeat(completed)
+
     for cfg in CONFIGS:
         for fold in range(FOLDS):
+            tag = fold_tag(cfg["prefix"], fold)
+            was_done = is_finished(tag)
+            current = f"{cfg['model']} fold {fold}"
+            _JOB_STATE.update(done=completed, current=current)
+            job_heartbeat(completed, current)
             ok = run_one(cfg, fold)
-            if ok and not args.skip_eval:
+            if ok and not args.skip_eval and not was_done:
                 eval_one(cfg, fold)
+            if ok and not was_done:
+                completed += 1
+            _JOB_STATE.update(done=completed, current=current if ok else "")
+            job_heartbeat(completed, f"{current} 完成" if ok else "")
 
+    _JOB_STOP.set()
+    job_heartbeat(completed, "汇总结果")
+    write_progress("cv-job", phase="done", folds_done=completed, folds_total=JOB_TOTAL,
+                   detail=f"五折 CV 完成 {completed}/{JOB_TOTAL} 折")
     write_summary(summarize())
 
 
