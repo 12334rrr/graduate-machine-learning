@@ -13,6 +13,8 @@ MedSeg Dataset Hub —— 科研数据集展示平台后端
   GET  /api/check_link?url=  上游链接可达性探测（HEAD 优先，10s 超时）
   GET  /api/hw1              作业1 实验聚合（只读 hw1_unet/outputs + reports）
   GET  /api/hw2              作业2 实验聚合（只读 hw2_sam/outputs + 嵌入缓存）
+  GET  /api/live             实时进度：扫描两作业 outputs/progress/*.json 心跳（10 分钟窗口）
+  GET  /api/env              环境体检：只读系统指标（负载/CPU/内存/swap/电源/热/磁盘/网络/资产/torch MPS 基准）
   GET  /api/hw_report        作业报告内容（限 reports/ 目录）
   GET  /api/hw_code          作业源码内容（限 src/ 目录）
   GET  /api/hw_eval          评测 JSON 原文（限 outputs/logs/）
@@ -25,12 +27,16 @@ MedSeg Dataset Hub —— 科研数据集展示平台后端
   （os.environ.setdefault，不覆盖已有环境变量）
 """
 
+import base64
 import csv
+import gzip
 import json
 import math
 import os
+import re
 import shutil
 import socket
+import subprocess
 import sys
 import time
 import urllib.parse
@@ -68,7 +74,7 @@ MIME = {
     ".ico": "image/x-icon",
 }
 
-SYSTEM_PROMPT = """你是「MedSeg Dataset Hub」科研数据集展示平台内置的研究助手，服务一个皮肤病变分割研究项目。
+SYSTEM_PROMPT_BASE = """你是「MedSeg Dataset Hub」科研数据集展示平台内置的研究助手，服务一个皮肤病变分割研究项目。
 
 【项目背景】
 - 作业1（hw1_unet）：在 ISIC 2018 Task 1 皮肤镜数据集上手写实现并对比三个分割模型：U-Net、ResUNet、Attention U-Net；评价指标为 Dice / IoU / HD95。
@@ -78,13 +84,11 @@ SYSTEM_PROMPT = """你是「MedSeg Dataset Hub」科研数据集展示平台内�
 【平台收录内容】
 6 个条目：ISIC 2018 Task 1（主数据集，train 2594 / val 100 / test 1000，前景占比均值约 23.3%）、ISIC 2019、HAM10000、PH²、SA-1B（背景知识）、SAM ViT-B 预训练权重；每个条目含官方/镜像下载链接（镜像：hf-mirror、ModelScope）、许可证与官方榜单来源；另有 30+ 条术语解释（Dice、IoU、HD95、LoRA、提示分割、零样本等）。
 
-【实验观测视图】
-平台还实时聚合两个作业的实验产物（只读）："作业 1" 视图展示训练运行（tag/最优 Dice/损失曲线对比，如 diag_1e-3_amp 等学习率与 AMP 诊断）、数据统计与 checkpoint；"作业 2" 视图展示 E1/E2/E3 三阶段状态（E1 零样本已有 GT 框提示评测：val 5 张 Dice 约 0.757、HD95 约 14.6）、嵌入缓存进度（train/val/test 已 100% 预计算）。用户问实验进展时按这些视图的实际数据回答，没跑的实验（如 E2/E3）如实说"尚未运行"。
-
 【回答要求】
-1. 始终用简体中文，专业且通俗易懂，回答尽量简洁（聊天面板场景，可用 Markdown 粗体与行内代码）。
+1. 始终用简体中文，专业且通俗易懂，回答尽量简洁（聊天面板场景，可用 Markdown 粗体、行内代码与列表）。
 2. 涉及数据集下载：优先说明官方直链，官方不可达时提示镜像（hf-mirror / ModelScope），并提醒许可证限制（ISIC 系列为 CC BY-NC 4.0，仅限非商业研究；SAM 权重为 Apache 2.0）。
-3. 绝不编造榜单排名、指标数字或许可证条款；不确定时明确说"平台数据中没有收录，建议查阅官方来源"。"""
+3. 绝不编造榜单排名、指标数字或许可证条款；平台没有收录的信息就说"平台数据中没有收录，建议查阅官方来源"。
+4. 用户询问实验进展时，**只依据下方由服务端实时注入的【当前实验状态】**回答；注入块里没有的指标一律回答"实时状态中没有该项"，不得凭记忆补数字或沿用旧结论。"""
 
 
 # ---------------------------------------------------------------- 配置加载
@@ -337,12 +341,15 @@ def _agg_runs(logs_dir, with_stage=False):
         mtime = csv_path.stat().st_mtime
         last = series[-1]
         best = max((r.get("val_dice") or r.get("dice") or 0) for r in series)
+        # 期望 epoch 数在 summary["args"]["epochs"]；顶层 "epochs" 仅作兼容
+        total_epochs = summary.get("epochs") or (summary.get("args") or {}).get("epochs")
         run = {
             "tag": tag,
             "model": summary.get("model", tag.split("_")[0]),
             "config": {k: v for k, v in summary.items() if k != "history"},
             "epochs_done": int(last.get("epoch", len(series))),
-            "total_epochs": summary.get("epochs"),
+            "total_epochs": total_epochs,
+            "stop_reason": summary.get("stop_reason"),
             "best_val_dice": round(best, 4),
             "last": last,
             "cum_min": round(last.get("cum_min") or 0, 2),
@@ -422,10 +429,92 @@ def _hw_stages(runs, evals):
     return stages
 
 
+# 评测心跳文件是原子替换的，文件创建时间不可靠；
+# 用「相邻两次心跳的进度差」在线估计速率（服务进程内缓存）。
+_LIVE_TRACK = {}
+
+
+def _log_birth(proj, tag):
+    """训练日志 CSV 的创建时间（append 模式不会重置），用作该次训练的起点。"""
+    root = HW1_DIR if proj == "hw1" else HW2_DIR
+    p = root / "outputs" / "logs" / f"{tag}.csv"
+    try:
+        st = p.stat()
+        return float(getattr(st, "st_birthtime", st.st_ctime))
+    except OSError:
+        return None
+
+
+def _recent_epoch_sec(proj, tag, k=3):
+    """最近几个 epoch 的实际耗时中位数（秒），用于更准的训练 ETA。"""
+    root = HW1_DIR if proj == "hw1" else HW2_DIR
+    p = root / "outputs" / "logs" / f"{tag}.csv"
+    try:
+        lines = p.read_text(encoding="utf-8").strip().splitlines()
+        if len(lines) < 2:
+            return None
+        header = lines[0].split(",")
+        idx = header.index("epoch_sec")
+        vals = []
+        for line in lines[-k:]:
+            parts = line.split(",")
+            if len(parts) > idx:
+                try:
+                    v = float(parts[idx])
+                    if math.isfinite(v) and v > 0:
+                        vals.append(v)
+                except ValueError:
+                    pass
+        if not vals:
+            return None
+        vals.sort()
+        return vals[len(vals) // 2]
+    except OSError:
+        return None
+
+
+def _tracked_eta(key, data):
+    """评测：由两次心跳的 (it, ts) 差分估计单图耗时，再外推剩余秒数。"""
+    prog = float(data.get("it") or 0)
+    total = float(data.get("total") or 0)
+    ts = float(data.get("ts") or 0)
+    if prog <= 0 or total <= prog or ts <= 0:
+        return None
+    prev = _LIVE_TRACK.get(key)
+    rate = None
+    if prev and prog > prev["prog"] and ts > prev["ts"]:
+        inst = (ts - prev["ts"]) / (prog - prev["prog"])
+        rate = inst if prev.get("rate") is None else prev["rate"] * 0.5 + inst * 0.5
+    _LIVE_TRACK[key] = {"ts": ts, "prog": prog, "rate": rate}
+    return (total - prog) * rate if rate else None
+
+
+def _eta_seconds(data, created_ts, now, proj=None):
+    """训练：用最近 epoch 实测耗时（优先）或平均耗时估算剩余秒数。"""
+    elapsed = max(0.0, now - created_ts)
+    phase = data.get("phase")
+    if phase == "train":
+        done = float(data.get("epoch") or 0)
+        total = float(data.get("epochs_total") or 0)
+        if done > 0 and total > done:
+            sec = _recent_epoch_sec(proj, data.get("tag")) if proj else None
+            if sec:
+                return sec * (total - done)
+            return elapsed * (total - done) / done
+    elif phase == "eval":
+        done = float(data.get("it") or 0)
+        total = float(data.get("total") or 0)
+        if done > 0 and total > done:
+            return elapsed * (total - done) / done
+    return None
+
+
 def live_state():
-    """实时进度：扫描两作业 outputs/progress/*.json（训练/评测进程每 epoch/每 25 张写一次）。
+    """实时进度：扫描两作业 outputs/progress/*.json（训练/评测进程每 epoch / 每 10 张写一次）。
 
     只返回 10 分钟内还有心跳的条目；phase=done 的保留 10 分钟用于展示"刚完成"。
+    同一阶段/提示已有 done 心跳时，隐藏残留的 eval 心跳——否则评测结束后
+    面板会先显示"心跳超时（可能已停止）"，与紧随其后的"已完成"自相矛盾。
     """
     now = time.time()
     items = []
@@ -440,11 +529,49 @@ def live_state():
             age = now - float(data.get("ts") or 0)
             if age > 600:
                 continue
-            item = {"proj": proj, "age_sec": round(age, 1)}
+            try:
+                st = p.stat()
+                created = float(getattr(st, "st_birthtime", st.st_ctime))
+            except OSError:
+                created = now
+            item = {"proj": proj, "age_sec": round(age, 1), "file": p.name,
+                    "created_ts": created, "elapsed_sec": round(max(0.0, now - created), 1)}
             item.update({k: v for k, v in data.items() if k != "ts"})
+            if item.get("phase") == "train" and item.get("tag"):
+                start = _log_birth(proj, item["tag"])
+                if start and start < created:
+                    created = start
+                    item["created_ts"] = created
+                    item["elapsed_sec"] = round(max(0.0, now - created), 1)
+                eta = _eta_seconds(item, created, now, proj)
+            elif item.get("phase") == "eval":
+                eta = _tracked_eta(f"{proj}:{p.name}", data)
+            else:
+                eta = None
+            if eta is not None and math.isfinite(eta) and eta >= 0:
+                item["eta_sec"] = round(eta, 1)
             items.append(item)
+
+    # 阶段/提示维度上已有 done 的，丢弃它残留的 eval 心跳
+    done_keys = set()
+    for it in items:
+        if it.get("phase") == "done":
+            m = re.match(r"\s*([A-Za-z0-9]+)/([A-Za-z0-9_-]+)", str(it.get("detail") or ""))
+            if m:
+                done_keys.add((it["proj"], m.group(1), m.group(2)))
+    items = [it for it in items if not (
+        it.get("phase") != "done"
+        and (it["proj"], it.get("stage"), it.get("prompt")) in done_keys)]
+
     # 活跃的排前面，然后按更新时间倒序
     items.sort(key=lambda x: (x.get("phase") == "done", -float(x.get("age_sec", 0))))
+
+    # 清理长时间不用的 ETA 采样，避免内存无界增长
+    if len(_LIVE_TRACK) > 200:
+        cutoff = now - 3600
+        for k in [k for k, v in _LIVE_TRACK.items() if v.get("ts", 0) < cutoff]:
+            _LIVE_TRACK.pop(k, None)
+
     return {"now": now, "count": len(items), "items": items}
 
 
@@ -493,6 +620,377 @@ def hw2_state():
     }
 
 
+# ---------------------------------------------------------------- 动态系统提示词
+# 实验状态每次都从磁盘重新聚合后注入，避免提示词随实验推进而过期。
+
+_STATUS_CN = {"done": "已完成", "running": "运行中", "pending": "待运行"}
+
+
+def _mean_std(values):
+    """均值与样本标准差（ddof=1，与 reports/tables.md 的口径一致）。"""
+    vals = [float(v) for v in values
+            if isinstance(v, (int, float)) and math.isfinite(float(v))]
+    if not vals:
+        return None, None
+    mean = sum(vals) / len(vals)
+    if len(vals) < 2:
+        return mean, None
+    var = sum((v - mean) ** 2 for v in vals) / (len(vals) - 1)
+    return mean, math.sqrt(var)
+
+
+def _hw1_model_name(tag):
+    if tag.startswith("attn"):
+        return "Attention U-Net"
+    if tag.startswith("res"):
+        return "ResUNet"
+    if tag.startswith("unet"):
+        return "U-Net"
+    return tag
+
+
+def experiment_status_text():
+    """把两作业的实时聚合结果压成一段给助手看的状态块。"""
+    lines = ["", "【当前实验状态（服务端实时读取 outputs/，生成于 %s）】"
+             % datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+    try:
+        s1 = hw1_state()
+        runs = s1.get("runs") or []
+        finished = [r for r in runs if r.get("status") == "finished"]
+        lines.append("- 作业1：训练日志 %d 个（已完成 %d 个）。" % (len(runs), len(finished)))
+        if runs:
+            best = max(runs, key=lambda r: r.get("best_val_dice") or 0)
+            total = best.get("total_epochs")
+            lines.append("  最佳 Val Dice %.4f（%s，epoch %s%s%s）。" % (
+                best["best_val_dice"], best["tag"], best.get("epochs_done"),
+                "/%s" % total if total else "",
+                "，" + best["stop_reason"] if best.get("stop_reason") else ""))
+        groups = {}
+        for e in s1.get("evals") or []:
+            metrics = e.get("metrics") or {}
+            if e.get("split") != "test" or metrics.get("dice") is None:
+                continue
+            groups.setdefault(_hw1_model_name(e.get("tag") or ""), []).append(metrics["dice"])
+        if groups:
+            parts = []
+            for name, vals in groups.items():
+                mean, std = _mean_std(vals)
+                parts.append("%s Dice %.4f%s（%d 个种子）" % (
+                    name, mean, "±%.4f" % std if std is not None else "", len(vals)))
+            lines.append("  测试集 test（每种子 n=1000）：" + "；".join(parts) + "。")
+        else:
+            lines.append("  测试集评测：尚未生成。")
+        ablation = s1.get("ablation") or {}
+        if ablation:
+            singles = [k for k, v in ablation.items() if isinstance(v, dict) and len(v) < 2]
+            lines.append("  消融实验：%s。" % (
+                "尚未运行（目前每组只有基线配置）" if len(singles) == len(ablation)
+                else "已有多组设置，详见 reports/tables.md"))
+    except Exception as exc:  # 聚合失败不能让聊天整体不可用
+        lines.append("- 作业1：实时状态暂不可用（%s）。" % exc.__class__.__name__)
+
+    try:
+        s2 = hw2_state()
+        stages = s2.get("stages") or {}
+        for sid in ("e1", "e2", "e3"):
+            info = stages.get(sid) or {}
+            best = info.get("best_eval")
+            status = _STATUS_CN.get(info.get("status"), info.get("status") or "待运行")
+            label = (info.get("name") or sid.upper()).split(" ")[0]
+            if best and best.get("dice") is not None:
+                def _fmt(v, spec):
+                    return (spec % v) if isinstance(v, (int, float)) and math.isfinite(float(v)) else "—"
+                lines.append("  %s：%s；最佳评测 Dice %s / IoU %s / HD95 %s"
+                             "（提示 %s，split %s，n=%s）。" % (
+                                 label, status, _fmt(best["dice"], "%.4f"),
+                                 _fmt(best.get("iou"), "%.4f"),
+                                 _fmt(best.get("hd95"), "%.1f"),
+                                 best.get("prompt", "?"), best.get("split", "?"),
+                                 best.get("n", "?")))
+            else:
+                lines.append("  %s：%s；尚无评测结果。" % (label, status))
+        embeddings = s2.get("embeddings") or {}
+        if embeddings:
+            lines.append("  嵌入缓存：" + "，".join(
+                "%s %s%%" % (k, v.get("pct")) for k, v in embeddings.items()) + "。")
+        lines.append("  评测档案 %d 份。" % len(s2.get("evals") or []))
+    except Exception as exc:
+        lines.append("- 作业2：实时状态暂不可用（%s）。" % exc.__class__.__name__)
+
+    if len(lines) == 1:
+        lines.append("- 实时状态暂不可用，请建议用户查看 #/hw1 与 #/hw2 视图。")
+    return "\n".join(lines)
+
+
+def build_system_prompt():
+    return SYSTEM_PROMPT_BASE + experiment_status_text()
+
+
+# ---------------------------------------------------------------- 环境体检（/api/env · 只读系统指标，标准库 subprocess，全部带降级）
+# 用途：判定本机是否满足复现/续跑环境，并为前端耗时估算提供实测基准（TFLOPS、资产体积）。
+# 所有采集失败都降级为 None/说明文字，绝不让接口 500。
+
+ENV_TTL_FAST = 3         # 负载 / CPU / 内存 / swap / 电源（秒）
+ENV_TTL_DISK = 10        # 磁盘空闲（秒）
+ENV_TTL_ASSET = 300      # 资产体积 du（秒）
+ENV_TTL_TORCH = 600      # torch 版本 / MPS / fp16 基准（秒）
+ENV_TTL_HOST = 3600      # 芯片 / 核数 / 系统版本（秒）
+_ENV_CACHE = {}
+
+TORCH_PROBE_ENVS = [
+    ("hw1-unet-medseg", "/opt/anaconda3/envs/hw1-unet-medseg/bin/python"),
+    ("hw2-sam-transformer", "/opt/anaconda3/envs/hw2-sam-transformer/bin/python"),
+]
+
+ENV_ASSETS = [
+    ("ISIC 2018 处理数据（384 母版 npy）", "isic_processed", HW1_DIR / "data" / "processed"),
+    ("作业 1 Checkpoints", "hw1_checkpoints", HW1_DIR / "outputs" / "checkpoints"),
+    ("SAM 原版权重与原始压缩包", "sam_weights_raw", HW2_DIR / "data" / "raw"),
+    ("SAM 嵌入缓存", "sam_embed_cache", HW2_DIR / "data" / "embeddings"),
+    ("作业 2 Checkpoints", "hw2_checkpoints", HW2_DIR / "outputs" / "checkpoints"),
+]
+
+
+def _run(cmd, timeout=8):
+    """跑一条只读系统命令；失败返回 None（对应体检项降级为「不可用」，不影响其余项）。"""
+    try:
+        p = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        return p.stdout.strip() if p.returncode == 0 else None
+    except Exception:
+        return None
+
+
+def _env_cached(key, ttl, fn):
+    ts, val = _ENV_CACHE.get(key, (0.0, None))
+    now = time.time()
+    if val is None or now - ts > ttl:
+        try:
+            val = fn()
+        except Exception as exc:
+            val = {"error": f"{exc.__class__.__name__}: {exc}"}
+        _ENV_CACHE[key] = (now, val)
+    return val
+
+
+def _env_host():
+    mem = int(_run("sysctl -n hw.memsize") or 0)
+    boot = _run("sysctl -n kern.boottime") or ""
+    m = re.search(r"sec\s*=\s*(\d+)", boot)
+    uptime_h = round((time.time() - int(m.group(1))) / 3600, 1) if m else None
+    return {
+        "model": _run("sysctl -n hw.model") or "—",
+        "chip": _run("sysctl -n machdep.cpu.brand_string") or "未知",
+        "ncpu": int(_run("sysctl -n hw.ncpu") or 0),
+        "cores_p": int(_run("sysctl -n hw.perflevel0.physicalcpu") or 0),
+        "cores_e": int(_run("sysctl -n hw.perflevel1.physicalcpu") or 0),
+        "mem_gb": round(mem / 1024 ** 3, 1) if mem else None,
+        "macos": _run("sw_vers -productVersion") or "未知",
+        "uptime_h": uptime_h,
+    }
+
+
+def _env_fast():
+    m = re.search(r"([\d.]+)\s+([\d.]+)\s+([\d.]+)", _run("sysctl -n vm.loadavg") or "")
+    load1, load5, load15 = (float(m.group(i)) for i in (1, 2, 3)) if m else (None, None, None)
+    # iostat 限定 disk0：取第 2 个采样（1s 间隔），固定 9 列 = 磁盘(tps KB/tps MB/s) + cpu(us sy id) + load×3
+    tk = (_run("iostat -c 2 disk0 | tail -1", timeout=10) or "").split()
+    cpu_user = cpu_sys = cpu_idle = disk_tps = disk_mbps = None
+    if len(tk) == 9:
+        try:
+            disk_tps = float(tk[0]); disk_mbps = float(tk[2])
+            cpu_user, cpu_sys, cpu_idle = float(tk[3]), float(tk[4]), float(tk[5])
+        except ValueError:
+            pass
+    vm = _run("vm_stat") or ""
+    page = int(_run("pagesize") or 16384)
+
+    def pages(label):
+        mm = re.search(label + r":\s+(\d+)", vm)
+        return int(mm.group(1)) * page if mm else 0
+
+    mem_total = (int(_run("sysctl -n hw.memsize") or 0)) or None
+    free = pages(r"Pages free") + pages(r"Pages speculative")
+    used = (mem_total or 0) - free - pages(r"Pages inactive")
+    sw = _run("sysctl -n vm.swapusage") or ""
+    sm = re.search(r"total\s*=\s*([\d.]+)M\s+used\s*=\s*([\d.]+)M", sw)
+    # 网络：netstat -ib 取累计收发字节数最多的活动接口（前端按两次采样差分算吞吐）
+    net_ibytes = net_obytes = None
+    best = 0
+    for line in (_run("netstat -ib") or "").splitlines()[1:]:
+        tk2 = line.split()
+        if len(tk2) >= 10:
+            try:
+                ib, ob = int(tk2[6]), int(tk2[9])
+            except ValueError:
+                continue
+            if ib > best and ib + ob > 0:
+                best, net_ibytes, net_obytes = ib, ib, ob
+    ps_cpu = _run("ps -Ao %cpu= | awk '{s+=$1} END {printf \"%.1f\", s}'", timeout=8)
+    return {
+        "load1": load1, "load5": load5, "load15": load15,
+        "cpu_user_pct": cpu_user, "cpu_sys_pct": cpu_sys, "cpu_idle_pct": cpu_idle,
+        "disk_tps": disk_tps, "disk_mbps": disk_mbps,
+        "net_ibytes": net_ibytes, "net_obytes": net_obytes,
+        "proc_cpu_sum_pct": float(ps_cpu) if ps_cpu else None,
+        "mem_used_gb": round(used / 1024 ** 3, 1) if mem_total else None,
+        "mem_used_pct": round(used / mem_total * 100, 1) if mem_total else None,
+        "swap_total_gb": round(float(sm.group(1)) / 1024, 2) if sm else 0,
+        "swap_used_gb": round(float(sm.group(2)) / 1024, 2) if sm else 0,
+    }
+
+
+def _env_power():
+    batt = _run("pmset -g batt") or ""
+    source = "AC 供电" if "AC Power" in batt else ("电池供电" if "Battery Power" in batt else "未知")
+    therm = _run("pmset -g therm") or ""
+    if "No thermal warning" in therm and "No performance warning" in therm:
+        thermal, throttled = "无热警告记录", False
+    else:
+        lm = re.search(r"CPU_Speed_Limit\s*=\s*(\d+)", therm)
+        if lm:
+            pct = int(lm.group(1))
+            thermal, throttled = (f"CPU 限速至 {pct}%", True) if pct < 100 else ("无限速", False)
+        else:
+            thermal, throttled = "无法读取（pmset 未报告）", None
+    return {"source": source, "thermal": thermal, "throttled": throttled}
+
+
+def _env_disk():
+    line = _run(f"df -k \"{WORKSPACE}\" | tail -1", timeout=6) or ""
+    tk = line.split()
+    free_gb = round(int(tk[3]) / 1024 ** 2, 1) if len(tk) >= 4 else None
+    total_gb = round(int(tk[1]) / 1024 ** 2, 1) if len(tk) >= 4 else None
+    return {"free_gb": free_gb, "total_gb": total_gb}
+
+
+def _env_assets():
+    out = []
+    for name, key, path in ENV_ASSETS:
+        kb = _run(f"du -sk \"{path}\" 2>/dev/null | cut -f1", timeout=30)
+        out.append({
+            "name": name, "key": key, "path": str(path),
+            "exists": path.exists(),
+            "gb": round(int(kb) / 1024 ** 2, 2) if kb else None,
+        })
+    return out
+
+
+def _env_torch():
+    # 探针脚本走 base64 注入，避免多层引号转义问题
+    probe_src = (
+        "import json, torch, time\n"
+        "ok = torch.backends.mps.is_available()\n"
+        "tf = None\n"
+        "if ok:\n"
+        "    a = torch.randn(2048, 2048, device='mps', dtype=torch.float16)\n"
+        "    b = torch.randn(2048, 2048, device='mps', dtype=torch.float16)\n"
+        "    for _ in range(5):\n"
+        "        c = a @ b\n"
+        "    torch.mps.synchronize()\n"
+        "    t0 = time.time()\n"
+        "    for _ in range(30):\n"
+        "        c = a @ b\n"
+        "    torch.mps.synchronize()\n"
+        "    tf = 2 * 2048 ** 3 * 30 / (time.time() - t0) / 1e12\n"
+        "print(json.dumps({'version': torch.__version__, 'mps': bool(ok),"
+        " 'tflops_fp16': round(tf, 1) if tf is not None else None}))\n"
+    )
+    probe_b64 = base64.b64encode(probe_src.encode("utf-8")).decode("ascii")
+    envs = []
+    for name, py in TORCH_PROBE_ENVS:
+        raw = _run(f"'{py}' -c \"import base64;exec(base64.b64decode('{probe_b64}').decode())\"", timeout=90)
+        info = {"env": name, "python": py}
+        if raw:
+            try:
+                info.update(json.loads(raw.splitlines()[-1]))
+            except Exception:
+                info["error"] = "输出解析失败"
+        else:
+            info["error"] = "解释器不可用或导入失败"
+        envs.append(info)
+    bench_tf = max((e["tflops_fp16"] for e in envs if e.get("tflops_fp16")), default=None)
+    return {"envs": envs, "bench": {"tflops_fp16": bench_tf} if bench_tf is not None else None}
+
+
+def _env_procs():
+    out = _run("ps ax -o pid=,pcpu=,etime=,command= | grep -E 'train\\.py|evaluate.*\\.py' | grep -v grep") or ""
+    procs = []
+    for line in out.splitlines():
+        tk = line.strip().split(None, 3)
+        if len(tk) == 4:
+            procs.append({"pid": tk[0], "cpu_pct": tk[1], "elapsed": tk[2], "cmd": tk[3][:160]})
+    return procs
+
+
+def env_state():
+    return {
+        "host": _env_cached("host", ENV_TTL_HOST, _env_host),
+        "live": _env_cached("fast", ENV_TTL_FAST, _env_fast),
+        "power": _env_cached("power", ENV_TTL_FAST, _env_power),
+        "disk": _env_cached("disk", ENV_TTL_DISK, _env_disk),
+        "assets": _env_cached("assets", ENV_TTL_ASSET, _env_assets),
+        "torch": _env_cached("torch", ENV_TTL_TORCH, _env_torch),
+        "procs": _env_cached("procs", ENV_TTL_FAST, _env_procs),
+        "ts": time.time(),
+    }
+
+
+# ---- Prometheus 文本格式暴露（/metrics）：本地 Prometheus 抓取 → Grafana 渲染 ----
+
+def metrics_text():
+    try:
+        env = env_state()
+    except Exception:
+        env = {}
+    live = env.get("live") or {}
+    host = env.get("host") or {}
+    power = env.get("power") or {}
+    tc = env.get("torch") or {}
+    procs = env.get("procs") or []
+    lines = []
+
+    def g(name, help_, val):
+        if val is None:
+            return
+        lines.append(f"# HELP {name} {help_}")
+        lines.append(f"# TYPE {name} gauge")
+        lines.append(f"{name} {val}")
+
+    def to_bytes(gb_val):
+        return int(gb_val * 1024 ** 3) if gb_val is not None else None
+
+    g("machine_cpu_user_percent", "CPU user percent (per-core avg, 0-100)", live.get("cpu_user_pct"))
+    g("machine_cpu_sys_percent", "CPU system percent (0-100)", live.get("cpu_sys_pct"))
+    g("machine_cpu_idle_percent", "CPU idle percent (0-100)", live.get("cpu_idle_pct"))
+    g("machine_mem_used_bytes", "Memory used bytes", to_bytes(live.get("mem_used_gb")))
+    g("machine_swap_used_bytes", "Swap used bytes", to_bytes(live.get("swap_used_gb")))
+    g("machine_load1", "Load average 1 minute", live.get("load1"))
+    g("machine_load5", "Load average 5 minutes", live.get("load5"))
+    g("machine_load15", "Load average 15 minutes", live.get("load15"))
+    g("machine_disk_io_mb_s", "disk0 read+write throughput MB/s", live.get("disk_mbps"))
+    g("machine_disk_tps", "disk0 transactions per second", live.get("disk_tps"))
+    if live.get("net_ibytes") is not None:
+        lines.append("# HELP machine_net_receive_bytes_total Network bytes received since boot")
+        lines.append("# TYPE machine_net_receive_bytes_total counter")
+        lines.append(f"machine_net_receive_bytes_total {live['net_ibytes']}")
+    if live.get("net_obytes") is not None:
+        lines.append("# HELP machine_net_transmit_bytes_total Network bytes sent since boot")
+        lines.append("# TYPE machine_net_transmit_bytes_total counter")
+        lines.append(f"machine_net_transmit_bytes_total {live['net_obytes']}")
+    g("machine_proc_cpu_percent", "Sum of all processes %CPU (100 per core)", live.get("proc_cpu_sum_pct"))
+    g("machine_train_procs", "Running train/eval processes", len(procs))
+    g("machine_mps_tflops_fp16", "Measured MPS fp16 matmul TFLOPS (cached probe)",
+      (tc.get("bench") or {}).get("tflops_fp16"))
+    throttled = power.get("throttled")
+    g("machine_thermal_throttled", "Thermal throttled (1 yes / 0 no)",
+      None if throttled is None else int(bool(throttled)))
+    g("machine_uptime_hours", "Host uptime hours", host.get("uptime_h"))
+    for a in env.get("assets") or []:
+        if a.get("gb") is not None:
+            lines.append(f'machine_asset_bytes{{asset="{a.get("key")}"}} {int(a["gb"] * 1024 ** 3)}')
+    return "\n".join(lines) + "\n"
+
+
 # ---------------------------------------------------------------- 请求处理
 
 class Handler(BaseHTTPRequestHandler):
@@ -501,13 +999,21 @@ class Handler(BaseHTTPRequestHandler):
 
     # ---- 基础输出 ----
     def _send(self, status, ctype, body, extra=None):
+        headers = dict(extra or {})
+        # 单文件 SPA 体积较大：仅对 HTML 做 gzip（标准库，零依赖），按 Accept-Encoding 协商
+        if body and len(body) > 1024 and ctype.startswith("text/html"):
+            if "gzip" in (self.headers.get("Accept-Encoding") or "").lower():
+                body = gzip.compress(body, 6)
+                headers["Content-Encoding"] = "gzip"
+                headers.setdefault("Vary", "Accept-Encoding")
+        content_length = len(body)
         if getattr(self, "_head_only", False):
-            body = b""  # HEAD：头照发、体不写
+            body = b""  # HEAD：头照发、体不写（Content-Length 与 GET 保持一致）
         self.send_response(status)
         self.send_header("Content-Type", ctype)
-        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Content-Length", str(content_length))
         self.send_header("Cache-Control", "no-store")
-        for key, value in (extra or {}).items():
+        for key, value in headers.items():
             self.send_header(key, value)
         self.end_headers()
         if body:
@@ -557,6 +1063,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send_json(hw2_state())
             if path == "/api/live":
                 return self._send_json(live_state())
+            if path == "/api/env":
+                return self._send_json(env_state())
+            if path == "/metrics":
+                return self._send(200, "text/plain; version=0.0.4; charset=utf-8",
+                                  metrics_text().encode("utf-8"))
             if path == "/api/hw_report":
                 return self._api_hw_report(parsed)
             if path == "/api/hw_code":
@@ -772,7 +1283,7 @@ class Handler(BaseHTTPRequestHandler):
         model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
         payload = {
             "model": model,
-            "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + history,
+            "messages": [{"role": "system", "content": build_system_prompt()}] + history,
             "stream": True,
             "temperature": 0.3,
         }

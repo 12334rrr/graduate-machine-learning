@@ -77,8 +77,9 @@ def plot_cases(model_tag, split, ds, per_sample, pred_masks, save_path: Path):
     fig, axes = plt.subplots(3, 4, figsize=(13, 10))
     for r, (label, rec) in enumerate(picks):
         idx = ds.ids.index(rec["id"])
-        img = np.asarray(ds.images[idx]).astype(np.uint8)          # 384×384 母版
-        gt = (np.asarray(ds.masks[idx]) > 127).astype(np.uint8)    # 384×384 母版
+        img_raw, gt_raw = ds.raw_pair(idx)                         # 384×384 母版
+        img = np.asarray(img_raw).astype(np.uint8)
+        gt = (np.asarray(gt_raw) > 127).astype(np.uint8)
         pd = pred_masks[rec["id"]]                                 # 评测分辨率（--size，默认 256）
         # 预测是在 --size 分辨率下算的（指标也在该分辨率下统计），展示时上采样回母版尺寸，
         # 否则与 img/gt 尺寸不一致会 broadcast 报错；最近邻插值不引入新的灰度值。
@@ -112,6 +113,9 @@ def main():
     ap.add_argument("--batch", type=int, default=8)
     ap.add_argument("--save-boxes", action="store_true", default=True)
     ap.add_argument("--no-amp", action="store_true")
+    ap.add_argument("--fold", type=int, default=None,
+                    help="五折交叉验证的折号 0-4（在 train+val 合并划分的留出折上评测）")
+    ap.add_argument("--folds", type=int, default=5)
     args = ap.parse_args()
 
     set_seed(42)
@@ -132,20 +136,24 @@ def main():
     total, _ = count_params(model)
     print(f"[评测] {args.tag} @ {args.split}  权重={ckpt_path.name}  参数={total/1e6:.2f}M  设备={device}")
 
-    ds = ISICSeg(args.split, size=args.size, augment=False)
+    # 五折模式：在 train+val 合并划分的第 fold 折（留出折）上评测
+    split_label = f"fold{args.fold}" if args.fold is not None else args.split
+    ds_split = "val" if args.fold is not None else args.split
+    ds = ISICSeg(ds_split, size=args.size, augment=False,
+                 fold=args.fold, folds=args.folds)
     summary, per_sample, boxes, pred_masks = run_eval(model, ds, device, amp, args.batch, save_masks=True)
 
     # 画案例图（需要重跑一遍拿掩膜，上面已经存了 pred_masks，直接用）
-    plot_cases(args.tag, args.split, ds, per_sample, pred_masks,
-               FIG_DIR / f"case_{args.tag}_{args.split}.png")
+    plot_cases(args.tag, split_label, ds, per_sample, pred_masks,
+               FIG_DIR / f"case_{args.tag}_{split_label}.png")
 
     if args.save_boxes:
-        (PRED_DIR / f"{args.tag}_{args.split}_boxes.json").write_text(
+        (PRED_DIR / f"{args.tag}_{split_label}_boxes.json").write_text(
             json.dumps(boxes), encoding="utf-8")
 
-    out = {"tag": args.tag, "split": args.split, "ckpt": args.ckpt,
+    out = {"tag": args.tag, "split": split_label, "ckpt": args.ckpt,
            "size": args.size, "params_M": round(total / 1e6, 2), "metrics": summary}
-    (LOG_DIR / f"eval_{args.tag}_{args.split}.json").write_text(
+    (LOG_DIR / f"eval_{args.tag}_{split_label}.json").write_text(
         json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
     print(json.dumps(summary, indent=2, ensure_ascii=False))
 

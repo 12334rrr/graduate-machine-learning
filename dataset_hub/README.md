@@ -23,7 +23,7 @@
 | 📊 Grafana 风格图表 | 自研纯 SVG 图表引擎：面积渐变、平滑曲线、**悬停十字线 + 共享 tooltip**、图例可点击隐藏、nice 刻度、阈值参考线、末值标注；另有分组柱状图与带迷你趋势线的统计面板 |
 | 🎨 浅色 / 深色双主题 | 导航栏 🌙/☀️ 一键切换，记忆偏好并跟随系统设置；全部颜色走语义化 CSS 变量，图表颜色同步切换 |
 | 🧭 代码与产物浏览 | 源码浏览器（点击 `src/*.py` 直接看内容）、图表画廊（缩略图 + 灯箱放大）、评测档案（完整指标 + 原始 JSON）、运行详情（逐 epoch 明细）、权重流式下载、报告查看 |
-| ⏱ 自动刷新 | 实验视图顶部「▶ 自动刷新（10s）」，训练进行中实时看进度（替代原监控台的 5 秒轮询） |
+| ⏱ 实时刷新 | 实时运行面板每 **3s** 轮询 `/api/live`（进度条 + 已运行/预计剩余时间，只更新面板不重绘整页）；**顶栏全局徽标在任何页面显示“有几个任务在跑、是什么、还需多久”**；每个实验视图顶部有「实验地图」（实验矩阵 + 依赖关系 + 当前进度）；另有「▶ 自动刷新（10s）」重新聚合，离开视图自动停表 |
 | 🏛 架构说明页 | 内嵌 SVG 分层架构图、模块划分表、前后端链路时序（`#/about`） |
 
 ## 页面（hash 路由，单文件 SPA）
@@ -36,7 +36,7 @@
 | `#/hw1` | 作业 1 实验 | 运行表、Val Dice 曲线对比、损失曲线（运行切换）、数据统计与分布图、checkpoints、报告查看 |
 | `#/hw2` | 作业 2 实验 | E1/E2/E3 阶段卡、嵌入缓存进度、评测表、级联叙事、checkpoints（含 SAM 原版权重下载） |
 | `#/glossary` | 术语表 | 分类分组 + 筛选 + 搜索；支持 `#/glossary?term=Dice` 直达锚点 |
-| `#/about` | 架构说明 | SVG 架构图、模块表、四条链路、三服务关系卡 |
+| `#/about` | 架构说明 | SVG 架构图（含 progress 心跳节点）、模块表、五条链路、三服务关系卡 |
 
 ## 技术栈
 
@@ -71,6 +71,7 @@ dataset_hub/
    │ ② GET /api/check_link?url=…                               （点【检测】时）
    │ ③ POST /api/chat {messages:[…]}                           （聊天时，SSE 流式响应）
    │ ④ GET /api/hw1 · /api/hw2 · /exp/…                        （作业 1 / 作业 2 实验视图）
+   │ ⑤ GET /api/live                                            （实时运行面板，每 3s 轮询）
    ▼
 server.py (127.0.0.1:8800)
    ├─ 读 data/*.json ──────── 数据来源（唯一事实来源）
@@ -84,6 +85,7 @@ server.py (127.0.0.1:8800)
 - **② 检测链路**：超时/DNS/HTTP 状态分类为中文文案，前端 🟢/🔴 呈现。
 - **③ 聊天链路**：前端 `fetch + ReadableStream` 逐行解析 `data:`，增量渲染至 `[DONE]`；`{"error": …}` 事件统一渲染为友好错误。
 - **④ 实验聚合链路**：`/api/hw1`、`/api/hw2` 每次请求实时扫描两作业的 `outputs/`（logs/figures/checkpoints/reports）与 hw2 的 `data/embeddings/` 嵌入缓存（与暗色监控台同一套聚合口径），训练进行中时视图随之刷新；图片经 `/exp/<proj>/figures/<f>`，权重经 `/exp/<proj>/download` 流式下载（1MB 分块；白名单为各作业 `outputs/checkpoints/` 与 hw2 的 SAM 原版权重，防目录穿越）。
+- **⑤ 实时监控链路**：训练/评测进程每 epoch（评测每 25 张）向 `outputs/progress/*.json` 写心跳 → 前端每 **3 秒**轮询 `/api/live`（10 分钟心跳窗口；`phase=done` 保留 10 分钟展示「刚完成」）→ 只更新实时运行面板，不打断图表悬停与滚动；实验视图的「自动刷新（10s）」则重新聚合 `/api/hw1|hw2`，离开视图会自动停表。
 
 ## 启动
 
@@ -126,6 +128,7 @@ export DEEPSEEK_API_KEY=sk-你的密钥
 | GET | `/api/check_link?url=` | HEAD 探测（10s 超时）→ `{ok, status, size_bytes, message}` |
 | GET | `/api/hw1` | 作业 1 实验聚合（runs/evals/checkpoints/figures/reports/data_stats，只读） |
 | GET | `/api/hw2` | 作业 2 实验聚合（stages/embeddings/runs/evals/checkpoints/figures/reports，只读） |
+| GET | `/api/live` | 实时进度：扫描两作业 `outputs/progress/*.json` 心跳，只返回 10 分钟内的条目（`phase=done` 保留 10 分钟，且同一阶段/提示已完成时自动隐藏残留的 eval 心跳）；每条含 `elapsed_sec` / `eta_sec`（训练按最近 epoch 实测耗时、评测按相邻心跳速率估算） |
 | GET | `/api/hw_report?proj=&path=` | 报告文本内容（限各作业 reports/ 目录） |
 | GET | `/api/hw_code?proj=&path=` | 源码内容（限各作业 src/，仅 .py） |
 | GET | `/api/hw_eval?proj=&file=` | 评测 JSON 原文（限各作业 outputs/logs/） |

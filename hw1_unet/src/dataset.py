@@ -24,6 +24,11 @@ from common import DATA_PROC
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
+# 五折交叉验证的固定划分种子：train+val 合并后做一次确定性置换，
+# 所有 fold / 所有模型看到的分折完全一致（与训练随机种子无关）。
+CV_SPLIT_SEED = 12345
+CV_FOLDS = 5
+
 
 class RandomAugment:
     """手写几何 + 色彩增强。
@@ -82,25 +87,71 @@ class RandomAugment:
 
 
 class ISICSeg(Dataset):
-    """从 npy 母版读取，按 size 下采样。"""
+    """从 npy 母版读取，按 size 下采样。
+
+    fold=None 时沿用官方划分（train 2594 / val 100 / test 1000）；
+    fold=k 时把 train+val 合并为 2694 张，做确定性五折划分：
+    split="train" 返回其余 4 折，split="val" 返回第 k 折。test 不受 fold 影响。
+    """
 
     def __init__(self, split: str = "train", size: int = 256, augment: bool = False,
-                 data_dir: Path = DATA_PROC):
+                 data_dir: Path = DATA_PROC, fold: int | None = None,
+                 folds: int = CV_FOLDS):
         self.split = split
         self.size = size
         self.augment = augment
-        self.images = np.load(data_dir / f"{split}_images.npy", mmap_mode="r")
-        self.masks = np.load(data_dir / f"{split}_masks.npy", mmap_mode="r")
-        self.ids = (data_dir / f"{split}_ids.txt").read_text(encoding="utf-8").split()
-        assert len(self.images) == len(self.masks) == len(self.ids)
+        self.fold = fold
+        self._parts = None
+        self._index = None
+
+        if fold is None:
+            self.images = np.load(data_dir / f"{split}_images.npy", mmap_mode="r")
+            self.masks = np.load(data_dir / f"{split}_masks.npy", mmap_mode="r")
+            self.ids = (data_dir / f"{split}_ids.txt").read_text(encoding="utf-8").split()
+            assert len(self.images) == len(self.masks) == len(self.ids)
+        else:
+            assert 0 <= fold < folds
+            assert split in ("train", "val"), "五折模式只用于 train/val"
+            parts = []
+            for sp in ("train", "val"):
+                parts.append((
+                    np.load(data_dir / f"{sp}_images.npy", mmap_mode="r"),
+                    np.load(data_dir / f"{sp}_masks.npy", mmap_mode="r"),
+                    (data_dir / f"{sp}_ids.txt").read_text(encoding="utf-8").split(),
+                ))
+            all_ids = parts[0][2] + parts[1][2]
+            n = len(all_ids)
+            perm = np.random.RandomState(CV_SPLIT_SEED).permutation(n)
+            chunks = np.array_split(perm, folds)
+            keep = (np.concatenate([chunks[i] for i in range(folds) if i != fold])
+                    if split == "train" else chunks[fold])
+            offsets = (0, len(parts[0][2]))
+            self._parts = parts
+            self._index = [(0, int(g)) if g < offsets[1] else (1, int(g) - offsets[1])
+                           for g in keep]
+            self.ids = [all_ids[int(g)] for g in keep]
+
         self.aug = RandomAugment() if augment else None
 
     def __len__(self) -> int:
         return len(self.ids)
 
+    def raw_pair(self, i: int):
+        """第 i 个样本的 384 母版原图与掩膜（画案例图用，不受 fold/size 影响）。"""
+        if self._parts is not None:
+            part, local = self._index[i]
+            return (np.asarray(self._parts[part][0][local]),
+                    np.asarray(self._parts[part][1][local]))
+        return np.asarray(self.images[i]), np.asarray(self.masks[i])
+
     def __getitem__(self, i: int):
-        img = np.asarray(self.images[i])          # (384,384,3) uint8
-        mask = np.asarray(self.masks[i])          # (384,384) uint8 0/255
+        if self._parts is not None:
+            part, local = self._index[i]
+            img = np.asarray(self._parts[part][0][local])     # (384,384,3) uint8
+            mask = np.asarray(self._parts[part][1][local])    # (384,384) uint8 0/255
+        else:
+            img = np.asarray(self.images[i])                  # (384,384,3) uint8
+            mask = np.asarray(self.masks[i])                  # (384,384) uint8 0/255
 
         if self.size != img.shape[0]:
             img = cv2.resize(img, (self.size, self.size), interpolation=cv2.INTER_AREA)
@@ -129,16 +180,22 @@ def seed_worker(worker_id):
     random.seed(worker_seed)
 
 
-def build_loaders(size=256, batch_size=8, num_workers=4, seed=42, data_dir=DATA_PROC):
-    """构造 train/val/test 三个 DataLoader。test 只在最终评测时用。"""
+def build_loaders(size=256, batch_size=8, num_workers=4, seed=42, data_dir=DATA_PROC,
+                  fold=None, folds=CV_FOLDS):
+    """构造 train/val/test 三个 DataLoader。test 只在最终评测时用。
+
+    fold=k 时 train/val 改为「train+val 合并后的五折划分」，test 不变。
+    """
     import torch
     from torch.utils.data import DataLoader
 
     g = torch.Generator()
     g.manual_seed(seed)
 
-    train_ds = ISICSeg("train", size=size, augment=True, data_dir=data_dir)
-    val_ds = ISICSeg("val", size=size, augment=False, data_dir=data_dir)
+    train_ds = ISICSeg("train", size=size, augment=True, data_dir=data_dir,
+                       fold=fold, folds=folds)
+    val_ds = ISICSeg("val", size=size, augment=False, data_dir=data_dir,
+                     fold=fold, folds=folds)
     test_ds = ISICSeg("test", size=size, augment=False, data_dir=data_dir)
 
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,

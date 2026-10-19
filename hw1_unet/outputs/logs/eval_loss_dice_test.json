@@ -1,0 +1,26 @@
+{
+  "tag": "loss_dice",
+  "split": "test",
+  "ckpt": "best",
+  "size": 256,
+  "params_M": 28.95,
+  "metrics": {
+    "n": 1000,
+    "dice": 0.6025604686614902,
+    "dice_std": 0.2928384075527511,
+    "iou": 0.49199040944007777,
+    "iou_std": 0.2943070935377278,
+    "hd95": 84.65904245664287,
+    "hd95_std": 44.95339427550849,
+    "hd95_valid": 995,
+    "sensitivity": 0.7562337353234189,
+    "sens_valid": 1000,
+    "specificity": 0.7360563436271194,
+    "spec_valid": 998,
+    "pixel_acc": 0.7376197357177734,
+    "empty_pred": 5,
+    "empty_gt": 0,
+    "spec_undefined": 2,
+    "sens_undefined": 0
+  }
+}

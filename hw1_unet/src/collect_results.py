@@ -12,11 +12,20 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from common import LOG_DIR, REPORT_DIR
 
 MODEL_CN = {"unet": "U-Net", "resunet": "ResUNet", "attn_unet": "Attention U-Net"}
+
+# 主对比运行只认 {model}_s{seed}；消融（loss_* / size* / attn_skip / attn_bottleneck）
+# 与诊断运行虽然 args.model 相同，但绝不能混进「三种子均值」。
+MAIN_TAG_RE = re.compile(r"^(unet|resunet|attn_unet)_s\d+$")
+
+
+def is_main_run(tag: str) -> bool:
+    return bool(MAIN_TAG_RE.match(tag))
 
 
 def guess_model(tag: str) -> str:
@@ -56,10 +65,10 @@ def load_all():
 
 
 def agg_models(rows, split="test"):
-    """按模型聚合多种子：均值 ± 标准差。"""
+    """按模型聚合三种子主对比：均值 ± 标准差（排除消融/诊断/冒烟运行）。"""
     out = {}
     for r in rows:
-        if r["split"] != split:
+        if r["split"] != split or not is_main_run(r["tag"]):
             continue
         out.setdefault(r["model"], []).append(r)
     res = {}

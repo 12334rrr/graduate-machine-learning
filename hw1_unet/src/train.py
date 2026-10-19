@@ -101,6 +101,9 @@ def main():
     ap.add_argument("--num-workers", type=int, default=4)
     ap.add_argument("--subset", type=int, default=0,
                     help=">0 时只用前 N 张训练图（快速诊断用，正式实验不要开）")
+    ap.add_argument("--fold", type=int, default=None,
+                    help="五折交叉验证的折号 0-4（train+val 合并后划分；不传用官方划分）")
+    ap.add_argument("--folds", type=int, default=5)
     args = ap.parse_args()
 
     set_seed(args.seed)
@@ -110,7 +113,11 @@ def main():
     print(f"[设备] {device}  AMP={'fp16' if amp else 'off'}  标签={tag}")
 
     train_loader, val_loader, _ = build_loaders(
-        size=args.size, batch_size=args.batch, num_workers=args.num_workers, seed=args.seed)
+        size=args.size, batch_size=args.batch, num_workers=args.num_workers, seed=args.seed,
+        fold=args.fold, folds=args.folds)
+    if args.fold is not None:
+        print(f"[五折] fold {args.fold}/{args.folds}：训练 {len(train_loader.dataset)} 张，"
+              f"验证 {len(val_loader.dataset)} 张（train+val 合并划分）")
     if args.subset > 0:
         from dataset import ISICSeg
         from torch.utils.data import DataLoader

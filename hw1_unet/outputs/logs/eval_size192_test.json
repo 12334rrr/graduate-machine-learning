@@ -1,0 +1,26 @@
+{
+  "tag": "size192",
+  "split": "test",
+  "ckpt": "best",
+  "size": 192,
+  "params_M": 28.95,
+  "metrics": {
+    "n": 1000,
+    "dice": 0.6390797584868069,
+    "dice_std": 0.2750071119191993,
+    "iou": 0.5253726063946536,
+    "iou_std": 0.2801102573348637,
+    "hd95": 59.22388603255749,
+    "hd95_std": 31.62961072124719,
+    "hd95_valid": 996,
+    "sensitivity": 0.7887698333290392,
+    "sens_valid": 1000,
+    "specificity": 0.7725481589979751,
+    "spec_valid": 999,
+    "pixel_acc": 0.7653038194444444,
+    "empty_pred": 4,
+    "empty_gt": 0,
+    "spec_undefined": 1,
+    "sens_undefined": 0
+  }
+}

@@ -50,6 +50,7 @@ conda activate hw2-sam-transformer    # 作业 2
 | **数据/权重不入库** | 见 `.gitignore`：`*/data/`、`*/outputs/checkpoints/`、`.conda/`、`.env` 全部排除 |
 | **密钥只存 `.env`** | `dataset_hub/.env` 已被 gitignore；前端、文档、提交里不得出现明文密钥 |
 | **门户只读实验产物** | `dataset_hub` 每次请求扫描两作业 `outputs/`，**不改实验代码** |
+| **推送前必须单元测试** | 任何代码修改后，先跑 `bash tests/run_all.sh`（语法 + hw1/hw2/hub 单元测试 + HTTP 冒烟），**全绿才允许 `git commit` / `git push`**；测试失败不得推送，禁止 `--no-verify` 绕过 |
 
 ---
 
@@ -83,21 +84,27 @@ cd dataset_hub && /usr/bin/python3 server.py      # 127.0.0.1:8800
 curl -s localhost:8800/api/hw1 | python3 -m json.tool | head
 ```
 
+### 测试（git commit / push 前必须全绿）
+```bash
+bash tests/run_all.sh        # 语法检查 + hw1/hw2/hub 单元测试 + HTTP 冒烟 + 交付物结构
+```
+
 ---
 
-## 5. 当前状态（2026-10-18）
+## 5. 当前状态（2026-10-19）
 
 | 项 | 状态 |
 | --- | --- |
 | hw1 数据 + 三模型实现 | ✅ 完成（384 母版 npy，train 2594 / val 100 / test 1000） |
 | hw1 主对比 9 组 | ✅ 完成（U-Net 0.594±0.022 / ResUNet 0.608±0.019 / Attn U-Net 0.608±0.015，**低于 0.75 目标**，欠训练） |
-| hw1 消融 6 组 | ⬜ 未跑（约 7 小时） |
-| hw1 报告 | ⬜ 未写 |
+| hw1 消融 6 组 | ✅ 完成（单种子 42；损失/分辨率/注意力位置各组 3 设置，结果见 `outputs/ablation.json`） |
+| hw1 报告 | ✅ 已写（六段式，含消融分析；数字与 `tables.md` 一致） |
 | hw2 E1 零样本 | ✅ test 1000 张 **Dice 0.869** |
 | hw2 E2 冻结微调 | ✅ test 1000 张 **Dice 0.900**（超作业 1 最佳 0.608，W5 验收达成） |
-| hw2 E3 LoRA | ✅ 训练完成（6 epoch，val Dice 0.9025）；评测进行中 |
-| hw2 级联 | ✅ E1/E2 的 auto/auto10 已出（E1 auto 0.384 / E2 auto 0.659） |
-| hw2 报告 | ⬜ 未写 |
+| hw2 E3 LoRA | ✅ 8 组提示 test 评测完成（GT 框 **Dice 0.898** / HD95 17.5） |
+| hw2 级联 | ✅ E1/E2/E3 的 auto/auto10 全部完成（auto：E1 0.384 / E2 0.659 / E3 **0.703**） |
+| hw1 五折 CV | 🔄 运行中（最佳 2 组超参，`src/run_cv.py`，约 8 h） |
+| hw2 报告 | ✅ 已写（六段式，E3 评测数字已补全） |
 | 门户 | ✅ 七视图 + 双主题 + Grafana 风格图表 + 代码浏览/评测档案/画廊/自动刷新 |
 
 ---
@@ -141,4 +148,6 @@ server.py (127.0.0.1:8800, 标准库)
 2. **分段交付**：每个阶段跑完对照验收标准核对，不超过 5 行汇报（产出文件、关键数字、下一步）。
 3. **长任务后台跑**：`nohup ... &`，不要占着终端；被中断就重跑同一条命令（自动续跑），**绝不删 checkpoint**。
 4. **改实验代码只允许修 bug**，改动必须记录在提交信息里；改完先 `python -m py_compile` 再跑。
-5. **报告纪律**：数字全部来自 `outputs/logs/*.json`，不得手填；口径（12 epoch、E3 子集、GT 框提示）必须在报告中披露。
+5. **测试门禁与推送**：任何代码修改后先跑 `bash tests/run_all.sh`，全部通过后才 `git add/commit/push`；
+   提交信息里写明改动与测试结果；推送前 `git status` 确认没有数据、权重、`.env` 或明文密钥。
+6. **报告纪律**：数字全部来自 `outputs/logs/*.json`，不得手填；口径（12 epoch、E3 子集、GT 框提示）必须在报告中披露。

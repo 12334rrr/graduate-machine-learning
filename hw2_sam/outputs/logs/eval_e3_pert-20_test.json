@@ -1,0 +1,28 @@
+{
+  "stage": "e3",
+  "tag": "e3_lora",
+  "prompt": "pert-20",
+  "split": "test",
+  "n": 1000,
+  "metrics": {
+    "n": 1000,
+    "dice": 0.8818351197625859,
+    "dice_std": 0.10632913090631246,
+    "iou": 0.8021317674210876,
+    "iou_std": 0.14322473807095265,
+    "hd95": 19.18438094471821,
+    "hd95_std": 17.646368707566076,
+    "hd95_valid": 1000,
+    "sensitivity": 0.878952346835181,
+    "sens_valid": 1000,
+    "specificity": 0.9765624306432448,
+    "spec_valid": 998,
+    "pixel_acc": 0.931130355834961,
+    "empty_pred": 0,
+    "empty_gt": 0,
+    "spec_undefined": 2,
+    "sens_undefined": 0,
+    "latency_ms_per_img": 5915.701966285706,
+    "no_prompt_fallback": 0
+  }
+}

@@ -99,7 +99,7 @@ button{font-family:inherit}
 .brand .logo{font-size:20px}
 .brand .sub{font-size:12px;color:var(--text2);font-weight:400}
 .nav-links{display:flex;gap:4px;margin-left:8px;flex:1}
-.nav-links a{padding:6px 12px;border-radius:6px;color:var(--text2);font-weight:500}
+.nav-links a{padding:6px 12px;border-radius:6px;color:var(--text2);font-weight:500;white-space:nowrap}
 .nav-links a:hover{background:var(--primary-weak);color:var(--primary);text-decoration:none}
 .nav-links a.active{background:var(--primary-weak);color:var(--primary)}
 .nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);white-space:nowrap;cursor:default}
@@ -110,6 +110,14 @@ button{font-family:inherit}
 .theme-btn{background:none;border:1px solid var(--border);border-radius:6px;width:34px;height:30px;font-size:15px;
   cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
 .theme-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-weak)}
+/* 全局运行指示：任何页面都能看到当前在跑什么 */
+.nav-live{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);
+  white-space:nowrap;cursor:pointer;padding:4px 8px;border-radius:6px;border:1px solid transparent}
+.nav-live:hover{background:var(--primary-weak);color:var(--primary);border-color:var(--border)}
+.nav-live.busy{color:var(--accent);font-weight:500}
+@media (max-width:1400px){.nav-links a{padding:6px 8px}.nav-live{max-width:190px;overflow:hidden;text-overflow:ellipsis}}
+@media (max-width:1100px){.nav-live{max-width:160px;overflow:hidden;text-overflow:ellipsis}}
+@media (max-width:767px){.nav-live{display:none}}
 
 /* ---- 布局 ---- */
 .container{max-width:1840px;margin:0 auto;padding:0 22px}
@@ -316,7 +324,7 @@ a.card:hover,.card.lift:hover{transform:translateY(-2px);box-shadow:var(--shadow
 .badge.running{background:var(--primary-weak);color:var(--primary-dark)}
 .badge.pending{background:var(--surface-2);color:var(--text2)}
 /* 数值表：首列左对齐，其余列右对齐（表头与数据一致） */
-.num-table td:not(:first-child){text-align:right}
+.num-table td:not(:first-child){text-align:right;padding-left:14px}   /* 列间留白：防止相邻数值黏连（如 0.6060.49093.9） */
 /* 宽表横向滚动容器（移动端防溢出） */
 .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .stage-card{border-top:3px solid var(--border)}
@@ -378,10 +386,7 @@ a.card:hover,.card.lift:hover{transform:translateY(-2px);box-shadow:var(--shadow
 .gal-item{margin:0;cursor:zoom-in;border:1px solid var(--border);border-radius:10px;overflow:hidden;
   background:var(--card);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
 .gal-item:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--primary)}
-/* contain 而不是 cover：图表类图片裁掉边缘就等于毁掉可读性 */
-.gal-item img{width:100%;height:172px;object-fit:contain;background:var(--surface-2);display:block;padding:8px}
-.gal-item figcaption{padding:7px 10px;font-size:11.5px;color:var(--text2);font-family:var(--mono);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid var(--border)}
+/* contain 而不是 cover：图表类图片裁掉边缘就等于毁掉可读性（图片具体尺寸样式见下方「画廊」区） */
 .lb-wrap{background:var(--surface-2);border-radius:10px;padding:10px;text-align:center}
 .lb-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
 
@@ -402,6 +407,25 @@ a.card:hover,.card.lift:hover{transform:translateY(-2px);box-shadow:var(--shadow
   background:linear-gradient(90deg,var(--primary),var(--violet))}
 .live-bar span{position:absolute;right:8px;top:0;font-size:10.5px;line-height:18px;color:var(--text);font-family:var(--mono)}
 .live-detail{font-size:12px;color:var(--text2);margin-top:5px;font-family:var(--mono)}
+.live-eta{font-size:12px;margin-top:5px;color:var(--text2)}
+.live-eta b{color:var(--text);font-weight:600}
+.live-other{margin-top:10px;padding-top:9px;border-top:1px dashed var(--border);font-size:12.5px;color:var(--text2)}
+.live-other a{color:var(--primary)}
+/* 实验地图：一眼看清做了哪些实验、彼此什么关系 */
+.exp-map{display:flex;flex-direction:column;gap:10px}
+.exp-map .em-row{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+.em-box{flex:1;min-width:170px;border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;background:var(--surface-2)}
+.em-box .em-t{font-weight:600;font-size:13.5px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.em-box .em-s{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.55}
+.em-box .em-v{font-family:var(--mono);font-size:17px;font-weight:700;margin-top:4px}
+.em-arrow{align-self:center;color:var(--text2);font-size:18px;flex:0 0 auto}
+.em-flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--text2);
+  border-top:1px dashed var(--border);padding-top:9px}
+.em-flow b{color:var(--text)}
+.em-flow .em-chip{font-family:var(--mono);background:var(--surface-2);border:1px solid var(--border);
+  border-radius:5px;padding:2px 7px;color:var(--text)}
+@media (max-width:767px){.em-arrow{display:none}}
 
 /* ---- 源码浏览器 ---- */
 .code-list{display:flex;flex-direction:column;gap:2px;max-height:330px;overflow-y:auto}
@@ -410,6 +434,76 @@ a.card:hover,.card.lift:hover{transform:translateY(-2px);box-shadow:var(--shadow
 .code-item:hover{background:var(--primary-weak);color:var(--primary-dark)}
 .code-item .mono{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fig-frame img{max-width:100%;height:auto;border-radius:4px}
+
+/* ---- 左侧章节导航（page-nav，U1） ---- */
+.page-with-nav{display:grid;grid-template-columns:208px minmax(0,1fr);gap:20px;align-items:start}
+.page-nav{position:sticky;top:68px;align-self:start;max-height:calc(100vh - 80px);overflow:auto;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px}
+.pn-item{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;
+  border-left:3px solid transparent;border-radius:6px;padding:0 10px;height:34px;margin:1px 0;
+  color:var(--text2);font-size:13px;cursor:pointer;transition:.14s;font-family:inherit}
+.pn-item:hover{background:var(--surface-2);color:var(--text)}
+.pn-item .pn-num{font-family:var(--mono);font-size:11px;color:var(--text2);width:18px;flex-shrink:0}
+.pn-item.active{border-left-color:var(--primary);background:var(--primary-weak);color:var(--primary);font-weight:600}
+.pn-item.active .pn-num{color:var(--primary)}
+.pn-item:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.page-main{min-width:0}
+[data-sec]{scroll-margin-top:84px}
+@media (max-width:1024px){
+  /* 窄屏降级：侧栏 → 吸顶横向 chip 条（沿用同一 DOM，不另加组件） */
+  .page-with-nav{display:block}
+  .page-nav{position:sticky;top:56px;z-index:55;display:flex;flex-direction:row;align-items:center;
+    overflow-x:auto;max-height:none;gap:6px;padding:8px;border-radius:8px;margin-bottom:14px}
+  .pn-item{width:auto;height:30px;white-space:nowrap;border-left:none;border:1px solid var(--border);
+    border-radius:999px;padding:0 12px;flex-shrink:0;margin:0}
+  .pn-item .pn-num{display:none}
+  .pn-item.active{border-color:var(--primary-solid);background:var(--primary-solid);color:#fff}
+}
+
+/* ---- 折叠组件（U2：长列表默认折叠，图表卡/画廊永不动用） ---- */
+.clps{position:relative}
+.clps-body{max-height:188px;overflow:hidden;transition:max-height .22s ease}
+.clps.open .clps-body{max-height:none}
+.clps-fade{position:absolute;left:0;right:0;bottom:29px;height:26px;pointer-events:none;display:none;
+  background:linear-gradient(to top,var(--card) 30%,rgba(0,0,0,0))}
+.clps:not(.open) .clps-fade{display:block}
+.clps-toggle{display:flex;align-items:center;gap:5px;width:100%;text-align:left;background:none;border:none;
+  color:var(--primary);font-size:12.5px;padding:6px 0 1px;cursor:pointer;font-family:inherit}
+.clps-toggle:hover{color:var(--primary-dark)}
+.clps-toggle .cv{display:inline-block;font-size:10px;transition:transform .2s ease}
+.clps.open .clps-toggle .cv{transform:rotate(90deg)}
+
+/* ---- 画廊：两行说明 caption + 宽图跨两列（U3/U4d） ---- */
+.gal-item img{width:100%;height:auto;max-height:280px;object-fit:contain;background:var(--surface-2);display:block;padding:8px}
+.gal-item figcaption{padding:6px 10px 7px;border-top:1px solid var(--border);overflow:hidden}
+.gal-item .gal-title{font-size:12.5px;color:var(--text);font-family:inherit;font-weight:500;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gal-item .gal-name{font-size:11px;color:var(--text2);font-family:var(--mono);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.gallery{grid-auto-flow:dense}   /* 宽图跨列后用 dense 回填空洞 */
+.gallery .span2{grid-column:span 2}
+.gallery .span-all{grid-column:1/-1}
+.gallery.gal-wide{grid-template-columns:repeat(2,1fr)}
+.gallery.gal-wide .gal-item{grid-column:auto}
+@media (max-width:900px){.gallery .span2{grid-column:auto}.gallery.gal-wide{grid-template-columns:1fr}}
+
+/* ---- 外置图目录说明区（U6） ---- */
+.fn-group{font-size:13px;font-weight:600;margin:12px 0 4px;padding-left:8px;border-left:3px solid var(--primary)}
+.fn-item{padding:8px 0;border-bottom:1px dashed var(--border);border-radius:4px}
+.fn-item:last-child{border-bottom:none}
+.fn-head{font-size:13px;color:var(--text)}
+.fn-item .gal-name{display:inline;margin-left:6px}
+.fn-line{font-size:12.5px;color:var(--text2);line-height:1.65;margin-top:2px}
+.fn-line b{color:var(--text2);margin-right:6px;font-size:12px}
+/* 灯箱说明 */
+.lb-cap{margin-top:12px;text-align:left}
+.lb-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.lb-title .gal-name{display:inline;margin-left:8px}
+.lb-line{font-size:12.5px;color:var(--text2);line-height:1.7;margin-top:2px}
+.lb-line .lb-k{display:inline-block;background:var(--surface-2);border-radius:4px;padding:0 6px;
+  margin-right:7px;font-size:12px;color:var(--text2)}
+.lb-line .mono{color:var(--text2)}
+.lb-pos{margin-left:12px;color:var(--text2)}
 
 /* ---- 页脚 ---- */
 footer{border-top:1px solid var(--border);background:var(--card);padding:20px 0;margin-top:20px}
@@ -451,6 +545,22 @@ footer .container{display:flex;justify-content:space-between;gap:12px;flex-wrap:
 #toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(8px);background:var(--toast-bg);color:var(--toast-fg);
   padding:9px 18px;border-radius:8px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:.25s}
 #toast.show{opacity:1;transform:translateX(-50%)}
+
+/* ---- 聊天气泡内的 Markdown（列表 / 代码块 / 术语） ---- */
+.bubble ul,.bubble ol{margin:5px 0 5px 20px;padding:0}
+.bubble li{margin:2px 0}
+.bubble .chat-pre{margin:7px 0;padding:9px 11px;background:var(--code-bg);border:1px solid var(--border);
+  border-radius:6px;overflow-x:auto;font-size:12px;line-height:1.6;white-space:pre}
+.bubble .chat-pre code{background:none;padding:0;font-size:inherit}
+.bubble .term{cursor:pointer}
+
+/* ---- 回到顶部（页内锚点滚动留白统一由 [data-sec]{scroll-margin-top} 负责） ---- */
+#to-top{position:fixed;right:24px;bottom:92px;width:40px;height:40px;border-radius:50%;z-index:78;
+  border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:17px;cursor:pointer;
+  display:none;box-shadow:var(--shadow);transition:.15s}
+#to-top.show{display:flex;align-items:center;justify-content:center}
+#to-top:hover{color:var(--primary);border-color:var(--primary)}
+@media (max-width:767px){#to-top{right:16px;bottom:82px}}
 
 /* ---- 响应式 ---- */
 @media (max-width:1100px){
@@ -496,13 +606,17 @@ footer .container{display:flex;justify-content:space-between;gap:12px;flex-wrap:
   <div class="nav-inner">
     <a class="brand" href="#/"><span class="logo">🔬</span>MedSeg Dataset Hub<span class="sub">科研数据集门户</span></a>
     <div class="nav-links" id="nav-links">
-      <a href="#/" data-route="/">首页</a>
-      <a href="#/datasets" data-route="/datasets">数据集</a>
-      <a href="#/hw1" data-route="/hw1">作业 1 · U-Net</a>
-      <a href="#/hw2" data-route="/hw2">作业 2 · SAM</a>
-      <a href="#/glossary" data-route="/glossary">术语表</a>
-      <a href="#/about" data-route="/about">架构说明</a>
+      <a href="#/" data-route="/">🏠 首页</a>
+      <a href="#/datasets" data-route="/datasets">🗂️ 数据集</a>
+      <a href="#/hw1" data-route="/hw1">🧠 作业 1 · U-Net</a>
+      <a href="#/hw2" data-route="/hw2">🤖 作业 2 · SAM</a>
+      <a href="#/glossary" data-route="/glossary">📖 术语表</a>
+      <a href="#/env" data-route="/env">🩺 环境体检</a>
+      <a href="#/about" data-route="/about">🏗️ 架构说明</a>
     </div>
+    <span class="nav-live" id="nav-live" title="正在运行的实验任务" onclick="goLiveTask()">
+      <span class="dot green" id="nav-live-dot"></span><span id="nav-live-text">检测中…</span>
+    </span>
     <div class="nav-status" id="nav-status" title="检查 AI 助手配置状态">
       <span class="dot yellow" id="status-dot"></span><span class="st-lab" id="status-lab">加载中</span>
     </div>
@@ -552,7 +666,7 @@ footer .container{display:flex;justify-content:space-between;gap:12px;flex-wrap:
 /* ---------------- 全局状态 ---------------- */
 const state = {
   overview: null, datasets: null, glossary: null, byTerm: {},
-  hw1: null, hw2: null, hw1Sel: null,
+  hw1: null, hw2: null, hw1Sel: null, hw1Group: "main",
   dataPromise: null, dataError: null,
 };
 const listState = { cat: "全部", q: "" };
@@ -706,25 +820,24 @@ function renderTerms(raw) {
     const term = m[0], s = m.index, e = s + term.length;
     if (!isTermHit(raw, s, e, term)) continue;
     out += esc(raw.slice(last, s));
-    out += '<span class="term" data-term="' + esc(term) + '">' + esc(term) + "</span>";
+    out += '<span class="term" data-term="' + esc(term) + '" tabindex="0" role="button" aria-label="术语：' +
+      esc(term) + '">' + esc(term) + "</span>";
     last = e;
   }
   out += esc(raw.slice(last));
   return out;
 }
 
-/* 术语悬浮卡（事件委托） */
+/* 术语悬浮卡（事件委托；鼠标悬停与键盘 focus 都支持） */
 const tip = document.getElementById("term-tip");
-document.addEventListener("mouseover", e => {
-  const t = e.target.closest(".term");
-  if (!t) return;
+function showTermTip(t) {
   const info = state.byTerm[t.dataset.term];
   if (!info) return;
   const def = info.def.length > 130 ? info.def.slice(0, 130) + "…" : info.def;
   tip.innerHTML = '<div class="tt-name">' + esc(info.term) +
     '<span class="tt-en"> · ' + esc(info.en || "") + '</span></div>' +
     '<div class="tt-def">' + esc(def) + '</div>' +
-    '<div class="tt-go">点击查看术语表 →</div>';
+    '<div class="tt-go">点击 / 回车查看术语表 →</div>';
   tip.style.display = "block";
   const r = t.getBoundingClientRect();
   let x = Math.min(r.left, window.innerWidth - 340);
@@ -732,9 +845,27 @@ document.addEventListener("mouseover", e => {
   if (y + 140 > window.innerHeight) y = r.top - 8 - tip.offsetHeight;
   tip.style.left = Math.max(8, x) + "px";
   tip.style.top = Math.max(8, y) + "px";
+}
+document.addEventListener("mouseover", e => {
+  const t = e.target.closest && e.target.closest(".term");
+  if (t) showTermTip(t);
 });
 document.addEventListener("mouseout", e => {
   if (e.target.closest && e.target.closest(".term")) tip.style.display = "none";
+});
+document.addEventListener("focusin", e => {
+  const t = e.target.closest && e.target.closest(".term");
+  if (t) showTermTip(t);
+});
+document.addEventListener("focusout", e => {
+  if (e.target.closest && e.target.closest(".term")) tip.style.display = "none";
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const t = e.target.closest && e.target.closest(".term");
+  if (!t) return;
+  e.preventDefault();
+  location.hash = "#/glossary?term=" + encodeURIComponent(t.dataset.term);
 });
 document.addEventListener("click", e => {
   const t = e.target.closest(".term");
@@ -781,23 +912,28 @@ function licenseShort(lic) {
 
 /* 首页「实验观测」摘要卡（融合 hw1/hw2 实时状态） */
 function expSummaryCards() {
-  const card = (title, href, accent, rows, badge) =>
+  const card = (title, href, accent, rows, badge, pct) =>
     '<a class="card" href="' + href + '" style="border-top:3px solid ' + accent + '">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>' + title + "</h3>" + (badge || "") + "</div>" +
       rows.map(r => '<div class="muted" style="margin-top:4px">' + r + "</div>").join("") +
+      (pct != null ? '<div class="prog" style="margin-top:10px" title="阶段完成度"><i style="width:' +
+        Math.max(2, Math.min(100, pct)).toFixed(0) + '%"></i></div>' : "") +
       '<div style="margin-top:10px;color:var(--primary);font-size:13px">进入实验视图 →</div></a>';
 
   const h1 = state.hw1, h2 = state.hw2;
-  let hw1Rows, hw1Badge = "", hw2Rows, hw2Badge = "";
+  let hw1Rows, hw1Badge = "", hw2Rows, hw2Badge = "", hw1Pct = null, hw2Pct = null;
   if (h1 && h1.runs && h1.runs.length) {
     const best = h1.runs.reduce((a, r) => (!a || r.best_val_dice > a.best_val_dice ? r : a), null);
     const fin = h1.runs.filter(r => r.status === "finished").length;
     const running = h1.runs.length - fin;
+    const mainRuns = h1.runs.filter(r => runGroup(r.tag) === "main");
+    const mainFin = mainRuns.filter(r => r.status === "finished").length;
+    hw1Pct = h1.runs.length ? fin / h1.runs.length * 100 : 0;   // U7：首页卡补完成度细进度条
     hw1Badge = '<span class="badge ' + (running === 0 ? "done" : "running") + '">' +
-      (running === 0 ? "完成 " + fin + "/" + h1.runs.length : "运行中 " + running + " 个") + "</span>";
+      (running === 0 ? "主对比 " + mainFin + "/" + mainRuns.length : "运行中 " + running + " 个") + "</span>";
     hw1Rows = [
-      "训练运行 " + h1.runs.length + " 个 · 最佳 Val Dice <b class='mono' style='color:var(--primary-dark)'>" + fmt3(best.best_val_dice) + "</b>（" + esc(best.tag) + "）",
-      (running ? running + " 个运行进行中" : "全部运行已完成") + " · checkpoints " + (h1.checkpoints || []).length + " 个",
+      "训练运行 " + h1.runs.length + " 个（主对比 " + mainRuns.length + "）· 最佳验证 Dice <b class='mono' style='color:var(--primary-dark)'>" + fmt3(best.best_val_dice) + "</b>（" + esc(best.tag) + "）",
+      (running ? running + " 个运行进行中" : "全部运行已完成") + " · 权重文件 " + (h1.checkpoints || []).length + " 个",
     ];
   } else if (h1) {
     hw1Rows = ["暂无训练日志 —— 训练启动后此处的状态与曲线实时更新"];
@@ -810,6 +946,7 @@ function expSummaryCards() {
     const ids = ["e1", "e2", "e3"];
     const doneN = ids.filter(s => st[s] && st[s].status === "done").length;
     const runN = ids.filter(s => st[s] && st[s].status === "running").length;
+    hw2Pct = doneN / 3 * 100;
     hw2Badge = '<span class="badge ' + (runN ? "running" : doneN ? "done" : "pending") + '">' +
       (runN ? "运行中 · " + doneN + "/3 阶段完成" : doneN + "/3 阶段完成") + "</span>";
     const pending = ids.filter(s => !st[s] || st[s].status === "pending")
@@ -827,8 +964,8 @@ function expSummaryCards() {
   } else {
     hw2Rows = ["实验聚合暂不可用"];
   }
-  return card("作业 1 · 手写 U-Net 系列", "#/hw1", "var(--primary)", hw1Rows, hw1Badge) +
-         card("作业 2 · SAM 提示分割", "#/hw2", "#7c3aed", hw2Rows, hw2Badge);
+  return card("作业 1 · 手写 U-Net 系列", "#/hw1", "var(--primary)", hw1Rows, hw1Badge, hw1Pct) +
+         card("作业 2 · SAM 提示分割", "#/hw2", "#7c3aed", hw2Rows, hw2Badge, hw2Pct);
 }
 
 function viewHome() {
@@ -864,17 +1001,17 @@ function viewHome() {
       '<div class="sec lb-strip"><span class="t">🏆 榜单速览</span>' + strip + '</div>' +
 
       '<div class="sec">' +
-        '<div class="sec-head"><h2>精选条目</h2><a class="more" href="#/datasets">查看全部 →</a></div>' +
+        '<div class="sec-head"><h2>⭐ 精选条目</h2><a class="more" href="#/datasets">查看全部 →</a></div>' +
         '<div class="grid grid-2">' + featured.map(datasetCard).join("") + '</div>' +
       '</div>' +
 
       '<div class="sec">' +
-        '<div class="sec-head"><h2>实验观测</h2><span style="font-size:13px;color:var(--text2)">融合自 hw1 / hw2 监控台 · 实时读取实验产物</span></div>' +
+        '<div class="sec-head"><h2>📡 实验观测</h2><span style="font-size:13px;color:var(--text2)">实时只读扫描两作业 outputs/ · 每 3s 刷新运行进度</span></div>' +
         '<div class="grid grid-2">' + expSummaryCards() + '</div>' +
       '</div>' +
 
       '<div class="sec">' +
-        '<div class="sec-head"><h2>平台能力</h2></div>' +
+        '<div class="sec-head"><h2>🧰 平台能力</h2></div>' +
         '<div class="grid grid-4">' +
           '<div class="card"><h3>📥 下载中心</h3><div class="muted">官方直链 + 国内镜像分组，一键复制 / 打开，并在线探测链接可达性与真实体积。</div></div>' +
           '<div class="card"><h3>📖 术语系统</h3><div class="muted">30+ 条术语带公式与通俗解释，正文悬浮即现释义，点击直达术语表。</div></div>' +
@@ -890,7 +1027,7 @@ function viewDatasets() {
   const cats = ["全部"].concat([...new Set(state.datasets.map(d => d.category))]);
   app.innerHTML =
     '<section class="view">' +
-      '<div class="sec-head" style="margin-top:4px"><h2>数据集与权重</h2>' +
+      '<div class="sec-head" style="margin-top:4px"><h2>🗂️ 数据集与权重</h2>' +
       '<span class="muted" style="font-size:13px;color:var(--text2)">共 ' + state.datasets.length + ' 个条目</span></div>' +
       '<div class="toolbar">' +
         '<div class="chiprow" id="cat-chips">' +
@@ -974,7 +1111,9 @@ async function checkLink(prefix, i, btn) {
   const url = URLS[prefix + "-" + i];
   const box = document.getElementById(prefix + "-res-" + i);
   if (!url || !box) return;
+  const btnLabel = btn.textContent;
   btn.disabled = true;
+  btn.textContent = "检测中…";   // U7：加载态 + 禁用，防连点生成多条结果
   box.className = "dl-check warn"; box.style.display = "block";
   box.textContent = "⏳ 正在探测（10 秒超时）…";
   const cacheKey = url;
@@ -993,6 +1132,7 @@ async function checkLink(prefix, i, btn) {
     box.textContent = "⚠️ 检测服务出错：" + err.message;
   } finally {
     btn.disabled = false;
+    btn.textContent = btnLabel;
   }
 }
 
@@ -1042,10 +1182,10 @@ function viewDataset(id) {
       '<div class="detail-grid">' +
         '<div style="display:flex;flex-direction:column;gap:16px;min-width:0">' +
 
-          '<div class="card"><h3>简介</h3><p style="margin:0;line-height:1.8">' + renderTerms(d.description) + '</p></div>' +
+          '<div class="card"><h3>📝 简介</h3><p style="margin:0;line-height:1.8">' + renderTerms(d.description) + '</p></div>' +
 
           (Object.keys(d.stats || {}).length ?
-          '<div class="card"><h3>关键统计</h3><table class="stat-table">' + statRows + '</table></div>' : "") +
+          '<div class="card"><h3>📊 关键统计</h3><table class="stat-table">' + statRows + '</table></div>' : "") +
 
           '<div class="card"><h3>📥 下载中心</h3><div class="muted" style="font-size:12.5px;margin-bottom:6px">先「检测」确认可达与真实体积，再「打开下载」；大文件建议用命令行断点续传。</div>' +
             dlHtml + '</div>' +
@@ -1056,7 +1196,7 @@ function viewDataset(id) {
         '</div>' +
 
         '<aside class="side">' +
-          '<div class="card"><h3>条目信息</h3><table class="info-table">' +
+          '<div class="card"><h3>ℹ️ 条目信息</h3><table class="info-table">' +
             '<tr><td>许可证</td><td>' + (licTerm
               ? '<span class="lic term" data-term="' + esc(licTerm) + '">' + esc(licTerm) + '</span>'
               : '<span class="lic">' + esc(licenseShort(d.license)) + '</span>') + '</td></tr>' +
@@ -1066,7 +1206,7 @@ function viewDataset(id) {
             (modalities ? '<tr><td>模态</td><td>' + modalities + '</td></tr>' : "") +
             (d.homepage ? '<tr><td>主页</td><td><a href="' + esc(d.homepage) + '" target="_blank" rel="noopener">官方页面 ↗</a></td></tr>' : "") +
           '</table></div>' +
-          '<div class="card"><h3>关联术语</h3><div class="chiprow">' + (termChips || '<span class="muted">无</span>') + '</div></div>' +
+          '<div class="card"><h3>🔖 关联术语</h3><div class="chiprow">' + (termChips || '<span class="muted">无</span>') + '</div></div>' +
         '</aside>' +
       '</div>' +
     '</section>';
@@ -1079,7 +1219,10 @@ function viewGlossary(query) {
   const cats = ["全部"].concat(state.glossary.categories || []);
   app.innerHTML =
     '<section class="view">' +
-      '<div class="sec-head" style="margin-top:4px"><h2>术语表</h2>' +
+      '<div class="page-with-nav">' +
+        '<aside class="page-nav" id="g-page-nav" aria-label="术语分类导航"></aside>' +
+        '<div class="page-main">' +
+      '<div class="sec-head" style="margin-top:4px"><h2>📖 术语表</h2>' +
       '<span style="font-size:13px;color:var(--text2)">共 ' + state.glossary.terms.length + ' 条 · 正文中的虚线词悬浮可看释义</span></div>' +
       '<div class="toolbar">' +
         '<div class="chiprow" id="g-chips">' +
@@ -1089,6 +1232,8 @@ function viewGlossary(query) {
           '<input id="g-search" type="search" placeholder="搜索术语 / 英文 / 定义…" value="' + esc(glossState.q) + '"></div>' +
       '</div>' +
       '<div id="g-list"></div>' +
+        '</div>' +
+      '</div>' +
     '</section>';
 
   const renderList = () => {
@@ -1100,6 +1245,7 @@ function viewGlossary(query) {
     if (!terms.length) {
       box.innerHTML = emptyBox("📖", "没有匹配的术语", "换个关键词，或清除筛选。") +
         '<div style="text-align:center"><button class="btn" onclick="resetGlossFilter()">清除筛选</button></div>';
+      initPageNav("g-page-nav", []);   // 清空侧栏，避免残留死链
       return;
     }
     /* 按分类分组：声明顺序优先，未在 categories 中声明的分类兜底追加（防止数据漏声明时静默丢词条） */
@@ -1109,8 +1255,11 @@ function viewGlossary(query) {
     const order = declared.concat(Object.keys(groups).filter(c => !declared.includes(c)));
     /* 锚点 id 清洗（HTML id 不允许空白字符），建 term → id 映射供跳转查询 */
     glossIds = {};
-    box.innerHTML = order.filter(c => groups[c] && groups[c].length).map(c =>
-      '<div class="g-group card"><h3 style="margin-bottom:4px">' + esc(c) +
+    /* 侧栏章节 = 当前可见的分类分组（随筛选/搜索联动重建） */
+    const navSecs = [];
+    box.innerHTML = order.filter(c => groups[c] && groups[c].length).map((c, gi) => {
+      navSecs.push({ id: "gg-" + gi, num: String(gi + 1).padStart(2, "0"), label: c });
+      return '<div class="g-group card" id="gg-' + gi + '" data-sec><h3 style="margin-bottom:4px">🏷️ ' + esc(c) +
         '<span style="font-weight:400;color:var(--text2);font-size:12.5px"> · ' + groups[c].length + ' 条</span></h3>' +
         groups[c].map(t => {
           const gid = "g-" + t.term.replace(/[^A-Za-z0-9一-鿿]+/g, "_");
@@ -1122,7 +1271,8 @@ function viewGlossary(query) {
             (t.formula ? '<div class="formula">' + esc(t.formula) + '</div>' : "") +
           '</div>';
         }).join("") +
-      '</div>').join("");
+      '</div>';
+    }).join("");   // 外层 map 必须 join：数组直接赋 innerHTML 会按逗号拼接，把「,」渲染成真实文本
     if (target && state.byTerm[target] && glossIds[target]) {
       const el = document.getElementById(glossIds[target]);
       if (el) {
@@ -1130,6 +1280,7 @@ function viewGlossary(query) {
         el.classList.add("flash");
       }
     }
+    initPageNav("g-page-nav", navSecs);   // 分类随筛选/搜索联动重建侧栏
   };
   renderList();
 
@@ -1152,12 +1303,15 @@ function resetGlossFilter() {
 function viewAbout() {
   app.innerHTML =
     '<section class="view">' +
-      '<div class="sec-head" style="margin-top:4px"><h2>架构说明</h2>' +
+      '<div class="page-with-nav">' +
+        '<aside class="page-nav" id="about-page-nav" aria-label="页面章节导航"></aside>' +
+        '<div class="page-main">' +
+      '<div class="sec-head" style="margin-top:4px"><h2>🏗️ 架构说明</h2>' +
       '<span style="font-size:13px;color:var(--text2)">零依赖 · Python 标准库后端 + 原生单文件 SPA</span></div>' +
 
-      '<div class="card" style="padding:22px">' +
+      '<div class="card" style="padding:22px" id="about-sec-arch" data-sec>' +
         '<h3>分层架构图</h3>' +
-        '<svg class="arch-svg" viewBox="0 0 940 400" xmlns="http://www.w3.org/2000/svg">' +
+        '<svg class="arch-svg" viewBox="0 0 940 470" xmlns="http://www.w3.org/2000/svg">' +
           '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
             '<path d="M 0 0 L 10 5 L 0 10 z" fill="#9aa0a6"/></marker></defs>' +
 
@@ -1197,6 +1351,11 @@ function viewAbout() {
           '<text class="svg-txt b" x="810" y="340" text-anchor="middle">磁盘项目文件（只读）</text>' +
           '<text class="svg-txt s" x="810" y="360" text-anchor="middle">hw1_unet/ · hw2_sam/</text>' +
 
+          /* 心跳文件（实时监控链路） */
+          '<rect class="svg-box green" x="700" y="392" width="220" height="58" rx="10" stroke-width="1.4"/>' +
+          '<text class="svg-txt b" x="810" y="416" text-anchor="middle">outputs/progress/*.json</text>' +
+          '<text class="svg-txt s" x="810" y="436" text-anchor="middle">训练每 epoch / 评测每 25 张写心跳</text>' +
+
           /* 链路 1：数据 */
           '<line class="svg-line" x1="240" y1="175" x2="354" y2="175"/>' +
           '<line class="svg-line" x1="356" y1="205" x2="242" y2="205"/>' +
@@ -1212,10 +1371,13 @@ function viewAbout() {
           /* 链路 4：SSE 代理 */
           '<line class="svg-line" x1="590" y1="240" x2="694" y2="272"/>' +
           '<text class="svg-lab" x="618" y="270">④ SSE 透传</text>' +
+          /* 链路 5：实时心跳 */
+          '<line class="svg-line" x1="590" y1="256" x2="694" y2="416"/>' +
+          '<text class="svg-lab" x="600" y="350">⑤ 读心跳 /api/live</text>' +
         '</svg>' +
       '</div>' +
 
-      '<div class="sec grid grid-2" style="gap:16px">' +
+      '<div class="sec grid grid-2" style="gap:16px" id="about-sec-modules" data-sec>' +
         '<div class="card"><h3>模块划分</h3>' +
           '<table class="about-table" style="border:none">' +
             '<tr><th>模块</th><th>职责</th></tr>' +
@@ -1224,37 +1386,67 @@ function viewAbout() {
             '<tr><td class="mono">data/*.json</td><td>唯一事实来源：数据集条目（含官方直链、镜像、榜单、术语关联）与术语表；服务端只读透出</td></tr>' +
             '<tr><td class="mono">.env</td><td>DEEPSEEK_API_KEY / DEEPSEEK_MODEL；环境变量优先于文件（setdefault 不覆盖）；被 .gitignore 排除</td></tr>' +
           '</table></div>' +
-        '<div class="card"><h3>四条前后端链路（时序）</h3><ol class="chain">' +
+        '<div class="card"><h3>五条前后端链路（时序）</h3><ol class="chain">' +
           '<li><b>数据加载</b>：路由切换 → 若未缓存 → GET /api/overview · /api/datasets · /api/glossary → 内存缓存 → 渲染；之后导航零请求。</li>' +
           '<li><b>链接检测</b>：详情页【检测】→ GET /api/check_link?url=… → 服务端 HEAD 上游（10s 超时，跟随 ≤2 次重定向，403/405/501 退化 Range GET）→ {ok, status, size_bytes, message} → 🟢/🔴。</li>' +
           '<li><b>聊天 SSE</b>：POST /api/chat（多轮历史，服务端截留最近 20 条并注入系统提示词）→ DeepSeek stream=true → 服务端逐行透传 → 前端 ReadableStream 逐行解析 data:，增量渲染至 [DONE]。</li>' +
           '<li><b>实验聚合</b>：作业 1 / 作业 2 视图 → GET /api/hw1 · /api/hw2 → 服务端实时扫描两作业 outputs/logs（CSV+摘要 JSON）、嵌入缓存、figures → 只读 JSON；图片走 /exp/&lt;proj&gt;/figures/，权重下载流式输出。</li>' +
+          '<li><b>实时监控</b>：训练 / 评测进程每 epoch（评测每 10 张）向 <code>outputs/progress/*.json</code> 写心跳 → 前端每 <b>3 秒</b>轮询 GET /api/live（服务端只返回 10 分钟内有心跳的条目；<code>phase=done</code> 保留 10 分钟，并自动隐藏同一阶段/提示残留的 eval 心跳）→ 服务端用训练日志起点 / 相邻心跳速率估算 <code>elapsed_sec</code> 与 <code>eta_sec</code>，面板显示“已运行 + 预计还需”，顶栏全局徽标在任何页面显示运行中的任务；实验视图另有 10s 自动刷新重新聚合 /api/hw1|hw2。</li>' +
         '</ol></div>' +
       '</div>' +
 
-      '<div class="sec">' +
-        '<div class="sec-head"><h2>单一门户架构（三服务已合并为一）</h2></div>' +
+      '<div class="sec" id="about-sec-merge" data-sec>' +
+        '<div class="sec-head"><h2>🏢 单一门户架构（三服务已合并为一）</h2></div>' +
         '<div class="grid grid-3">' +
           '<div class="card svc-card"><h3>本平台（一站式门户）</h3><div class="port">127.0.0.1:8800 · 本页</div><div class="muted" style="margin-top:6px">数据集、术语、榜单、AI 问答，加上两个作业的<b>完整实验观测</b>——<a href="#/hw1">#/hw1</a> · <a href="#/hw2">#/hw2</a>。一个端口看完整个作业。</div></div>' +
-          '<div class="card svc-card" style="border-top-color:var(--text2);opacity:.75"><h3>hw1 监控仪表盘</h3><div class="port">~~127.0.0.1:8801~~ · 已废弃</div><div class="muted" style="margin-top:6px">功能已全部并入 <a href="#/hw1">#/hw1</a>（运行表、曲线、评测、权重、源码、画廊、实时刷新），迁移对照见 <code>hw1_unet/dashboard/DEPRECATED.md</code>。</div></div>' +
-          '<div class="card svc-card" style="border-top-color:var(--text2);opacity:.75"><h3>hw2 监控仪表盘</h3><div class="port">~~127.0.0.1:8802~~ · 已废弃</div><div class="muted" style="margin-top:6px">功能已全部并入 <a href="#/hw2">#/hw2</a>，并新增提示类型对比与鲁棒性曲线，见 <code>hw2_sam/dashboard/DEPRECATED.md</code>。</div></div>' +
+          '<div class="card svc-card" style="border-top-color:var(--text2);opacity:.75"><h3>hw1 监控仪表盘</h3><div class="port"><s>127.0.0.1:8801</s> · 已废弃</div><div class="muted" style="margin-top:6px">功能已全部并入 <a href="#/hw1">#/hw1</a>（运行表、曲线、评测、权重、源码、画廊、实时刷新），迁移对照见 <code>hw1_unet/dashboard/DEPRECATED.md</code>。</div></div>' +
+          '<div class="card svc-card" style="border-top-color:var(--text2);opacity:.75"><h3>hw2 监控仪表盘</h3><div class="port"><s>127.0.0.1:8802</s> · 已废弃</div><div class="muted" style="margin-top:6px">功能已全部并入 <a href="#/hw2">#/hw2</a>，并新增提示类型对比与鲁棒性曲线，见 <code>hw2_sam/dashboard/DEPRECATED.md</code>。</div></div>' +
         '</div>' +
         '<div class="card" style="margin-top:16px"><b>为什么合并</b>：原先三个服务要开三个端口、三套主题（两个暗色 + 一个浅色），查一次实验要在门户与监控台之间来回跳。现在统一为一个门户：<b>浅色 / 深色一键切换</b>、实验观测与数据物料同屏、实时刷新内建。三者共用同一份磁盘数据（ISIC 原始数据、SAM 权重、嵌入缓存），本平台对实验代码零改动。</div>' +
       '</div>' +
 
-      '<div class="sec">' +
-        '<div class="sec-head"><h2>图表引擎（对标 Grafana）</h2>' +
-          '<span style="font-size:13px;color:var(--text2)">纯 SVG · 零依赖 · 主题自适应</span></div>' +
+      '<div class="sec" id="about-sec-charts" data-sec>' +
+        '<div class="sec-head"><h2>📊 图表引擎（对标 Grafana）</h2>' +
+          '<span style="font-size:13px;color:var(--text2)">纯 SVG · 零依赖 · 主题自适应 · 按容器宽度重绘（等比不拉伸）</span></div>' +
         '<div class="grid grid-2">' +
           '<div class="card"><h3>折线 / 面积图</h3><div class="muted" style="font-size:13px">面积渐变填充、Catmull-Rom 平滑曲线、<b>悬停十字线 + 共享 tooltip</b>（一次显示所有序列在该 x 的取值）、图例可点击隐藏/恢复、nice 刻度（1/2/5×10ⁿ）、阈值参考线（如 Dice 目标 0.75）、末值标注点。</div></div>' +
           '<div class="card"><h3>柱状图与统计面板</h3><div class="muted" style="font-size:13px">分组柱状图用于模型对比、消融对比、提示类型对比（带数值标签与悬停提示）；统计面板（Stat panel）用于关键指标大字显示 + 迷你趋势线（sparkline）。</div></div>' +
         '</div>' +
       '</div>' +
+        '</div>' +
+      '</div>' +
     '</section>';
+
+  initPageNav("about-page-nav", [
+    { id: "about-sec-arch", num: "01", label: "分层架构图" },
+    { id: "about-sec-modules", num: "02", label: "模块与链路" },
+    { id: "about-sec-merge", num: "03", label: "服务合并" },
+    { id: "about-sec-charts", num: "04", label: "图表引擎" },
+  ]);
 }
 
 /* ---------------- 实验观测（融合 hw1 / hw2 监控台数据） ---------------- */
 function fmt3(v) { return (v == null || isNaN(v)) ? "—" : Number(v).toFixed(3); }
+
+/* ---------------- 中文映射表（界面语言统一） ----------------
+ * 原始码（stage / prompt / split / 指标键）一律先过映射再进 DOM，映射缺失时回退原值；
+ * 新增提示类型时须同步 hw2_sam/src/plot_figures.py 的 PNAME（两边保持一致）。 */
+const SPLIT_CN = { train: "训练集", val: "验证集", test: "测试集" };
+const STAGE_CN = { e1: "E1", e2: "E2", e3: "E3" };
+const PROMPT_CN = { gt: "GT 框", "pert-20": "框−20%", "pert-10": "框−10%",
+  pert10: "框+10%", pert20: "框+20%", point1: "1 点", point3: "3 点",
+  point5: "5 点", auto: "自动框", auto10: "自动框+10%" };
+const METRIC_CN = { dice: "Dice 系数", iou: "IoU", hd95: "HD95（像素）",
+  sensitivity: "灵敏度", specificity: "特异度", n: "样本数", ms: "单图耗时",
+  split: "划分", stage: "阶段", prompt: "提示形式", epochs_done: "已完成轮次",
+  total_epochs: "总轮次", best_val_dice: "最佳验证 Dice", epoch_sec: "单轮耗时（秒）",
+  epoch: "轮次", train_loss: "训练损失", val_loss: "验证损失", val_dice: "验证 Dice",
+  lr: "学习率", pixel_acc: "像素准确率", empty_pred: "空预测数", latency_ms: "单图延迟（毫秒）",
+  params_M: "参数量（百万）" };
+const splitCN = v => SPLIT_CN[v] || String(v == null ? "?" : v);
+const stageCN = v => STAGE_CN[v] || String(v == null ? "" : v);
+const promptCN = v => PROMPT_CN[v] || String(v == null ? "" : v);
+const metCN = k => (METRIC_CN[k] != null ? METRIC_CN[k] : k);
 
 /* ==================== 图表引擎（对标 Grafana · 纯 SVG · 无依赖） ====================
  * 特性：nice 刻度 / 面积渐变 / 平滑曲线 / 悬停十字线 + 共享 tooltip /
@@ -1280,7 +1472,8 @@ function fmtNum(v, step) {
   if (a >= 1e6) return (v / 1e6).toFixed(1) + "M";
   if (a >= 1e4) return (v / 1e3).toFixed(0) + "k";
   if (a >= 1e3 && step >= 100) return (v / 1e3).toFixed(1) + "k";
-  const d = step >= 1 ? 0 : step >= 0.1 ? 1 : step >= 0.01 ? 2 : 3;
+  if (a !== 0 && a < 1e-4) return v.toExponential(1);   // 学习率等极小值用科学计数，避免全被四舍五入成 0.000
+  const d = step >= 1 ? 0 : step >= 0.1 ? 1 : step >= 0.01 ? 2 : step >= 0.001 ? 3 : 4;
   return v.toFixed(d);
 }
 /* Catmull-Rom → 三次贝塞尔：比折线柔和，又不会像样条那样过冲 */
@@ -1316,7 +1509,8 @@ function chartSVG(id) {
     return '<div class="chart-legend">' + chartLegend(id) + "</div>" +
       '<div class="empty" style="padding:26px"><div class="emoji">📈</div>没有可显示的序列</div>';
   }
-  const w = 720, h = opt.h || 260, pl = 56, pr = 18, pt = 26, pb = 36;
+  /* 宽度跟随容器（ResizeObserver 重算后重绘），保证 x/y 等比、文字不失真 */
+  const w = st.width || 720, h = opt.h || 260, pl = 56, pr = 18, pt = 26, pb = 36;
   const xs = [].concat.apply([], vis.map(s => s.pts.map(p => p[0])));
   const ys = [].concat.apply([], vis.map(s => s.pts.map(p => p[1])));
   let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
@@ -1384,7 +1578,9 @@ function chartSVG(id) {
     const line = opt.smooth === false
       ? "M" + P.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L")
       : smoothPath(P.map(p => [Number(p[0].toFixed(1)), Number(p[1].toFixed(1))]));
-    if (s.pts.length > 1) {
+    /* 序列多于 3 条时不铺面积：多条半透明面积叠加会把曲线糊成一片 */
+    const withArea = opt.area === true || (opt.area !== false && vis.length <= 3);
+    if (s.pts.length > 1 && withArea) {
       body += '<path d="' + line + " L" + P[P.length - 1][0].toFixed(1) + "," + (h - pb) +
         " L" + P[0][0].toFixed(1) + "," + (h - pb) + ' Z" fill="url(#' + id + "g" + i + ')"/>';
     }
@@ -1400,7 +1596,7 @@ function chartSVG(id) {
   const yLab = opt.yLabel ? '<text class="c-axlabel" x="4" y="11" text-anchor="start">' + esc(opt.yLabel) + "</text>" : "";
   const xLab = opt.xLabel ? '<text class="c-axlabel" x="' + (w - pr) + '" y="' + (h - 2) + '" text-anchor="end">' + esc(opt.xLabel) + "</text>" : "";
   return '<div class="chart-legend">' + chartLegend(id) + "</div>" +
-    '<svg class="gc-svg" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="none" style="width:100%;height:' + h + 'px;display:block;overflow:visible">' +
+    '<svg class="gc-svg" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:' + h + 'px;display:block;overflow:visible">' +
       defs + grid + thr +
       '<line x1="' + pl + '" y1="' + (h - pb) + '" x2="' + (w - pr) + '" y2="' + (h - pb) + '" style="stroke:var(--chart-axis)"/>' +
       xlab + body +
@@ -1469,7 +1665,7 @@ function chartHover(e) {
     return { name: s.name, color: s.color, x: pt[0], y: pt[1] };
   });
   const step = (niceTicks(g.x0, g.x1, 6).step) || 1;
-  tip.innerHTML = '<div class="tip-x">' + esc(st.opt.xLabel || "x") + " = " + fmtNum(best, step) + "</div>" +
+  tip.innerHTML = '<div class="tip-x">' + esc(st.opt.xLabel || "轮次") + " = " + fmtNum(best, step) + "</div>" +
     rows.map(r2 => '<div class="tip-row"><span class="dot" style="background:' + r2.color + '"></span>' +
       "<span class='tip-n'>" + esc(r2.name) + "</span><b>" + fmtNum(r2.y, 0.001) + "</b></div>").join("");
   tip.style.display = "block";
@@ -1506,14 +1702,48 @@ document.addEventListener("click", e => {
 });
 
 /* ---- 柱状图（分组对比，对标 Grafana Bar chart） ---- */
+/* 与折线图同样按容器宽度重绘：RESP[id] 保存 render(w)，ResizeObserver 统一驱动 */
+const RESP = {};
 function gbar(cats, series, opt) {
   opt = opt || {};
+  const id = "gb" + (++chartSeq);
+  const item = { width: 720, render: w => gbarSVG(cats, series, opt, w) };
+  RESP[id] = item;
+  return '<div class="gchart" data-resp="' + id + '">' + item.render(720) + "</div>";
+}
+/* 分类标签宽度估计（px）：CJK 字符按 1.0×字号、ASCII 按 0.56×字号 */
+function labelW(s, fs) {
+  let wpx = 0;
+  for (const ch of String(s)) wpx += /[^\x00-\xff]/.test(ch) ? fs : fs * 0.56;
+  return wpx;
+}
+/* 分类标签防重叠布局决策（gbar 专用）：
+ *   n ≤ 5        → 竖排柱状图（水平标签）；
+ *   6 ≤ n ≤ 10   → 总宽放得下就水平，放不下旋转 −35°；
+ *   n > 10       → 转横向条形图（分类轴纵向，标签永不相交）。
+ * 硬性要求：任何模式下字号 ≥10px，不为避让缩小字号——宁可旋转/转横向。 */
+function fitBarCats(cats, availW, fs) {
+  fs = fs || 10.5;
+  const n = cats.length;
+  if (n <= 5) return "v";
+  if (n > 10) return "h";
+  const total = cats.reduce((s, c) => s + labelW(c, fs), 0) + (n - 1) * 8;
+  return total > availW ? "r" : "v";
+}
+function gbarSVG(cats, series, opt, w) {
+  const layout = fitBarCats(cats, w - 56 - 18, 10.5);
+  if (layout === "h") return gbarH(cats, series, opt, w);
   const pal = seriesColors();
-  const w = 720, h = opt.h || 240, pl = 56, pr = 18, pt = 22, pb = 46;
+  const rot = layout === "r";
+  const h = opt.h || 240, pl = 56, pr = 18, pt = 22, pb = rot ? 62 : 46;
   series.forEach((s, i) => { if (!s.color) s.color = pal[i % pal.length]; });
   const all = [].concat.apply([], series.map(s => s.values));
   if (!all.length) return '<div class="empty" style="padding:24px"><div class="emoji">📊</div>暂无数据</div>';
   let y0 = 0, y1 = Math.max.apply(null, all);
+  /* 误差线上端不能超出 y 轴 */
+  series.forEach(s => (s.errors || []).forEach((e, i) => {
+    if (typeof e === "number" && typeof s.values[i] === "number") y1 = Math.max(y1, s.values[i] + e);
+  }));
   if (opt.yMax != null) y1 = Math.max(y1, opt.yMax);
   if (y1 <= 0) y1 = 1;
   y1 *= 1.14;
@@ -1540,19 +1770,161 @@ function gbar(cats, series, opt) {
       bars += '<rect x="' + bx.toFixed(1) + '" y="' + by.toFixed(1) + '" width="' + barW.toFixed(1) +
         '" height="' + bh.toFixed(1) + '" rx="2.5" fill="' + s.color + '"><title>' + esc(c) + " · " + esc(s.name) +
         " = " + (opt.fmt ? opt.fmt(v) : v.toFixed(3)) + "</title></rect>";
+      /* 误差线（如 3 种子样本标准差） */
+      const err = s.errors && s.errors[ci];
+      if (typeof err === "number" && err > 0) {
+        const ex = bx + barW / 2;
+        const eTop = Math.max(pt, Y(v + err)), eBot = Math.min(h - pb, Y(Math.max(0, v - err)));
+        const cap = Math.max(2.5, Math.min(6, barW / 4));
+        bars += '<line x1="' + ex.toFixed(1) + '" y1="' + eTop.toFixed(1) + '" x2="' + ex.toFixed(1) + '" y2="' + eBot.toFixed(1) +
+          '" style="stroke:var(--text2)" stroke-width="1.2"/>' +
+          '<line x1="' + (ex - cap).toFixed(1) + '" y1="' + eTop.toFixed(1) + '" x2="' + (ex + cap).toFixed(1) + '" y2="' + eTop.toFixed(1) +
+          '" style="stroke:var(--text2)" stroke-width="1.2"/>' +
+          '<line x1="' + (ex - cap).toFixed(1) + '" y1="' + eBot.toFixed(1) + '" x2="' + (ex + cap).toFixed(1) + '" y2="' + eBot.toFixed(1) +
+          '" style="stroke:var(--text2)" stroke-width="1.2"/>';
+      }
       if (barW >= 20) {
-        bars += '<text class="c-tick" x="' + (bx + barW / 2).toFixed(1) + '" y="' + (by - 4).toFixed(1) +
+        /* 有误差线时数值标签抬到误差线上端帽之上，避免被竖线穿过 */
+        const lblY = (typeof err === "number" && err > 0) ? Math.max(pt + 9, Y(v + err) - 5) : by - 4;
+        bars += '<text class="c-tick" x="' + (bx + barW / 2).toFixed(1) + '" y="' + lblY.toFixed(1) +
           '" text-anchor="middle" style="fill:var(--text)">' + (opt.fmt ? opt.fmt(v) : v.toFixed(3)) + "</text>";
       }
     });
-    bars += '<text class="c-tick" x="' + cx.toFixed(1) + '" y="' + (h - pb + 18) + '" text-anchor="middle" style="fill:var(--text2)">' + esc(c) + "</text>";
+    /* 分类标签：放不下时旋转 −35°（锚点在刻度右上，文字向左下延伸），不为避让缩字号 */
+    if (rot) {
+      const lx = (cx + 4).toFixed(1), ly = h - pb + 14;
+      bars += '<text class="c-tick" x="' + lx + '" y="' + ly + '" text-anchor="end" transform="rotate(-35 ' + lx + " " + ly + ')" style="fill:var(--text2)">' + esc(c) + "</text>";
+    } else {
+      bars += '<text class="c-tick" x="' + cx.toFixed(1) + '" y="' + (h - pb + 18) + '" text-anchor="middle" style="fill:var(--text2)">' + esc(c) + "</text>";
+    }
   });
   const legend = series.map((s, i) =>
     '<span class="lg" style="cursor:default"><span class="dot" style="background:' + s.color + '"></span>' + esc(s.name) + "</span>").join("");
-  return '<div class="chart-legend">' + legend + "</div>" +
-    '<svg viewBox="0 0 ' + w + " " + h + '" style="width:100%;height:' + h + 'px;display:block">' + grid +
+  const errNote = series.some(s => s.errors && s.errors.some(e => typeof e === "number"))
+    ? '<span class="lg" style="cursor:default;opacity:.75">误差线＝多种子样本标准差</span>' : "";
+  const xLab = opt.xLabel ? '<text class="c-axlabel" x="' + (w - pr) + '" y="' + (h - 2) + '" text-anchor="end">' + esc(opt.xLabel) + "</text>" : "";
+  return '<div class="chart-legend">' + legend + errNote + "</div>" +
+    '<svg class="gc-svg" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:' + h + 'px;display:block">' + grid +
     '<line x1="' + pl + '" y1="' + (h - pb) + '" x2="' + (w - pr) + '" y2="' + (h - pb) + '" style="stroke:var(--chart-axis)"/>' +
-    bars + "</svg>";
+    bars + xLab + "</svg>";
+}
+/* 横向条形图（分类 >10 时自动启用）：分类标签右对齐排在轴左，永不相交；
+ * 条按首序列数值降序排列，数值轴在底部，tooltip/误差线/图例与竖排模式同一套逻辑。 */
+function gbarH(cats, series, opt, w) {
+  const pal = seriesColors();
+  series.forEach((s, i) => { if (!s.color) s.color = pal[i % pal.length]; });
+  const all = [].concat.apply([], series.map(s => s.values));
+  if (!all.length) return '<div class="empty" style="padding:24px"><div class="emoji">📊</div>暂无数据</div>';
+  const fs = 10.5, n = cats.length, ns = series.length;
+  /* 排序：按首序列数值降序（缺失排最后），长列表更易扫读 */
+  const order = cats.map((c, i) => i).sort((a, b) => {
+    const va = series[0].values[a], vb = series[0].values[b];
+    return (vb == null ? -Infinity : vb) - (va == null ? -Infinity : va);
+  });
+  const labW = Math.min(Math.max.apply(null, cats.map(c => labelW(c, fs))) + 12, w * 0.44, 200);
+  const pr = 18, pt = 24, pb = 42;
+  const plotL = labW + 14, plotR = w - pr, plotW = Math.max(80, plotR - plotL);
+  const bandH = Math.max(ns * 13 + 7, 18);
+  const h = pt + n * bandH + pb;
+  let x1 = Math.max.apply(null, all.filter(v => typeof v === "number" && !isNaN(v)).concat([0]));
+  series.forEach(s => (s.errors || []).forEach((e, i) => {
+    if (typeof e === "number" && typeof s.values[i] === "number") x1 = Math.max(x1, s.values[i] + e);
+  }));
+  if (opt.yMax != null) x1 = Math.max(x1, opt.yMax);
+  if (x1 <= 0) x1 = 1;
+  x1 *= ns === 1 ? 1.22 : 1.1;   /* 单序列时条末要标数值，多留头部空间 */
+  const X = v => plotL + v / x1 * plotW;
+  const tk = niceTicks(0, x1, 5);
+  let grid = "";
+  tk.ticks.forEach(v => {
+    if (v < 0 || v > x1) return;
+    const xx = X(v).toFixed(1);
+    grid += '<line x1="' + xx + '" y1="' + pt + '" x2="' + xx + '" y2="' + (h - pb) + '" style="stroke:var(--chart-grid)"/>';
+    grid += '<text class="c-tick" x="' + xx + '" y="' + (h - pb + 16) + '" text-anchor="middle">' + fmtNum(v, tk.step) + "</text>";
+  });
+  const barH = Math.max(8, Math.min(13, (bandH - 6) / ns));
+  let bars = "";
+  order.forEach((ci, row) => {
+    const yTop = pt + row * bandH, cy = yTop + bandH / 2;
+    bars += '<text class="c-tick" x="' + labW.toFixed(1) + '" y="' + (cy + 3.5).toFixed(1) +
+      '" text-anchor="end" style="fill:var(--text2)">' + esc(cats[ci]) + "</text>";
+    series.forEach((s, si) => {
+      const v = s.values[ci];
+      if (v == null || isNaN(v)) return;
+      const yb = yTop + (bandH - ns * barH - (ns - 1) * 2) / 2 + si * (barH + 2);
+      const bw = Math.max(1.5, X(v) - plotL);
+      bars += '<rect x="' + plotL.toFixed(1) + '" y="' + yb.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + barH.toFixed(1) +
+        '" rx="2" fill="' + s.color + '"><title>' + esc(cats[ci]) + " · " + esc(s.name) +
+        " = " + (opt.fmt ? opt.fmt(v) : v.toFixed(3)) + "</title></rect>";
+      /* 误差线（横向） */
+      const err = s.errors && s.errors[ci];
+      if (typeof err === "number" && err > 0) {
+        const ey = yb + barH / 2;
+        const lft = X(Math.max(0, v - err)), rgt = X(v + err);
+        const cap = Math.max(2, Math.min(5, barH / 3));
+        bars += '<line x1="' + lft.toFixed(1) + '" y1="' + ey.toFixed(1) + '" x2="' + rgt.toFixed(1) + '" y2="' + ey.toFixed(1) + '" style="stroke:var(--text2)" stroke-width="1.1"/>' +
+          '<line x1="' + lft.toFixed(1) + '" y1="' + (ey - cap).toFixed(1) + '" x2="' + lft.toFixed(1) + '" y2="' + (ey + cap).toFixed(1) + '" style="stroke:var(--text2)" stroke-width="1.1"/>' +
+          '<line x1="' + rgt.toFixed(1) + '" y1="' + (ey - cap).toFixed(1) + '" x2="' + rgt.toFixed(1) + '" y2="' + (ey + cap).toFixed(1) + '" style="stroke:var(--text2)" stroke-width="1.1"/>';
+      }
+      /* 单序列且条够高时在条末标数值；放不下就画进条内（白字） */
+      if (ns === 1 && barH >= 9) {
+        const label = opt.fmt ? opt.fmt(v) : v.toFixed(3);
+        const lx = plotL + bw + 5;
+        const inside = lx + labelW(label, fs) + 4 > plotR;
+        bars += '<text class="c-tick" x="' + (inside ? plotL + bw - 5 : lx).toFixed(1) + '" y="' + (yb + barH / 2 + 3.5).toFixed(1) +
+          '" text-anchor="' + (inside ? "end" : "start") + '" style="fill:' + (inside ? "#fff" : "var(--text)") + '">' + esc(label) + "</text>";
+      }
+    });
+  });
+  const legend = series.map((s, i) =>
+    '<span class="lg" style="cursor:default"><span class="dot" style="background:' + s.color + '"></span>' + esc(s.name) + "</span>").join("");
+  const errNote = series.some(s => s.errors && s.errors.some(e => typeof e === "number"))
+    ? '<span class="lg" style="cursor:default;opacity:.75">误差线＝多种子样本标准差</span>' : "";
+  const xLab = opt.xLabel ? '<text class="c-axlabel" x="' + plotR + '" y="' + (h - 2) + '" text-anchor="end">' + esc(opt.xLabel) + "</text>" : "";
+  return '<div class="chart-legend">' + legend + errNote + "</div>" +
+    '<svg class="gc-svg" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:' + h + 'px;display:block">' + grid +
+    '<line x1="' + plotL.toFixed(1) + '" y1="' + pt + '" x2="' + plotL.toFixed(1) + '" y2="' + (h - pb) + '" style="stroke:var(--chart-axis)"/>' +
+    '<line x1="' + plotL.toFixed(1) + '" y1="' + (h - pb) + '" x2="' + plotR + '" y2="' + (h - pb) + '" style="stroke:var(--chart-axis)"/>' +
+    bars + xLab + "</svg>";
+}
+/* 容器宽度变化 → 按新宽度重绘（保持 1:1 像素比例，文字/圆点/阈值线不再被拉伸压缩） */
+let chartRO = null, roTimer = null;
+function resizeChartEl(el, w) {
+  if (!w) return;
+  if (el.dataset.chart) {
+    const st = CHARTS[el.dataset.chart];
+    if (!st || Math.abs((st.width || 720) - w) < 2) return;
+    st.width = w;
+    el.innerHTML = chartSVG(el.dataset.chart);
+  } else if (el.dataset.resp) {
+    const item = RESP[el.dataset.resp];
+    if (!item || Math.abs(item.width - w) < 2) return;
+    item.width = w;
+    el.innerHTML = item.render(w);
+  }
+}
+function attachChartResize() {
+  if (typeof ResizeObserver === "undefined") return;
+  if (!chartRO) {
+    chartRO = new ResizeObserver(entries => {
+      entries.forEach(en => resizeChartEl(en.target, Math.round(en.target.clientWidth)));
+    });
+  }
+  document.querySelectorAll(".gchart").forEach(el => {
+    if (el.dataset.ro) return;
+    el.dataset.ro = "1";
+    chartRO.observe(el);
+    /* 立即按当前宽度重绘一次：ResizeObserver 的首帧回调可能晚于本次渲染 */
+    resizeChartEl(el, Math.round(el.clientWidth));
+  });
+  /* 画廊宽图跨两列：图片加载完成后按真实宽高比重估（onload 之外 here 兜底一次） */
+  document.querySelectorAll(".gal-item img").forEach(galAspect);
+}
+if (typeof MutationObserver !== "undefined") {
+  new MutationObserver(() => {
+    clearTimeout(roTimer);
+    roTimer = setTimeout(attachChartResize, 60);
+  }).observe(document.body, { childList: true, subtree: true });
 }
 
 /* ---- 统计面板（对标 Grafana Stat panel：大数字 + 副标题 + 迷你趋势） ---- */
@@ -1575,7 +1947,7 @@ function gstat(label, value, opt) {
   }
   return '<div class="gstat">' +
     '<div class="gs-lab">' + esc(label) + "</div>" +
-    '<div class="gs-val" style="color:' + color + '">' + esc(String(value)) +
+    '<div class="gs-val" style="color:' + color + (opt.size ? ";font-size:" + opt.size : "") + '">' + esc(String(value)) +
       (opt.unit ? '<span class="gs-unit">' + esc(opt.unit) + "</span>" : "") + "</div>" +
     (opt.sub ? '<div class="gs-sub">' + opt.sub + "</div>" : "") + spark + "</div>";
 }
@@ -1629,8 +2001,14 @@ function closeModal() {
   const m = document.getElementById("modal");
   if (m) { m.style.display = "none"; m.innerHTML = ""; }
   document.body.style.overflow = "";
+  FIG_NAV = null;   /* 灯箱关闭后清除上下组导航状态 */
 }
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeModal(); return; }
+  if (!FIG_NAV) return;   /* 灯箱打开时 ←/→ 在同分组内循环切换 */
+  if (e.key === "ArrowLeft") { e.preventDefault(); figStep(-1); }
+  else if (e.key === "ArrowRight") { e.preventDefault(); figStep(1); }
+});
 
 /* 运行详情：指标 + 逐 epoch 曲线 + 原始日志表 */
 function showRunDetail(proj, tag) {
@@ -1641,20 +2019,21 @@ function showRunDetail(proj, tag) {
   const yKey = cols.indexOf("val_dice") >= 0 ? "val_dice" : "dice";
   const chart = (r.series || []).length
     ? gchart([
-        { name: yKey, pts: toPts(r.series, "epoch", yKey) },
-        { name: "train_loss", pts: toPts(r.series, "epoch", "train_loss") },
-      ], { h: 220, smooth: true, xLabel: "epoch" })
+        { name: metCN(yKey), pts: toPts(r.series, "epoch", yKey) },
+        { name: "训练损失", pts: toPts(r.series, "epoch", "train_loss") },
+      ], { h: 220, smooth: true, xLabel: "轮次" })
     : '<div class="muted">无曲线数据</div>';
   const table = '<div class="table-scroll"><table class="stat-table num-table"><tr>' +
-    cols.map(c => "<td>" + esc(c) + "</td>").join("") + "</tr>" +
+    cols.map(c => "<td>" + esc(metCN(c)) + "</td>").join("") + "</tr>" +
     (r.series || []).map(row => "<tr>" + cols.map(c => "<td>" + esc(row[c]) + "</td>").join("") + "</tr>").join("") +
     "</table></div>";
   openModal("运行详情 · " + tag,
     '<div class="chiprow" style="margin-bottom:12px">' +
       '<span class="tag cat">' + esc(r.model || "") + "</span>" + statusBadge(r.status) +
-      '<span class="badge done">best Dice ' + fmt3(r.best_val_dice) + "</span>" +
-      '<span class="run-metric">epoch ' + r.epochs_done + (r.total_epochs ? "/" + r.total_epochs : "") + "</span>" +
-      '<span class="run-metric">' + esc(r.cum_min) + " min</span>" +
+      '<span class="badge done">最佳 Dice ' + fmt3(r.best_val_dice) + "</span>" +
+      '<span class="run-metric">第 ' + r.epochs_done + (r.total_epochs ? "/" + r.total_epochs : "") + " 轮</span>" +
+      (r.stop_reason ? '<span class="tag cat" title="' + esc(r.stop_reason) + '">' + esc(fmtStop(r.stop_reason)) + "</span>" : "") +
+      '<span class="run-metric">累计 ' + esc(r.cum_min) + " 分钟</span>" +
       '<span class="run-metric">' + esc(r.updated) + "</span>" +
     "</div>" + chart + '<div style="margin-top:14px">' + table + "</div>", { wide: true });
 }
@@ -1669,13 +2048,13 @@ async function showEvalDetail(proj, file) {
     const rows = Object.keys(m).map(k => {
       const v = m[k];
       const shown = v == null ? "—" : (typeof v === "number" ? v : JSON.stringify(v));
-      return "<tr><td>" + esc(k) + '</td><td class="mono">' + esc(shown) + "</td></tr>";
+      return "<tr><td>" + esc(metCN(k)) + '</td><td class="mono">' + esc(shown) + "</td></tr>";
     }).join("");
     const head = '<div class="chiprow" style="margin-bottom:12px">' +
-      (d.stage ? '<span class="tag">' + esc(d.stage) + "</span>" : "") +
-      (d.prompt ? '<span class="tag cat">提示 ' + esc(d.prompt) + "</span>" : "") +
-      (d.split ? '<span class="tag cat">' + esc(d.split) + "</span>" : "") +
-      (d.n ? '<span class="run-metric">n=' + esc(d.n) + "</span>" : "") + "</div>";
+      (d.stage ? '<span class="tag">' + esc(stageCN(d.stage)) + "</span>" : "") +
+      (d.prompt ? '<span class="tag cat">提示 ' + esc(promptCN(d.prompt)) + "</span>" : "") +
+      (d.split ? '<span class="tag cat">' + esc(splitCN(d.split)) + "</span>" : "") +
+      (d.n ? '<span class="run-metric">样本数 ' + esc(d.n) + "</span>" : "") + "</div>";
     openModal("评测档案 · " + file,
       head + '<div class="table-scroll"><table class="stat-table num-table">' + rows + "</table></div>" +
       '<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--text2);font-size:12.5px">查看原始 JSON</summary>' +
@@ -1697,34 +2076,354 @@ async function showCode(proj, path) {
   }
 }
 
-/* 图片灯箱 */
-function showFigure(src, title) {
-  openModal(title || "图片",
-    '<div class="lb-wrap"><img class="lightbox-img" src="' + esc(src) + '" alt="' + esc(title || "") + '"></div>' +
+/* ---------------- 产物图中文说明表（U3） ----------------
+ * 键 = 文件名；how = 生成逻辑（与实际脚本/参数核对过），why = 支撑的结论。
+ * 表外新文件回退为「分组名 + 文件名 + 通用说明」，不留空白 caption。 */
+const FIG_NOTES = {
+  "arch_unet.png": { title: "U-Net 基线结构图",
+    how: "hw1_unet/src/plot_figures.py 的 draw_arch 用 matplotlib 代码绘制（12.5×6.4 英寸，160 dpi，无外部素材）",
+    why: "说明作业 1 基线的四次下采样/上采样与跳跃连接的走向" },
+  "arch_resunet.png": { title: "ResUNet 残差结构图",
+    how: "同上（variant=resunet），同一绘图函数切换结构变体",
+    why: "展示残差连接如何缓解深网络的退化问题" },
+  "arch_attn_unet.png": { title: "Attention U-Net 结构图",
+    how: "同上（variant=attn_unet），注意力门控画在跳跃连接上",
+    why: "展示注意力门如何筛选跳跃连接传来的特征" },
+  "case_unet_s42_test.png": { title: "U-Net（种子 42）测试集典型案例",
+    how: "hw1_unet/src/evaluate.py 的 plot_cases：好/中/差三例 × 原图/金标准掩膜/预测掩膜/差异图（13×10 英寸，150 dpi）",
+    why: "目视验证分割质量；差异图红＝误检、绿＝漏检、蓝＝命中" },
+  "case_unet_s7_test.png": { title: "U-Net（种子 7）测试集典型案例",
+    how: "同上（plot_cases，种子 7 运行）", why: "同上；不同种子互相佐证稳定性" },
+  "case_unet_s2026_test.png": { title: "U-Net（种子 2026）测试集典型案例",
+    how: "同上（plot_cases，种子 2026 运行）", why: "同上；不同种子互相佐证稳定性" },
+  "case_resunet_s42_test.png": { title: "ResUNet（种子 42）测试集典型案例",
+    how: "同上（plot_cases，ResUNet 种子 42）", why: "目视验证 ResUNet 分割质量与误检形态" },
+  "case_resunet_s7_test.png": { title: "ResUNet（种子 7）测试集典型案例",
+    how: "同上（plot_cases，ResUNet 种子 7）", why: "同上；不同种子互相佐证稳定性" },
+  "case_resunet_s2026_test.png": { title: "ResUNet（种子 2026）测试集典型案例",
+    how: "同上（plot_cases，ResUNet 种子 2026）", why: "同上；不同种子互相佐证稳定性" },
+  "case_attn_unet_s42_test.png": { title: "Attention U-Net（种子 42）测试集典型案例",
+    how: "同上（plot_cases，Attention U-Net 种子 42）", why: "目视验证注意力变体的分割质量" },
+  "case_attn_unet_s7_test.png": { title: "Attention U-Net（种子 7）测试集典型案例",
+    how: "同上（plot_cases，Attention U-Net 种子 7）", why: "同上；不同种子互相佐证稳定性" },
+  "case_attn_unet_s2026_test.png": { title: "Attention U-Net（种子 2026）测试集典型案例",
+    how: "同上（plot_cases，Attention U-Net 种子 2026）", why: "同上；不同种子互相佐证稳定性" },
+  "case_diag_1e-3_amp_val.png": { title: "诊断案例（学习率 1e-3 + 混合精度，验证集）",
+    how: "同上（plot_cases，诊断运行 diag_1e-3_amp 的验证集输出）",
+    why: "复现训练异常时的分割表现，用于故障排查" },
+  "data_stats.png": { title: "数据分布统计图",
+    how: "hw1_unet/src/prepare_data.py 的 plot_stats：统计 384 母版掩膜的前景占比与连通域个数后绘制（11×4 英寸，150 dpi）",
+    why: "说明训练 2594 / 验证 100 / 测试 1000 的规模、病变像素占比与连通域分布，解释数据难度" },
+  "training_curves.png": { title: "三模型训练曲线（种子 42）",
+    how: "hw1_unet/src/plot_figures.py --curves，读 outputs/logs/{tag}.csv 的逐 epoch 记录",
+    why: "对照三模型的训练损失、验证 Dice 与 HD95 走势，解释早停与训练不稳定性" },
+  "arch_sam.png": { title: "SAM 三件套结构图",
+    how: "hw2_sam/src/plot_figures.py 的 draw_sam_arch（13.5×6.6 英寸，160 dpi）",
+    why: "说明 ViT-B 图像编码器/提示编码器/掩膜解码器的分工与数据流" },
+  "arch_mask_decoder.png": { title: "Mask Decoder 数据流图",
+    how: "同脚本 draw_decoder_flow（11×6.2 英寸，160 dpi）",
+    why: "说明两轮双向交叉注意力如何把提示信息注入图像特征" },
+  "robustness.png": { title: "提示扰动鲁棒性复合图",
+    how: "同脚本 draw_robustness：读 hw2_sam/outputs/logs/eval_*.json 的测试集结果绘制；门户展示版经独立脚本按 14.5×5.0 英寸 / 200 dpi 重绘（右子图标签 35° 防重叠）",
+    why: "左图回答「提示框不准时各阶段掉多少分」，右图回答「哪种提示形式最好用」" },
+  "cascade_system.png": { title: "级联系统流程图",
+    how: "同脚本 draw_cascade（13.6×3.3 英寸，170 dpi）",
+    why: "说明「作业 1 出粗框 → 作业 2 精修」的系统级联叙事" },
+  "case_sam_gt_test.png": { title: "SAM 三阶段定性案例（GT 框提示）",
+    how: "hw2_sam/src/plot_cases.py：按 GT 面积取 10%/50%/90% 分位，各跑 E1/E2/E3 后并排",
+    why: "逐样本对照真实掩膜与三阶段预测，展示均值之外的胜负差异" },
+  "ablation.png": { title: "消融实验对比图",
+    how: "hw1_unet/src/plot_figures.py --ablation，读 outputs/ablation.json（collect_results.py 生成）",
+    why: "三组对照的 Dice/HD95：损失函数、输入分辨率、注意力位置" },
+  "case_loss_bce_test.png": { title: "消融案例：BCE 损失（测试集）",
+    how: "evaluate.py 的 plot_cases，loss_bce 运行", why: "观察纯 BCE 下模型坍塌为全背景的失败形态" },
+  "case_loss_dice_test.png": { title: "消融案例：Dice 损失（测试集）",
+    how: "evaluate.py 的 plot_cases，loss_dice 运行", why: "与 BCE 对照，验证区域重叠损失的作用" },
+  "case_size192_test.png": { title: "消融案例：192 分辨率（测试集）",
+    how: "evaluate.py 的 plot_cases，size192 运行", why: "低分辨率下预测更平滑，对应 HD95 的改善" },
+  "case_size384_test.png": { title: "消融案例：384 分辨率（测试集）",
+    how: "evaluate.py 的 plot_cases，size384 运行", why: "高分辨率但训练不足时的欠拟合表现" },
+  "case_attn_skip_test.png": { title: "消融案例：注意力仅加在 skip（测试集）",
+    how: "evaluate.py 的 plot_cases，attn_skip 运行", why: "对比注意力位置对误检/漏检形态的影响" },
+  "case_attn_bottleneck_test.png": { title: "消融案例：注意力仅加在 bottleneck（测试集）",
+    how: "evaluate.py 的 plot_cases，attn_bottleneck 运行", why: "瓶颈门控对边界贴合（HD95）的作用" },
+};
+const FIG_GROUP_ORDER = ["网络结构图", "训练曲线", "消融实验", "样例分割", "数据分布", "级联系统", "鲁棒性", "其他"];
+function figGroup(name) {
+  if (/^arch_|^structure/i.test(name)) return "网络结构图";
+  if (/^training_curves/i.test(name)) return "训练曲线";
+  if (/^ablation/i.test(name)) return "消融实验";
+  if (/^case_|^pred_|^sample/i.test(name)) return "样例分割";
+  if (/^data_stats|^dist|hist/i.test(name)) return "数据分布";
+  if (/^cascade/i.test(name)) return "级联系统";
+  if (/robust|perturb/i.test(name)) return "鲁棒性";
+  return "其他";
+}
+function figTitle(f) {
+  const n = FIG_NOTES[f.name];
+  if (n) return n.title;
+  return figGroup(f.name) + " · " + f.name.replace(/\.[a-z]+$/i, "");
+}
+
+/* 图片灯箱：大图 + 中文标题 + 生成逻辑/作用/路径 + 同组上一条/下一条（U3/U6） */
+let FIG_NAV = null;
+const FIG_LISTS = {};
+let figListSeq = 0;
+/* 每次视图渲染把文件列表登记成带 gid 的清单，画廊网格与说明区共用同一份 */
+function figList(files, proj) {
+  if (!files || !files.length) return [];
+  const gid = "fig" + (++figListSeq);
+  const list = files.map(f => ({
+    name: f.name,
+    path: f.path || ("outputs/figures/" + f.name),
+    src: "/exp/" + proj + "/figures/" + encodeURIComponent(f.name),
+    group: figGroup(f.name),
+    note: FIG_NOTES[f.name] || null,
+    title: figTitle(f),
+  }));
+  list.gid = gid;
+  FIG_LISTS[gid] = list;
+  return list;
+}
+function figHow(it) { return it.note ? it.note.how : "本图由实验脚本自动生成，详见 reports/ 目录。"; }
+function figWhy(it) { return it.note ? it.note.why : "支撑对应实验小节的结论。"; }
+function openFig(gid, idx) {
+  const list = FIG_LISTS[gid];
+  if (!list || !list[idx]) return;
+  const it = list[idx];
+  const mates = list.map((x, i) => (x.group === it.group ? i : -1)).filter(i => i >= 0);
+  const pos = mates.indexOf(idx);
+  FIG_NAV = { gid: gid, mates: mates, pos: pos };
+  openModal(it.title,
+    '<div class="lb-wrap"><img class="lightbox-img" src="' + esc(it.src) + '" alt="' + esc(it.title) + '"></div>' +
+    '<div class="lb-cap">' +
+      '<div class="lb-title">' + esc(it.title) + '<span class="gal-name mono">' + esc(it.name) + "</span></div>" +
+      '<div class="lb-line"><span class="lb-k">生成逻辑</span>' + esc(figHow(it)) + "</div>" +
+      '<div class="lb-line"><span class="lb-k">作用</span>' + esc(figWhy(it)) + "</div>" +
+      '<div class="lb-line"><span class="lb-k">文件路径</span><span class="mono">' + esc(it.path) + "</span>" +
+        (mates.length > 1 ? '<span class="lb-pos">第 ' + (pos + 1) + " / " + mates.length + " 张（" + esc(it.group) + "）</span>" : "") +
+      "</div></div>" +
     '<div class="lb-actions">' +
-      '<a class="btn sm" href="' + esc(src) + '" target="_blank" rel="noopener">新标签打开原图 ↗</a>' +
-      '<a class="btn sm" href="' + esc(src) + '" download>下载</a>' +
+      (mates.length > 1 ? '<button class="btn sm" onclick="figStep(-1)">← 上一张</button>' +
+        '<button class="btn sm" onclick="figStep(1)">下一张 →</button>' : "") +
+      '<a class="btn sm" href="' + esc(it.src) + '" target="_blank" rel="noopener">新标签打开原图 ↗</a>' +
+      '<a class="btn sm" href="' + esc(it.src) + '" download>下载</a>' +
     "</div>", { wide: true });
 }
-
-/* 图表画廊：缩略图网格，点击放大 */
-function figureGallery(files, proj, emptyHint) {
-  if (!files || !files.length) return '<div class="muted" style="font-size:13px">' + emptyHint + "</div>";
-  return '<div class="gallery">' + files.map(f => {
-    const src = "/exp/" + proj + "/figures/" + encodeURIComponent(f.name);
-    return '<figure class="gal-item" onclick="showFigure(\'' + esc(src) + "','" + esc(f.name) + "')\">" +
-      '<img src="' + esc(src) + '" loading="lazy" alt="' + esc(f.name) + '">' +
-      '<figcaption title="' + esc(f.name) + '">' + esc(f.name) + "</figcaption></figure>";
-  }).join("") + "</div>";
+function figStep(dir) {
+  if (!FIG_NAV) return;
+  const n = FIG_NAV.mates.length;
+  if (!n) return;
+  openFig(FIG_NAV.gid, FIG_NAV.mates[(FIG_NAV.pos + dir + n) % n]);
 }
 
-/* 源码浏览器：文件列表 */
+/* 图表画廊：缩略图（中文标题 + 文件名两行 caption），点击开灯箱；宽图跨两列（U4d） */
+function galAspect(img) {
+  if (!img || !img.naturalWidth) return;
+  const item = img.closest(".gal-item"), gal = img.closest(".gallery");
+  if (!item || !gal) return;
+  const ratio = img.naturalWidth / img.naturalHeight;
+  item.dataset.ratio = ratio.toFixed(2);
+  /* 全部条目都是宽图（如 hw2 四张复合图）时改用两列等宽布局：
+   * 每张都「跨两列」会在 auto-fill 网格里留下成片空洞；混排时才逐项跨两列 */
+  const items = Array.from(gal.querySelectorAll(".gal-item"));
+  const known = items.filter(it => it.dataset.ratio).length;
+  const wideCount = items.filter(it => parseFloat(it.dataset.ratio) > 1.6).length;
+  if (known === items.length && wideCount === items.length && items.length >= 2 && gal.clientWidth >= 720) {
+    gal.classList.add("gal-wide");
+    return;
+  }
+  gal.classList.remove("gal-wide");
+  /* 单条目宽图（单图分组）占满整行，避免半宽卡右侧留大片空洞 */
+  if (items.length === 1 && ratio > 1.6 && gal.clientWidth >= 720) {
+    item.classList.add("span-all");
+    return;
+  }
+  item.classList.remove("span-all");
+  /* 宽高比 >1.6 的宽幅图且画廊够宽时跨两列，缩略图不再被 letterbox 压扁 */
+  if (ratio > 1.6 && gal.clientWidth >= 720) item.classList.add("span2");
+  else item.classList.remove("span2");
+}
+function figureGallery(list, emptyHint, grouped) {
+  if (!list || !list.length) return '<div class="muted" style="font-size:13px">' + emptyHint + "</div>";
+  const grid = fs => '<div class="gallery">' + fs.map(it => {
+    const idx = list.indexOf(it);
+    return '<figure class="gal-item" onclick="openFig(\'' + list.gid + "'," + idx + ')" title="点击放大，附生成逻辑与作用说明">' +
+      '<img src="' + esc(it.src) + '" loading="lazy" alt="' + esc(it.title) + '" onload="galAspect(this)">' +
+      '<figcaption><div class="gal-title">' + esc(it.title) + '</div>' +
+        '<div class="gal-name" title="' + esc(it.path) + '">' + esc(it.name) + "</div></figcaption></figure>";
+  }).join("") + "</div>";
+  if (!grouped) return grid(list);
+  const groups = {};
+  list.forEach(it => { (groups[it.group] = groups[it.group] || []).push(it); });
+  return FIG_GROUP_ORDER.filter(g => groups[g]).map(g =>
+    '<div class="muted" style="font-size:12.5px;margin:2px 0 6px">' + esc(g) +
+      '<span style="color:var(--text2)"> · ' + groups[g].length + '</span></div>' + grid(groups[g])
+  ).join("");
+}
+/* 外置图目录说明区（U6）：说明不堆进画廊网格，条目点击开同一灯箱 */
+function figNotesCard(list, key) {
+  if (!list || !list.length) return "";
+  const byGroup = {};
+  list.forEach(it => (byGroup[it.group] = byGroup[it.group] || []).push(it));
+  let k = 0;
+  const entries = FIG_GROUP_ORDER.filter(g => byGroup[g]).map(g =>
+    '<div class="fn-group">' + esc(g) + "</div>" +
+    byGroup[g].map(it => {
+      k++;
+      const gi = list.indexOf(it);
+      return '<div class="fn-item row-click" onclick="openFig(\'' + list.gid + "'," + gi + ')">' +
+        '<div class="fn-head">' + k + ". " + esc(it.title) +
+          '<span class="gal-name mono" title="' + esc(it.path) + '">' + esc(it.name) + "</span></div>" +
+        '<div class="fn-line"><b>生成逻辑</b>' + esc(figHow(it)) + "</div>" +
+        '<div class="fn-line"><b>作用</b>' + esc(figWhy(it)) + "</div>" +
+      "</div>";
+    }).join("")).join("");
+  return '<div class="card" style="margin-top:16px"><div class="ph"><h3>📚 图目录与生成说明（' + list.length + ' 张）</h3>' +
+    '<span class="p-meta">说明外置 · 点击条目打开大图</span></div>' +
+    collapsibleBlock(entries, list.length, { key: key }) + "</div>";
+}
+
+/* 源码浏览器：文件列表（显示相对项目根的完整路径，保留目录信息） */
 function codeList(files, proj) {
   if (!files || !files.length) return '<div class="muted" style="font-size:13px">暂无源码文件</div>';
   return '<div class="code-list">' + files.map(f =>
     '<button class="code-item" onclick="showCode(\'' + proj + "','" + esc(f.path) + "')\">" +
-      '<span class="mono">' + esc(f.name) + "</span>" +
+      '<span class="mono" title="' + esc(f.path) + '">' + esc(f.path) + "</span>" +
       '<span class="dl-meta">' + esc(f.size_h) + "</span></button>").join("") + "</div>";
+}
+
+/* ==================== 折叠组件（U2） ====================
+ * 规则：列表行数 > 8 才折叠（fileRows / 评测表 / 图目录说明区）；
+ * 图表卡、统计卡、实时面板、画廊网格一律不加折叠控件。
+ * 状态存 sessionStorage（键=卡身份），同会话内切运行 / 自动刷新后恢复。 */
+const CLPS_THRESHOLD = 8, CLPS_H = 188;   /* 折叠态可见高度 ≈ 前 5 行 */
+function collapsibleBlock(innerHtml, count, opt) {
+  opt = opt || {};
+  if (count == null || count <= CLPS_THRESHOLD) return innerHtml;
+  const key = opt.key || ("x" + count);
+  let open = false;
+  try { open = sessionStorage.getItem("dh-clps:" + key) === "1"; } catch (e) { /* 隐私模式 */ }
+  return '<div class="clps' + (open ? " open" : "") + '" data-clps-key="' + esc(key) + '" data-clps-n="' + count + '">' +
+    '<div class="clps-body">' + innerHtml + "</div>" +
+    '<div class="clps-fade"></div>' +
+    '<button class="clps-toggle" type="button" aria-expanded="' + (open ? "true" : "false") + '">' +
+      '<span class="cv">▸</span>' + (open ? "收起" : "展开全部（" + count + "）") + "</button></div>";
+}
+function setClpsOpen(box, open) {
+  const body = box.querySelector(".clps-body");
+  if (!body) return;
+  const btn = box.querySelector(".clps-toggle");
+  const n = box.dataset.clpsN;
+  const finish = () => {   /* 展开动画结束后放开高度限制，防内容换行变化被裁 */
+    if (box.classList.contains("open")) body.style.maxHeight = "none";
+    body.removeEventListener("transitionend", finish);
+  };
+  body.removeEventListener("transitionend", finish);
+  if (open) {
+    box.classList.add("open");
+    body.style.maxHeight = body.scrollHeight + "px";
+    body.addEventListener("transitionend", finish);
+    setTimeout(finish, 320);   /* transitionend 兜底 */
+  } else {
+    if (getComputedStyle(body).maxHeight === "none") body.style.maxHeight = body.scrollHeight + "px";
+    requestAnimationFrame(() => { body.style.maxHeight = CLPS_H + "px"; });
+    box.classList.remove("open");
+  }
+  if (btn) {
+    btn.innerHTML = '<span class="cv">▸</span>' + (open ? "收起" : "展开全部（" + n + "）");
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  try { sessionStorage.setItem("dh-clps:" + box.dataset.clpsKey, open ? "1" : "0"); } catch (e) { /* 忽略 */ }
+}
+document.addEventListener("click", e => {
+  const btn = e.target.closest && e.target.closest(".clps-toggle");
+  if (btn && btn.closest(".clps")) {
+    const box = btn.closest(".clps");
+    setClpsOpen(box, !box.classList.contains("open"));
+  }
+});
+
+/* ==================== 左侧章节导航（U1） ====================
+ * 点击平滑滚动（不改 location.hash，避免整页重渲染）；
+ * 滚动时 scroll-spy 高亮当前章节；≤1024px 降级为吸顶横向 chip 条（见 CSS）。 */
+const PAGE_SECTIONS = {
+  hw1: [
+    { id: "hw1-sec-map", num: "00", label: "实验地图" },
+    { id: "hw1-sec-stats", num: "01", label: "统计总览" },
+    { id: "hw1-sec-live", num: "02", label: "实时运行" },
+    { id: "hw1-sec-curves", num: "03", label: "学习曲线" },
+    { id: "hw1-sec-compare", num: "04", label: "模型对比" },
+    { id: "hw1-sec-runs", num: "05", label: "运行清单" },
+    { id: "hw1-sec-evals", num: "06", label: "评测档案" },
+    { id: "hw1-sec-artifacts", num: "07", label: "产物画廊" },
+    { id: "hw1-sec-source", num: "08", label: "源码与报告" },
+  ],
+  hw2: [
+    { id: "hw2-sec-map", num: "00", label: "实验地图" },
+    { id: "hw2-sec-stats", num: "01", label: "统计总览" },
+    { id: "hw2-sec-live", num: "02", label: "实时运行" },
+    { id: "hw2-sec-stages", num: "03", label: "阶段进展" },
+    { id: "hw2-sec-charts", num: "04", label: "对比图表" },
+    { id: "hw2-sec-evals", num: "05", label: "评测档案" },
+    { id: "hw2-sec-curves", num: "06", label: "训练曲线" },
+    { id: "hw2-sec-artifacts", num: "07", label: "产物画廊" },
+    { id: "hw2-sec-source", num: "08", label: "源码与报告" },
+  ],
+};
+let pageNav = null;   /* { secs, onScroll } */
+function teardownPageNav() {
+  if (pageNav && pageNav.onScroll) window.removeEventListener("scroll", pageNav.onScroll);
+  pageNav = null;
+}
+function pageNavSpy() {
+  if (!pageNav) return;
+  const secs = pageNav.secs;
+  let cur = secs[0] && secs[0].id;
+  for (const s of secs) {
+    const el = document.getElementById(s.id);
+    if (el && el.getBoundingClientRect().top <= 96) cur = s.id;
+  }
+  /* 滚到页底时点亮最后一章（末章较短时也能到达） */
+  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+    cur = secs[secs.length - 1].id;
+  }
+  const navEl = document.querySelector(".page-nav");
+  document.querySelectorAll(".page-nav .pn-item").forEach(b =>
+    b.classList.toggle("active", b.dataset.sec === cur));
+  const act = document.querySelector(".page-nav .pn-item.active");
+  if (act && navEl) {   /* 激活项在侧栏内保持可见（纵向/横向两种形态） */
+    const r = act.getBoundingClientRect(), nr = navEl.getBoundingClientRect();
+    if (r.top < nr.top + 2) navEl.scrollTop += r.top - nr.top - 6;
+    else if (r.bottom > nr.bottom - 2) navEl.scrollTop += r.bottom - nr.bottom + 6;
+    if (r.left < nr.left + 2) navEl.scrollLeft += r.left - nr.left - 6;
+    else if (r.right > nr.right - 2) navEl.scrollLeft += r.right - nr.right + 6;
+  }
+}
+function initPageNav(mountId, secs) {
+  teardownPageNav();
+  const nav = document.getElementById(mountId);
+  if (!nav || !secs || !secs.length) return;
+  nav.innerHTML = secs.map(s =>
+    '<button class="pn-item" data-sec="' + s.id + '"><span class="pn-num">' + s.num + "</span>" + esc(s.label) + "</button>").join("");
+  pageNav = { secs: secs, onScroll: null };
+  let ticking = false;
+  pageNav.onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; pageNavSpy(); });
+  };
+  window.addEventListener("scroll", pageNav.onScroll, { passive: true });
+  nav.addEventListener("click", e => {
+    const b = e.target.closest(".pn-item");
+    if (!b) return;
+    const el = document.getElementById(b.dataset.sec);
+    if (!el) return;
+    document.querySelectorAll(".page-nav .pn-item").forEach(x =>
+      x.classList.toggle("active", x === b));
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  pageNavSpy();
 }
 
 /* ==================== 自动刷新（训练进行中实时看进度） ==================== */
@@ -1736,8 +2435,13 @@ function toggleAutoRefresh(proj) {
   if (autoRefresh.timer) { clearInterval(autoRefresh.timer); autoRefresh.timer = null; }
   if (autoRefresh.on) {
     autoRefresh.timer = setInterval(async () => {
+      /* 路由守卫：离开该作业视图后立即停表，绝不在别的页面静默重绘本视图 */
+      if (parseHash().path !== "/" + proj) { stopAutoRefresh(); return; }
+      /* 用户正在悬停图表时不重绘（重绘会重置 tooltip），下一轮再刷新 */
+      if (tipVisible) return;
       try {
         const fresh = await api("/api/" + proj);
+        if (parseHash().path !== "/" + proj) { stopAutoRefresh(); return; }
         if (proj === "hw1") state.hw1 = fresh; else state.hw2 = fresh;
         const y = window.scrollY;
         if (proj === "hw1") viewHw1(); else viewHw2();
@@ -1760,20 +2464,39 @@ function stopAutoRefresh() {
  * 训练/评测进程每 epoch / 每 25 张向 outputs/progress/*.json 写心跳，
  * 这里只更新面板本身，不重绘整个视图（避免打断图表悬停与滚动位置）。 */
 let liveTimer = null;
+function fmtDur(sec) {
+  if (sec == null || isNaN(sec)) return "—";
+  sec = Math.max(0, Math.round(sec));
+  if (sec < 60) return sec + " 秒";
+  const m = Math.round(sec / 60);
+  if (m < 60) return m + " 分钟";
+  const h = Math.floor(m / 60), r = m % 60;
+  return h + " 小时" + (r ? " " + r + " 分钟" : "");
+}
 function livePct(it) {
   if (it.epoch != null && it.epochs_total) return Math.min(100, it.epoch / it.epochs_total * 100);
   if (it.it != null && it.total) return Math.min(100, it.it / it.total * 100);
   return null;
 }
+function liveKind(it) {
+  if (it.phase === "done") return "已完成";
+  return it.phase === "eval" ? "评测中" : "训练中";
+}
+function liveProgressText(it) {
+  if (it.phase === "eval" && it.it != null && it.total) return it.it + " / " + it.total;
+  if (it.phase === "train" && it.epoch != null && it.epochs_total) return "epoch " + it.epoch + " / " + it.epochs_total;
+  return "";
+}
 function renderLive(items) {
   if (!items.length) {
-    return '<div class="live-empty"><span class="live-dot"></span>实时监控中 · 当前没有运行中的任务</div>';
+    return '<div class="live-empty"><span class="live-dot"></span>本项目当前没有运行中的任务</div>';
   }
   return items.map(it => {
     const pct = livePct(it);
     const done = it.phase === "done";
-    const kind = done ? "已完成" : (it.phase === "eval" ? "评测中" : "训练中");
-    const stale = !done && it.age_sec > 90;
+    const kind = liveKind(it);
+    /* 训练按 epoch 写心跳（约 5 分钟一次），阈值放宽；评测每 10 张写一次，150s 无心跳才算异常 */
+    const stale = !done && (it.phase === "train" ? it.age_sec > 420 : it.age_sec > 150);
     const age = it.age_sec < 60 ? Math.round(it.age_sec) + "s 前" : Math.round(it.age_sec / 60) + " 分钟前";
     if (stale) {
       return '<div class="live-item stale">' +
@@ -1782,19 +2505,31 @@ function renderLive(items) {
         '<span class="live-age">' + age + "（可能已停止）</span></div>" +
         (it.detail ? '<div class="live-detail">' + esc(it.detail) + "</div>" : "") + "</div>";
     }
+    const eta = !done && it.eta_sec != null
+      ? '<div class="live-eta">已运行 <b>' + fmtDur(it.elapsed_sec) + "</b>" +
+        (it.eta_sec ? " · 预计还需 <b>" + fmtDur(it.eta_sec) + "</b>" : " · 正在收尾") + "</div>"
+      : "";
     return '<div class="live-item ' + (done ? "done" : "running") + '">' +
       '<div class="live-head">' +
         '<span class="badge ' + (done ? "done" : "running") + '">' + (done ? "" : '<span class="live-dot"></span>') + kind + "</span>" +
         '<b class="mono">' + esc(it.tag || it.stage || "") + "</b>" +
-        (it.stage && it.prompt ? '<span class="tag cat">' + esc(it.stage) + "/" + esc(it.prompt) + "</span>" : "") +
-        '<span class="live-age">' + age + "</span>" +
+        (it.stage && it.prompt ? '<span class="tag cat">' + esc(stageCN(it.stage)) + " · " + esc(promptCN(it.prompt)) + "</span>" : "") +
+        '<span class="live-age">' + age + (done ? "（完成后保留 10 分钟）" : "") + "</span>" +
       "</div>" +
       (pct != null
         ? '<div class="live-bar"><i style="width:' + pct.toFixed(1) + '%"></i><span>' + pct.toFixed(0) + "%</span></div>"
         : "") +
       (it.detail ? '<div class="live-detail">' + esc(it.detail) + "</div>" : "") +
+      eta +
     "</div>";
   }).join("");
+}
+function renderOtherLive(others) {
+  if (!others.length) return "";
+  return '<div class="live-other">其他项目也在运行：' + others.map(it =>
+    '<a href="#/' + esc(it.proj) + '">' + esc(it.proj) + " · " + esc(it.tag || it.stage || "") +
+    " " + esc(liveKind(it)) + (it.eta_sec != null ? " · 预计还需 " + fmtDur(it.eta_sec) : "") +
+    "</a>").join("；") + "</div>";
 }
 async function pollLive() {
   const panel = document.getElementById("live-panel");
@@ -1802,63 +2537,119 @@ async function pollLive() {
   const proj = panel.dataset.proj;
   try {
     const d = await api("/api/live");
-    const items = (d.items || []).filter(x => x.proj === proj);
-    panel.innerHTML = renderLive(items);
+    const all = d.items || [];
+    panel.innerHTML = renderLive(all.filter(x => x.proj === proj)) +
+      renderOtherLive(all.filter(x => x.proj !== proj && x.phase !== "done"));
   } catch (e) { /* 轮询失败静默，保留上次内容 */ }
 }
 function startLivePoll() { stopLivePoll(); liveTimer = setInterval(pollLive, 3000); pollLive(); }
 function stopLivePoll() { if (liveTimer) { clearInterval(liveTimer); liveTimer = null; } }
 
+/* ---------------- 全局运行指示（任何页面都能看到在跑什么） ---------------- */
+let globalLiveItems = [];
+async function pollGlobalLive() {
+  try {
+    const d = await api("/api/live");
+    globalLiveItems = d.items || [];
+    renderGlobalLive();
+  } catch (e) { /* 静默 */ }
+}
+function renderGlobalLive() {
+  const box = document.getElementById("nav-live");
+  const txt = document.getElementById("nav-live-text");
+  const dot = document.getElementById("nav-live-dot");
+  if (!box || !txt || !dot) return;
+  const run = globalLiveItems.filter(x => x.phase !== "done");
+  if (!run.length) {
+    txt.textContent = "空闲";
+    box.classList.remove("busy");
+    dot.className = "dot green";
+    box.title = "当前没有运行中的实验任务";
+    updateExpLive();
+    return;
+  }
+  const f = run[0];
+  txt.textContent = run.length + " 个任务运行中 · " + f.proj + " " + (f.tag || f.stage || "");
+  box.classList.add("busy");
+  dot.className = "dot yellow";
+  box.title = run.map(it =>
+    it.proj + " · " + (it.tag || it.stage || "") + " · " + liveKind(it) +
+    (liveProgressText(it) ? " · " + liveProgressText(it) : "") +
+    (it.eta_sec != null ? " · 预计还需 " + fmtDur(it.eta_sec) : "")).join("\n");
+  updateExpLive();
+}
+function updateExpLive() {
+  const el = document.getElementById("exp-cv-eta");
+  if (!el) return;
+  const it = globalLiveItems.find(x =>
+    x.proj === "hw1" && x.phase !== "done" && /^cv_/.test(x.tag || ""));
+  el.textContent = it
+    ? "当前 " + (it.tag || "").replace(/^cv_/, "").replace("_f", " · fold ") +
+      (it.eta_sec != null ? "，预计还需 " + fmtDur(it.eta_sec) : "") + "（共 10 折）"
+    : "";
+}
+function goLiveTask() {
+  const run = globalLiveItems.filter(x => x.phase !== "done");
+  if (run.length) location.hash = "#/" + run[0].proj;
+}
+
 /* ==================== 作业 1 实验视图 ==================== */
-function hw1Stats(d) {
-  const runs = d.runs || [];
-  const best = runs.reduce((a, r) => (!a || r.best_val_dice > a.best_val_dice ? r : a), null);
-  const evals = (d.evals || []).filter(e => e.metrics);
-  const bestEval = evals.reduce((a, e) => (!a || e.metrics.dice > a.metrics.dice ? e : a), null);
-  const totalMin = runs.reduce((n, r) => n + (Number(r.cum_min) || 0), 0);
-  const m = bestEval ? bestEval.metrics : null;
-  return '<div class="grid-stats">' +
-    gstat("最佳 Val Dice", best ? fmt3(best.best_val_dice) : "—",
-      { sub: best ? esc(best.tag) : "暂无运行", color: "var(--accent)", spark: best ? best.series.map(r => r.dice) : null }) +
-    gstat("测试集 Dice", m ? fmt3(m.dice) : "—",
-      { sub: m ? "n=" + m.n + " · " + esc(bestEval.tag) : "尚未评测", color: "var(--primary)" }) +
-    gstat("测试集 HD95", m ? Number(m.hd95).toFixed(1) : "—", { unit: "px", sub: m ? "越低越好" : "—", color: "var(--warn)" }) +
-    gstat("训练运行", runs.length, { sub: runs.filter(r => r.status === "finished").length + " 个已完成" }) +
-    gstat("累计训练时长", totalMin.toFixed(0), { unit: "min", sub: (totalMin / 60).toFixed(1) + " 小时" }) +
-    gstat("Checkpoints", (d.checkpoints || []).length, { sub: "可下载" }) +
-  "</div>";
-}
-function hw1ModelBars(d) {
-  const evals = (d.evals || []).filter(e => e.metrics && e.split === "test");
-  if (!evals.length) return "";
-  const byModel = {};
-  evals.forEach(e => {
-    const tag = e.tag || "";
-    const model = /^attn/.test(tag) ? "Attention U-Net" : /^res/.test(tag) ? "ResUNet" : /^unet/.test(tag) ? "U-Net" : tag;
-    (byModel[model] = byModel[model] || []).push(e.metrics.dice);
-  });
-  const cats = Object.keys(byModel);
-  const avg = cats.map(c => byModel[c].reduce((a, b) => a + b, 0) / byModel[c].length);
-  return gbar(cats, [{ name: "测试集 Dice（均值）", values: avg }], { h: 230, yMax: 1, fmt: v => v.toFixed(3) });
-}
+/* 消融面板：只有一组至少 2 个设置时才画对比柱状图；否则诚实展示基线 */
 function hw1AblationBars(d) {
   const ab = d.ablation || {};
   const groups = Object.keys(ab);
-  if (!groups.length) return "";
-  return groups.map(g => {
-    const items = ab[g];
+  if (!groups.length) return '<div class="muted" style="font-size:13px">消融实验尚未运行（<code>run_all.py --only ablation</code>）。</div>';
+  const ready = groups.every(g => ab[g] && Object.keys(ab[g]).length >= 2);
+  if (!ready) {
+    const rows = groups.map(g => {
+      const items = ab[g] || {};
+      const name = Object.keys(items)[0] || "—";
+      const v = items[name] || {};
+      const cell = x => (x == null ? "—" : Number(x).toFixed(3));
+      return "<tr><td>" + esc(g) + "</td><td class='mono'>" + esc(name) + "</td><td>" + cell(v.dice) +
+        "</td><td>" + cell(v.iou) + "</td><td>" + (v.hd95 == null ? "—" : Number(v.hd95).toFixed(1)) + "</td></tr>";
+    }).join("");
+    return '<div class="muted" style="font-size:12.5px;line-height:1.65;margin-bottom:8px">' +
+        '消融实验尚未运行（<code>run_all.py --only ablation</code>），当前仅展示各组<b>基线配置</b>；' +
+        '同一维度还没有第二个设置，因此不构成可比较的结论。</div>' +
+      '<div class="table-scroll"><table class="stat-table num-table">' +
+        '<tr><td style="color:var(--text2)">维度</td><td style="color:var(--text2)">设置</td>' +
+        '<td style="color:var(--text2)">Dice</td><td style="color:var(--text2)">IoU</td><td style="color:var(--text2)">HD95</td></tr>' +
+        rows + "</table></div>";
+  }
+  return '<div class="grid grid-3">' + groups.map(g => {
+    const items = ab[g] || {};
     const cats = Object.keys(items);
-    return '<div style="margin-bottom:16px"><div class="muted" style="font-size:12.5px;margin-bottom:4px">' + esc(g) + "</div>" +
-      gbar(cats, [
-        { name: "Dice", values: cats.map(c => items[c].dice) },
-        { name: "HD95(px)", values: cats.map(c => items[c].hd95) },
-      ], { h: 200, fmt: v => v.toFixed(2) }) + "</div>";
-  }).join("");
+    /* 分辨率组的 HD95 单位随输入尺寸变化，跨设置不可比，故只画 Dice */
+    const series = [{ name: "Dice", values: cats.map(c => items[c].dice) }];
+    if (!/分辨率/.test(g)) {
+      series.push({ name: "HD95(px)（@256）", values: cats.map(c => items[c].hd95) });
+    }
+    return '<div><div class="muted" style="font-size:12.5px;margin-bottom:4px">' + esc(g) +
+      (/分辨率/.test(g) ? '<span style="color:var(--text2)"> · HD95 口径随尺寸变化，不跨档比较</span>' : "") + "</div>" +
+      gbar(cats, series, { h: 200, fmt: v => v.toFixed(2) }) + "</div>";
+  }).join("") + "</div>";
 }
 /* ---------- 聚合小工具 ---------- */
 function nmean(arr) {
   const v = (arr || []).filter(x => typeof x === "number" && !isNaN(x));
   return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+}
+/* 样本标准差（ddof=1），与 reports/tables.md 的 ± 口径一致 */
+function nstd(arr) {
+  const v = (arr || []).filter(x => typeof x === "number" && !isNaN(x));
+  if (v.length < 2) return null;
+  const m = v.reduce((a, b) => a + b, 0) / v.length;
+  return Math.sqrt(v.reduce((s, x) => s + (x - m) * (x - m), 0) / (v.length - 1));
+}
+/* 运行分组：主对比 / 诊断 / 冒烟 / 消融（消融 tag 为 loss_* / size* / attn_skip 等） */
+function runGroup(tag) {
+  if (/^diag_/.test(tag)) return "diag";
+  if (/^smoke/.test(tag)) return "smoke";
+  if (/^cv_/.test(tag)) return "cv";
+  if (/^(loss_bce|loss_dice|size\d+|attn_skip|attn_bottleneck)$/.test(tag)) return "ablation";
+  if (/^(unet|resunet|attn_unet)_s\d+$/.test(tag)) return "main";
+  return "other";
 }
 function diceCell(v) {
   if (v == null || isNaN(v)) return '<span class="muted">—</span>';
@@ -1868,21 +2659,123 @@ function diceCell(v) {
 function hw1AggByModel(evals) {
   const CN = { unet: "U-Net", resunet: "ResUNet", attn_unet: "Attention U-Net" };
   const out = {};
-  (evals || []).filter(e => e.metrics && e.split === "test").forEach(e => {
+  /* 只聚合主对比运行 {model}_s{seed}：消融评测的 args.model 与主实验相同，混入会污染均值 */
+  (evals || []).filter(e => e.metrics && e.split === "test" &&
+      /^(unet|resunet|attn_unet)_s\d+$/.test(e.tag || "")).forEach(e => {
     const tag = e.tag || "";
-    const k = /^attn/.test(tag) ? "attn_unet" : /^res/.test(tag) ? "resunet" : /^unet/.test(tag) ? "unet" : tag;
+    const k = /^attn/.test(tag) ? "attn_unet" : /^res/.test(tag) ? "resunet" : "unet";
     (out[k] = out[k] || []).push(e);
   });
   return Object.entries(out).map(([k, es]) => ({
     key: k, name: CN[k] || k, n: es.length,
-    dice: nmean(es.map(e => e.metrics.dice)), iou: nmean(es.map(e => e.metrics.iou)),
-    hd95: nmean(es.map(e => e.metrics.hd95)), sens: nmean(es.map(e => e.metrics.sensitivity)),
+    dice: nmean(es.map(e => e.metrics.dice)), dice_std: nstd(es.map(e => e.metrics.dice)),
+    iou: nmean(es.map(e => e.metrics.iou)), iou_std: nstd(es.map(e => e.metrics.iou)),
+    hd95: nmean(es.map(e => e.metrics.hd95)), hd95_std: nstd(es.map(e => e.metrics.hd95)),
+    sens: nmean(es.map(e => e.metrics.sensitivity)),
     spec: nmean(es.map(e => e.metrics.specificity)), acc: nmean(es.map(e => e.metrics.pixel_acc)),
     params: es[0].params_M || "", tag: es.reduce((a, e) => (!a || e.metrics.dice > a.metrics.dice ? e : a)).tag,
   }));
 }
 
 /* ==================== 作业 1 实验视图（Grafana 12 列仪表盘） ==================== */
+function pm(mean, std, digits) {
+  if (mean == null || isNaN(mean)) return "—";
+  const d = digits == null ? 3 : digits;
+  return Number(mean).toFixed(d) + (std == null ? "" : " ± " + Number(std).toFixed(d));
+}
+function fmtStop(reason) {
+  if (!reason) return "";
+  if (/^early_stop/.test(reason)) return "提前停止（" + reason.replace(/^early_stop\(|\)$/g, "") + "）";
+  if (reason === "completed") return "跑满";
+  if (/max_minutes/.test(reason)) return "到达时间上限";
+  return reason;
+}
+/* 评测表划分筛选（U7-2）：只影响表格显示，不改任何数据；默认「全部」 */
+const evalFilter = { hw1: "全部", hw2: "全部" };
+function setEvalSplit(proj, v) {
+  evalFilter[proj] = v;
+  const y = window.scrollY;
+  if (proj === "hw1") viewHw1(); else viewHw2();
+  window.scrollTo(0, y);
+}
+function setHw1Group(g) {
+  state.hw1Group = g;
+  const y = window.scrollY;
+  viewHw1();
+  window.scrollTo(0, y);
+}
+const HW1_GROUPS = [["main", "主对比"], ["ablation", "消融"], ["cv", "五折CV"], ["diag", "诊断"], ["smoke", "冒烟"], ["all", "全部"]];
+
+/* ---------------- 实验地图：一眼看清实验矩阵与依赖关系 ---------------- */
+function emBadge(done, total, running) {
+  if (!total) return '<span class="badge pending">未开始</span>';
+  if (running) return '<span class="badge running">运行中 ' + done + "/" + total + "</span>";
+  return '<span class="badge ' + (done >= total ? "done" : "running") + '">' + done + "/" + total + "</span>";
+}
+function emBox(title, sub, value, badge) {
+  return '<div class="em-box"><div class="em-t"><span>' + title + "</span>" + badge + "</div>" +
+    '<div class="em-v">' + value + '</div><div class="em-s">' + sub + "</div></div>";
+}
+function expMapHw1(d) {
+  const runs = d.runs || [];
+  const main = runs.filter(r => runGroup(r.tag) === "main");
+  const abl = runs.filter(r => runGroup(r.tag) === "ablation");
+  const cv = runs.filter(r => runGroup(r.tag) === "cv");
+  const fin = arr => arr.filter(r => r.status === "finished").length;
+  const cvRunning = cv.some(r => r.status !== "finished");
+  return '<div class="exp-map">' +
+    '<div class="em-row">' +
+      emBox("① 主对比", "3 模型 × 3 种子；测试集 n=1000，报告均值±标准差",
+        main.length + " 组", emBadge(fin(main), main.length, main.some(r => r.status !== "finished"))) +
+      '<span class="em-arrow">→</span>' +
+      emBox("② 消融", "损失函数 / 输入分辨率 / 注意力位置，各 3 个设置",
+        abl.length + " 组", emBadge(fin(abl), abl.length, abl.some(r => r.status !== "finished"))) +
+      '<span class="em-arrow">→</span>' +
+      emBox("③ 五折交叉验证", "最佳 2 组超参 × 5 折；train+val 合并后重划分，test 不参与；" +
+        "单折约 1–1.5 小时，10 折合计约 12–18 小时（受机器负载影响）" +
+        '<br><span id="exp-cv-eta" style="color:var(--primary)"></span>',
+        "10 折", emBadge(fin(cv), 10, cvRunning)) +
+    "</div>" +
+    '<div class="em-flow"><b>三者的关系：</b><span>主对比回答“哪个模型更好”</span><span>→</span>' +
+      '<span>消融回答“差异来自哪个超参数”</span><span>→</span>' +
+      '<span>五折 CV 回答“这个排名是否依赖某一次划分”</span></div>' +
+    '<div class="em-flow"><b>接作业 2：</b><span class="em-chip">unet_s42_test_boxes.json</span>' +
+      "<span>（1000 个自动预测框）→</span><a href=\"#/hw2\">作为 SAM 的 auto / auto10 提示 →</a></div>" +
+  "</div>";
+}
+function expMapHw2(d) {
+  const stages = d.stages || {};
+  const evals = d.evals || [];
+  const pick = (stage, prompt) => {
+    const e = evals.find(x => x.stage === stage && x.prompt === prompt && x.split === "test");
+    return e && e.dice != null ? e.dice : null;
+  };
+  const st = sid => (stages[sid] && stages[sid].status) || "pending";
+  const stBadge = sid => statusBadge(st(sid));
+  const prompts = [...new Set(evals.map(e => e.prompt))].length;
+  return '<div class="exp-map">' +
+    '<div class="em-row">' +
+      emBox("E1 零样本", "原版 SAM 不训练；GT 框提示", fmt3(pick("e1", "gt")), stBadge("e1")) +
+      '<span class="em-arrow">→</span>' +
+      emBox("E2 冻结微调", "冻结 ViT，只训提示编码器 + 掩膜解码器（4.06M）", fmt3(pick("e2", "gt")), stBadge("e2")) +
+      '<span class="em-arrow">→</span>' +
+      emBox("E3 LoRA", "ViT q/v 注入 LoRA(r=8)，连同解码器训练（LoRA 0.295M）", fmt3(pick("e3", "gt")), stBadge("e3")) +
+    "</div>" +
+    '<div class="em-flow"><b>递进关系：</b><span>E1 测域差距</span><span>→</span>' +
+      '<span>E2 只调解码器（4.06M）</span><span>→</span>' +
+      '<span>E3 给主干松绑（LoRA 0.295M + 解码器）</span>' +
+      '<span>可训练参数：0 → 4.06M → 4.36M</span></div>' +
+    '<div class="em-flow"><b>提示矩阵：</b><span>每个阶段 × ' + (prompts || 10) + ' 种提示</span>' +
+      '<span>（GT / ±10% / ±20% / 点×1,3,5 / 自动框 / 自动框+10%）</span>' +
+      '<span>= ' + (evals.length || 0) + " 份评测 → 回答“提示不准时还准不准”</span></div>" +
+    '<div class="em-flow"><b>级联闭环：</b><a href="#/hw1">作业 1 的 U-Net 自动框</a><span>→</span>' +
+      '<span>E1 <b>' + fmt3(pick("e1", "auto")) + "</b></span><span>→</span>" +
+      '<span>E2 <b>' + fmt3(pick("e2", "auto")) + "</b></span><span>→</span>" +
+      '<span>E3 <b>' + fmt3(pick("e3", "auto")) + "</b></span>" +
+      '<span>（自动框提示；越往后越能忍受粗框）</span></div>' +
+  "</div>";
+}
+
 function viewHw1() {
   if (!state.hw1) {
     app.innerHTML = '<section class="view">' + errBox("作业 1 实验数据不可用（/api/hw1 聚合失败）") + "</section>";
@@ -1890,23 +2783,23 @@ function viewHw1() {
   }
   for (const k in CHARTS) delete CHARTS[k];
   const d = state.hw1;
-  const runs = d.runs || [];
+  const allRuns = d.runs || [];
+  const groupKey = state.hw1Group || "main";
+  const runs = groupKey === "all" ? allRuns : allRuns.filter(r => runGroup(r.tag) === groupKey);
   const finished = runs.filter(r => r.status === "finished").length;
   const bestRun = runs.reduce((a, r) => (!a || r.best_val_dice > a.best_val_dice ? r : a), null);
   if (!state.hw1Sel && bestRun) state.hw1Sel = bestRun.tag;
   const sel = runs.find(r => r.tag === state.hw1Sel) || bestRun || runs[0];
   const models = hw1AggByModel(d.evals);
   const bestTest = models.reduce((a, m) => (!a || m.dice > a.dice ? m : a), null);
-  const bestTestEval = (d.evals || []).filter(e => e.metrics && e.split === "test")
-    .reduce((a, e) => (!a || e.metrics.dice > a.metrics.dice ? e : a), null);
   const totalMin = runs.reduce((n, r) => n + (Number(r.cum_min) || 0), 0);
 
   const diceSeries = runs.map((r, i) => ({ name: r.tag, pts: toPts(r.series, "epoch", "dice") }));
   const lossSeries = sel ? [
-    { name: "train_loss", pts: toPts(sel.series, "epoch", "train_loss") },
-    { name: "val_loss", pts: toPts(sel.series, "epoch", "val_loss") },
+    { name: "训练损失", pts: toPts(sel.series, "epoch", "train_loss") },
+    { name: "验证损失", pts: toPts(sel.series, "epoch", "val_loss") },
   ] : [];
-  const lrSeries = sel ? [{ name: "lr", pts: toPts(sel.series, "epoch", "lr") }] : [];
+  const lrSeries = sel ? [{ name: "学习率", pts: toPts(sel.series, "epoch", "lr") }] : [];
   const secSeries = sel ? [{ name: "秒", pts: toPts(sel.series, "epoch", "epoch_sec") }] : [];
 
   const runRows = runs.map(r =>
@@ -1914,10 +2807,11 @@ function viewHw1() {
       '<span class="run-tag">' + esc(r.tag) + "</span>" +
       '<span class="tag cat">' + esc(r.model) + "</span>" +
       statusBadge(r.status) +
-      '<span class="run-metric">epoch ' + r.epochs_done + (r.total_epochs ? "/" + r.total_epochs : "") + "</span>" +
-      '<span class="run-metric">best Dice <b style="color:var(--primary-dark)">' + fmt3(r.best_val_dice) + "</b></span>" +
-      '<span class="run-metric">loss ' + fmt3(r.last && r.last.train_loss) + "</span>" +
-      '<span class="run-metric">' + esc(r.cum_min) + " min</span>" +
+      '<span class="run-metric">第 ' + r.epochs_done + (r.total_epochs ? "/" + r.total_epochs : "") + " 轮</span>" +
+      (r.stop_reason ? '<span class="run-metric" title="' + esc(r.stop_reason) + '">' + esc(fmtStop(r.stop_reason)) + "</span>" : "") +
+      '<span class="run-metric">最佳 Dice <b style="color:var(--primary-dark)">' + fmt3(r.best_val_dice) + "</b></span>" +
+      '<span class="run-metric">损失 ' + fmt3(r.last && r.last.train_loss) + "</span>" +
+      '<span class="run-metric">累计 ' + esc(r.cum_min) + " 分钟</span>" +
       '<span class="run-metric">' + esc(r.updated) + "</span>" +
     "</div>").join("") || '<div class="muted" style="font-size:13px">暂无训练日志</div>';
 
@@ -1928,21 +2822,24 @@ function viewHw1() {
   const numCell = v => (typeof v === "number" ? v.toLocaleString("en-US") : (v == null ? "—" : esc(String(v))));
   const pctCell = v => (typeof v === "number" ? (v * 100).toFixed(2) + "%" : "—");
   const dsRows = Object.entries(ds).filter(([, s]) => s && typeof s === "object").map(([split, s]) =>
-    "<tr><td>" + esc(split) + "</td><td>" + numCell(s.count) + "</td><td>" + pctCell(s.fg_ratio_mean) + "</td><td>" +
+    "<tr><td>" + esc(splitCN(split)) + "</td><td>" + numCell(s.count) + "</td><td>" + pctCell(s.fg_ratio_mean) + "</td><td>" +
     pctCell(s.fg_ratio_median) + "</td><td>" + numCell(s.multi_component) + "</td><td>" + numCell(s.empty_masks) + "</td></tr>").join("");
-  const dsBar = Object.keys(ds).length ? gbar(Object.keys(ds), [
+  const dsBar = Object.keys(ds).length ? gbar(Object.keys(ds).map(splitCN), [
       { name: "前景占比均值 %", values: Object.values(ds).map(s => (s.fg_ratio_mean || 0) * 100) },
       { name: "前景占比中位 %", values: Object.values(ds).map(s => (s.fg_ratio_median || 0) * 100) },
     ], { h: 220, fmt: v => v.toFixed(1) + "%" }) : "";
   const dsRowsHtml = dsRows ? '<div class="table-scroll"><table class="stat-table num-table">' +
-    '<tr><td style="color:var(--text2)">split</td><td style="color:var(--text2)">样本</td><td style="color:var(--text2)">前景均值</td><td style="color:var(--text2)">前景中位</td><td style="color:var(--text2)">多连通域</td><td style="color:var(--text2)">空掩膜</td></tr>' +
+    '<tr><td style="color:var(--text2)">划分</td><td style="color:var(--text2)">样本</td><td style="color:var(--text2)">前景均值</td><td style="color:var(--text2)">前景中位</td><td style="color:var(--text2)">多连通域</td><td style="color:var(--text2)">空掩膜</td></tr>' +
     dsRows + "</table></div>" : "";
 
-  /* 评测档案（阈值着色 + 点击详情） */
-  const evalRows = (d.evals || []).map(e => {
+  /* 评测档案（阈值着色 + 点击详情；U7：划分筛选只影响表格显示） */
+  const shownEvals = evalFilter.hw1 === "全部" ? (d.evals || []) :
+    (d.evals || []).filter(e => splitCN(e.split || "?") === evalFilter.hw1);
+  const evalRows = shownEvals.map(e => {
     const m = e.metrics || {};
     return '<tr class="row-click" onclick="showEvalDetail(\'hw1\',\'' + esc(e.file) + '\')">' +
       '<td class="mono">' + esc(e.file) + "</td>" +
+      '<td><span class="tag cat" title="数据划分：train 训练 / val 验证 / test 测试">' + esc(splitCN(e.split)) + "</span></td>" +
       '<td style="text-align:right">' + numCell(m.n) + "</td>" +
       '<td style="text-align:right">' + diceCell(m.dice) + "</td>" +
       '<td style="text-align:right">' + (m.iou != null ? Number(m.iou).toFixed(4) : "—") + "</td>" +
@@ -1953,105 +2850,145 @@ function viewHw1() {
     "</tr>";
   }).join("");
   const evalTable = '<div class="table-scroll"><table class="stat-table num-table">' +
-    '<tr><td style="color:var(--text2)">文件</td><td style="color:var(--text2)">n</td><td style="color:var(--text2)">Dice</td><td style="color:var(--text2)">IoU</td><td style="color:var(--text2)">HD95</td><td style="color:var(--text2)">Sens</td><td style="color:var(--text2)">Spec</td><td style="color:var(--text2)">空预测</td></tr>' +
-    (evalRows || '<tr><td colspan="8" style="color:var(--text2)">暂无评测</td></tr>') + "</table></div>";
+    '<tr><td style="color:var(--text2)">文件</td><td style="color:var(--text2)">划分</td><td style="color:var(--text2)">样本数</td>' +
+    '<td style="color:var(--text2)" title="Dice 相似系数（分割重叠指标，越高越好）">Dice</td>' +
+    '<td style="color:var(--text2)" title="交并比 IoU（分割重叠指标）">IoU</td>' +
+    '<td style="color:var(--text2)" title="95% Hausdorff 距离，边界误差，单位像素，越低越好">HD95</td>' +
+    '<td style="color:var(--text2)" title="灵敏度 Sensitivity＝召回率，病灶被检出的比例">灵敏度</td>' +
+    '<td style="color:var(--text2)" title="特异度 Specificity，背景被判为背景的比例">特异度</td>' +
+    '<td style="color:var(--text2)">空预测</td></tr>' +
+    (evalRows || '<tr><td colspan="9" style="color:var(--text2)">暂无评测</td></tr>') + "</table></div>";
+  const evalSplits = (d.evals || []).reduce((acc, e) => {
+    const k = e.split || "?";
+    acc[k] = (acc[k] || 0) + 1;
+    return acc;
+  }, {});
+  const evalCountText = Object.entries(evalSplits).map(([k, n]) => splitCN(k) + " " + n).join(" · ") || "0";
 
   const repBtns = (d.reports || []).map(r =>
     '<button class="btn sm" data-report="' + esc(r.path) + '">' + esc(r.name) + "</button>").join(" ");
   const dsFig = (d.figures || []).filter(f => /data_stats|dist/.test(f.name));
+  const hw1Gallery = figList(d.figures, "hw1");
 
   app.innerHTML =
     '<section class="view">' +
+      '<div class="page-with-nav">' +
+        '<aside class="page-nav" id="hw1-page-nav" aria-label="页面章节导航"></aside>' +
+        '<div class="page-main">' +
       '<div class="sec-head" style="margin-top:4px"><h2>' + esc(d.project.title) + "</h2>" +
         '<span style="font-size:13px;color:var(--text2)">' + esc(d.project.subtitle) + "</span></div>" +
-      '<div class="chiprow" style="margin-bottom:16px">' +
+      '<div class="chiprow" style="margin-bottom:10px">' +
         '<span class="badge ' + (finished === runs.length && runs.length ? "done" : "running") + '">运行 ' + runs.length + " · 完成 " + finished + "</span>" +
         '<button class="btn sm" id="auto-refresh-btn" onclick="toggleAutoRefresh(\'hw1\')">▶ 自动刷新（10s）</button>' +
+        '<span style="font-size:12.5px;color:var(--text2)">运行分组</span>' +
+        HW1_GROUPS.filter(([k]) => k === "all" || allRuns.some(r => runGroup(r.tag) === k)).map(([k, label]) =>
+          '<button class="chip' + (k === groupKey ? " active" : "") + '" onclick="setHw1Group(\'' + k + '\')">' + label + "</button>").join("") +
       "</div>" +
-      '<div class="card live-panel" id="live-panel" data-proj="hw1" style="margin-bottom:16px"></div>' +
+      '<div id="hw1-sec-map" data-sec>' +
+        '<div class="card" style="margin-bottom:16px"><div class="ph"><h3>🧭 实验地图</h3>' +
+          '<span class="p-meta">做了哪些实验 · 彼此关系 · 当前进度</span></div>' + expMapHw1(d) + "</div>" +
+      "</div>" +
+      '<div id="hw1-sec-live" data-sec>' +
+        '<div class="card live-panel" id="live-panel" data-proj="hw1" style="margin-bottom:16px"></div>' +
+      "</div>" +
 
-      /* —— 统计面板行 —— */
-      '<div class="grid-stats">' +
-        gstat("最佳 Val Dice", bestRun ? fmt3(bestRun.best_val_dice) : "—",
+      /* —— 统计面板行（模型级 3 种子均值±样本标准差） —— */
+      '<div class="grid-stats" id="hw1-sec-stats" data-sec>' +
+        gstat("最佳验证 Dice", bestRun ? fmt3(bestRun.best_val_dice) : "—",
           { sub: bestRun ? esc(bestRun.tag) : "暂无", color: "var(--accent)",
             spark: bestRun ? bestRun.series.map(r => r.dice) : null }) +
-        gstat("测试集 Dice（最佳）", bestTest ? fmt3(bestTest.dice) : "—",
-          { sub: bestTest ? "n=1000 · " + esc(bestTest.tag) : "尚未评测", color: "var(--primary)" }) +
-        gstat("测试集 IoU", bestTest ? fmt3(bestTest.iou) : "—", { sub: bestTest ? esc(bestTest.tag) : "—", color: "var(--violet)" }) +
-        gstat("测试集 HD95", bestTest ? Number(bestTest.hd95).toFixed(1) : "—",
-          { unit: "px", sub: "越低越好", color: "var(--warn)" }) +
-        gstat("训练运行", runs.length, { sub: finished + " 个已完成" }) +
+        gstat("测试集 Dice（模型均值）", pm(bestTest && bestTest.dice, bestTest && bestTest.dice_std),
+          { size: "19px", color: "var(--primary)",
+            sub: bestTest ? esc(bestTest.name) + " · " + (bestTest.n > 1 ? bestTest.n + " 种子 × 样本数 1000" : "单种子") : "尚未评测" }) +
+        gstat("测试集 IoU（模型均值）", pm(bestTest && bestTest.iou, bestTest && bestTest.iou_std),
+          { size: "19px", color: "var(--violet)",
+            sub: bestTest ? esc(bestTest.name) + " · 同上口径" : "—" }) +
+        gstat("测试集 HD95（模型均值）", pm(bestTest && bestTest.hd95, bestTest && bestTest.hd95_std, 1),
+          { size: "19px", unit: "px", color: "var(--warn)", sub: "越低越好" }) +
+        gstat("训练运行", runs.length, { sub: finished + " 个已完成 · 共 " + allRuns.length + " 个" }) +
         gstat("累计训练时长", totalMin.toFixed(0), { unit: "min", sub: (totalMin / 60).toFixed(1) + " 小时" }) +
       "</div>" +
 
       /* —— 曲线区 —— */
-      '<div class="g12" style="margin-top:16px">' +
-        '<div class="card col-8"><div class="ph"><h3>Val Dice 曲线对比（全部运行）</h3><span class="p-meta">悬停看数值 · 点图例隐藏</span></div>' +
-          gchart(diceSeries, { yLabel: "val dice", xLabel: "epoch", smooth: true, h: 300,
-            threshold: { value: 0.75, label: "目标 0.75" } }) + "</div>" +
-        '<div class="card col-4"><div class="ph"><h3>学习率调度 · <span id="hw1-loss-title" class="mono">' + (sel ? esc(sel.tag) : "—") + "</span></h3></div>" +
-          gchart(lrSeries, { yLabel: "lr", xLabel: "epoch", h: 132 }) +
-          '<div class="ph" style="margin:12px 0 10px"><h3>每 epoch 耗时</h3></div>' +
-          gchart(secSeries, { yLabel: "秒", xLabel: "epoch", h: 132 }) + "</div>" +
-        '<div class="card col-12"><div class="ph"><h3>损失曲线 · <span id="hw1-loss-title2" class="mono">' + (sel ? esc(sel.tag) : "—") + "</span></h3>" +
+      '<div class="g12" style="margin-top:16px" id="hw1-sec-curves" data-sec>' +
+        '<div class="card col-8"><div class="ph"><h3>📈 验证 Dice 曲线对比（' +
+          (groupKey === "all" ? "全部运行" : esc((HW1_GROUPS.find(g => g[0] === groupKey) || [, "当前分组"])[1])) +
+          " · " + runs.length + " 个）</h3><span class=\"p-meta\">悬停看数值 · 点图例隐藏</span></div>" +
+          (runs.length ? gchart(diceSeries, { yLabel: "验证 Dice", xLabel: "轮次", smooth: true, h: 300,
+            threshold: { value: 0.75, label: "目标 0.75" } }) : '<div class="muted" style="font-size:13px">该分组暂无运行</div>') + "</div>" +
+        '<div class="card col-4"><div class="ph"><h3>🎚️ 学习率调度 · <span id="hw1-loss-title" class="mono">' + (sel ? esc(sel.tag) : "—") + "</span></h3></div>" +
+          '<div id="hw1-lr-chart">' + gchart(lrSeries, { yLabel: "学习率", xLabel: "轮次", h: 132 }) + "</div>" +
+          '<div class="ph" style="margin:12px 0 10px"><h3>⏱️ 每 epoch 耗时 · <span id="hw1-sec-title" class="mono">' + (sel ? esc(sel.tag) : "—") + "</span></h3></div>" +
+          '<div id="hw1-sec-chart">' + gchart(secSeries, { yLabel: "秒", xLabel: "轮次", h: 132 }) + "</div></div>" +
+        '<div class="card col-12"><div class="ph"><h3>📉 损失曲线 · <span id="hw1-loss-title2" class="mono">' + (sel ? esc(sel.tag) : "—") + "</span></h3>" +
           '<span class="p-meta">点击下方运行切换</span></div>' +
-          '<div id="hw1-loss-chart">' + gchart(lossSeries, { yLabel: "loss", xLabel: "epoch", smooth: true, h: 240 }) + "</div>" +
+          '<div id="hw1-loss-chart">' + gchart(lossSeries, { yLabel: "损失", xLabel: "轮次", smooth: true, h: 240 }) + "</div>" +
           '<div class="chiprow" style="margin-top:10px" id="hw1-run-chips">' + selChips + "</div></div>" +
       "</div>" +
 
       /* —— 对比区 —— */
-      '<div class="g12" style="margin-top:16px">' +
-        (models.length ? '<div class="card col-4"><div class="ph"><h3>模型对比 · Dice / IoU</h3><span class="p-meta">测试集均值</span></div>' +
+      '<div class="g12" style="margin-top:16px" id="hw1-sec-compare" data-sec>' +
+        (models.length ? '<div class="card col-4"><div class="ph"><h3>⚖️ 模型对比 · Dice / IoU</h3><span class="p-meta">测试集 · 3 种子均值±std</span></div>' +
           gbar(models.map(m => m.name), [
-            { name: "Dice", values: models.map(m => m.dice) },
-            { name: "IoU", values: models.map(m => m.iou) },
+            { name: "Dice", values: models.map(m => m.dice), errors: models.map(m => m.dice_std) },
+            { name: "IoU", values: models.map(m => m.iou), errors: models.map(m => m.iou_std) },
           ], { h: 240, yMax: 1, fmt: v => v.toFixed(3) }) + "</div>" : "") +
-        (models.length ? '<div class="card col-4"><div class="ph"><h3>模型对比 · HD95</h3><span class="p-meta">px · 越低越好</span></div>' +
-          gbar(models.map(m => m.name), [{ name: "HD95", values: models.map(m => m.hd95) }],
+        (models.length ? '<div class="card col-4"><div class="ph"><h3>📏 模型对比 · HD95</h3><span class="p-meta">px · 越低越好 · 均值±std</span></div>' +
+          gbar(models.map(m => m.name), [{ name: "HD95", values: models.map(m => m.hd95), errors: models.map(m => m.hd95_std) }],
             { h: 240, fmt: v => v.toFixed(1) }) + "</div>" : "") +
-        (dsBar ? '<div class="card col-4"><div class="ph"><h3>数据分布（ISIC 2018）</h3></div>' + dsBar + "</div>" : "") +
+        (dsBar ? '<div class="card col-4"><div class="ph"><h3>🗺️ 数据分布（ISIC 2018）</h3></div>' + dsBar + "</div>" : "") +
       "</div>" +
 
       /* —— 训练运行表 —— */
-      '<div class="card" style="margin-top:16px"><div class="ph"><h3>训练运行</h3>' +
-        '<span class="p-meta">点击任意行查看逐 epoch 明细</span></div>' + runRows + "</div>" +
+      '<div class="card" style="margin-top:16px" id="hw1-sec-runs" data-sec><div class="ph"><h3>🏃 训练运行（' + runs.length + '）</h3>' +
+        '<span class="p-meta">点击任意行查看逐 epoch 明细 · 含停止原因</span></div>' + runRows + "</div>" +
 
       /* —— 评测档案 + 数据统计 —— */
-      '<div class="g12" style="margin-top:16px">' +
-        '<div class="card col-7"><div class="ph"><h3>测试集评测档案</h3><span class="p-meta">Dice 阈值着色 · 点击行看完整指标</span></div>' + evalTable + "</div>" +
-        '<div class="card col-5"><div class="ph"><h3>数据统计（data_stats）</h3></div>' + dsRowsHtml +
-          (dsFig.length ? '<div style="margin-top:10px">' + figureGallery(dsFig, "hw1", "") + "</div>" : "") + "</div>" +
+      '<div class="g12" style="margin-top:16px" id="hw1-sec-evals" data-sec>' +
+        '<div class="card col-7"><div class="ph"><h3>🧪 评测档案（' + evalCountText + '）</h3><span class="p-meta">含划分列 · Dice 阈值着色 · 点击行看完整指标</span></div>' +
+          '<div class="chiprow" style="margin-bottom:8px">' +
+            ["全部"].concat(Object.keys(evalSplits).map(splitCN)).map(k =>
+              '<button class="chip' + (evalFilter.hw1 === k ? " active" : "") + '" onclick="setEvalSplit(\'hw1\',\'' + k + '\')">' + k + "</button>").join("") +
+          "</div>" +
+          collapsibleBlock(evalTable, shownEvals.length, { key: "hw1-evals" }) + "</div>" +
+        '<div class="card col-5"><div class="ph"><h3>📊 数据统计（data_stats）</h3></div>' + dsRowsHtml +
+          (dsFig.length ? '<div style="margin-top:10px">' + figureGallery(figList(dsFig, "hw1"), "", false) + "</div>" : "") + "</div>" +
       "</div>" +
 
-      /* —— 消融 / Checkpoints / 预测框 —— */
+      /* —— 产物区：消融 / Checkpoints（>8 行自动折叠）/ 预测框 + 画廊 + 图目录 —— */
+      '<div id="hw1-sec-artifacts" data-sec>' +
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>🔬 消融实验</h3><span class="p-meta">' +
+        (Object.keys(d.ablation || {}).every(g => Object.keys(d.ablation[g] || {}).length >= 2) &&
+         Object.keys(d.ablation || {}).length ? "单种子 42 · Dice / HD95 对比" : "基线参考 · 待运行") +
+        "</span></div>" + hw1AblationBars(d) + "</div>" +
       '<div class="g12" style="margin-top:16px">' +
-        '<div class="card col-4"><div class="ph"><h3>消融实验</h3><span class="p-meta">Dice 对比</span></div>' +
-          (d.ablation && Object.keys(d.ablation).length ? gbar(
-            Object.keys(d.ablation),
-            [{ name: "Dice", values: Object.values(d.ablation).map(g => {
-                const k = Object.keys(g)[0];
-                return k ? g[k].dice : null; }) }],
-            { h: 220, yMax: 1, fmt: v => v.toFixed(3) }) + '<div class="muted" style="font-size:12px;margin-top:6px">各组首项对比；完整数据见 reports/tables.md</div>'
-            : '<div class="muted" style="font-size:13px">消融实验尚未运行（run_all --only ablation）</div>') + "</div>" +
-        '<div class="card col-4"><div class="ph"><h3>Checkpoints（' + (d.checkpoints || []).length + '）</h3></div>' +
-          fileRows(d.checkpoints, "hw1", "暂无模型权重") + "</div>" +
-        '<div class="card col-4"><div class="ph"><h3>预测框导出（级联用）</h3></div>' +
-          fileRows(d.predictions, "hw1", "暂无预测框") + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>💾 模型权重 Checkpoints（' + (d.checkpoints || []).length + '）</h3><span class="p-meta">续跑依赖 last 文件 · 勿删</span></div>' +
+          collapsibleBlock(fileRows(d.checkpoints, "hw1", "暂无模型权重"), (d.checkpoints || []).length, { key: "hw1-ckpt" }) + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>📦 预测框导出（级联用）</h3></div>' +
+          collapsibleBlock(fileRows(d.predictions, "hw1", "暂无预测框"), (d.predictions || []).length, { key: "hw1-pred" }) + "</div>" +
       "</div>" +
 
-      /* —— 画廊 / 源码 / 报告 —— */
-      '<div class="card" style="margin-top:16px"><div class="ph"><h3>图表产物（' + (d.figures || []).length + '）</h3>' +
-        '<span class="p-meta">点击放大</span></div>' + figureGallery(d.figures, "hw1", "暂无图表") + "</div>" +
-      '<div class="g12" style="margin-top:16px">' +
-        '<div class="card col-6"><div class="ph"><h3>源码（src/）</h3></div>' + codeList(d.code, "hw1") + "</div>" +
-        '<div class="card col-6"><div class="ph"><h3>报告文档</h3></div>' +
+      /* —— 画廊 / 图目录说明 —— */
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>🖼️ 图表产物（' + hw1Gallery.length + '）</h3>' +
+        '<span class="p-meta">按类型分组 · 点击放大看生成逻辑</span></div>' + figureGallery(hw1Gallery, "暂无图表", true) + "</div>" +
+      figNotesCard(hw1Gallery, "hw1-fig-notes") +
+      "</div>" +
+
+      /* —— 源码 / 报告 —— */
+      '<div class="g12" style="margin-top:16px" id="hw1-sec-source" data-sec>' +
+        '<div class="card col-6"><div class="ph"><h3>💻 源码（src/）</h3></div>' + codeList(d.code, "hw1") + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>📄 报告文档</h3></div>' +
           '<div class="chiprow" id="hw1-report-btns">' + (repBtns || '<span class="muted">暂无报告</span>') + "</div>" +
           '<pre class="report-pre" id="hw1-report-box" style="display:none"></pre></div>' +
+      "</div>" +
+        "</div>" +
       "</div>" +
     "</section>";
 
   bindReportButtons("hw1-report-btns", "hw1", "hw1-report-box");
   startLivePoll();
+  initPageNav("hw1-page-nav", PAGE_SECTIONS.hw1);
+  requestAnimationFrame(attachChartResize);
   const chipsBox = document.getElementById("hw1-run-chips");
   if (chipsBox) chipsBox.addEventListener("click", e => {
     const b = e.target.closest(".chip");
@@ -2066,21 +3003,30 @@ function bindReportButtons(containerId, proj, boxId) {
     if (b) loadHwReport(proj, b.dataset.report, boxId);
   });
 }
-/* 局部更新损失曲线与选中态：不重绘整页 */
+/* 局部更新损失 / 学习率 / 每 epoch 耗时三张图与标题：不重绘整页 */
 function selectHw1Run(tag) {
   const runs = (state.hw1 && state.hw1.runs) || [];
   const sel = runs.find(r => r.tag === tag);
   if (!sel) return;
   state.hw1Sel = tag;
-  const chart = document.getElementById("hw1-loss-chart");
-  if (chart) chart.innerHTML = gchart([
-    { name: "train_loss", pts: toPts(sel.series, "epoch", "train_loss") },
-    { name: "val_loss", pts: toPts(sel.series, "epoch", "val_loss") },
-  ], { yLabel: "loss", xLabel: "epoch", smooth: true, h: 240 });
-  const t1 = document.getElementById("hw1-loss-title2");
-  if (t1) t1.textContent = tag;
+  const loss = document.getElementById("hw1-loss-chart");
+  if (loss) loss.innerHTML = gchart([
+    { name: "训练损失", pts: toPts(sel.series, "epoch", "train_loss") },
+    { name: "验证损失", pts: toPts(sel.series, "epoch", "val_loss") },
+  ], { yLabel: "损失", xLabel: "轮次", smooth: true, h: 240 });
+  const lr = document.getElementById("hw1-lr-chart");
+  if (lr) lr.innerHTML = gchart([{ name: "学习率", pts: toPts(sel.series, "epoch", "lr") }],
+    { yLabel: "学习率", xLabel: "轮次", h: 132 });
+  const sec = document.getElementById("hw1-sec-chart");
+  if (sec) sec.innerHTML = gchart([{ name: "秒", pts: toPts(sel.series, "epoch", "epoch_sec") }],
+    { yLabel: "秒", xLabel: "轮次", h: 132 });
+  ["hw1-loss-title", "hw1-loss-title2", "hw1-sec-title"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = tag;
+  });
   document.querySelectorAll("#hw1-run-chips .chip").forEach(c =>
     c.classList.toggle("active", c.dataset.run === tag));
+  requestAnimationFrame(attachChartResize);
 }
 
 /* ==================== 作业 2 实验视图 ==================== */
@@ -2094,13 +3040,13 @@ function hw2PromptBars(d) {
   const prompts = PORDER.filter(p => evals.some(e => e.prompt === p))
     .concat([...new Set(evals.map(e => e.prompt))].filter(p => PORDER.indexOf(p) < 0));
   const series = stages.map(s => ({
-    name: s.toUpperCase(),
+    name: stageCN(s),
     values: prompts.map(p => {
       const hit = evals.find(e => e.stage === s && e.prompt === p);
       return hit && hit.dice != null ? hit.dice : null;
     }),
   }));
-  return gbar(prompts, series, { h: 280, yMax: 1, fmt: v => v.toFixed(3) });
+  return gbar(prompts.map(promptCN), series, { h: 280, yMax: 1, xLabel: "提示形式", fmt: v => v.toFixed(3) });
 }
 function hw2Robustness(d) {
   const order = ["pert-20", "pert-10", "gt", "pert10", "pert20"];
@@ -2116,23 +3062,27 @@ function hw2Robustness(d) {
   })).filter(s => s.pts.length);
   if (!series.length) return "";
   return '<div class="muted" style="font-size:12.5px;margin-bottom:6px">横轴为提示框相对 GT 外接框的扰动幅度；曲线越平说明对提示误差越不敏感。</div>' +
-    gchart(series, { h: 280, yLabel: "Dice", xLabel: "", smooth: true,
+    gchart(series, { h: 280, yLabel: "Dice", xLabel: "扰动幅度", smooth: true,
                      xTicks: ["-20%", "-10%", "GT", "+10%", "+20%"] });
+}
+function fmtLatency(ms) {
+  if (ms == null || isNaN(ms)) return "—";
+  return ms < 100 ? Number(ms).toFixed(1) + "ms" : (ms / 1000).toFixed(2) + "s";
 }
 function hw2LatencyBars(d) {
   const evals = (d.evals || []).filter(e => e.latency_ms != null && e.split === "test");
   if (!evals.length) return "";
-  const cats = evals.map(e => e.stage + "/" + e.prompt);
-  return gbar(cats, [{ name: "单图延迟", values: evals.map(e => e.latency_ms / 1000) }],
-    { h: 240, fmt: v => v.toFixed(2) + "s" });
+  const cats = evals.map(e => stageCN(e.stage) + " · " + promptCN(e.prompt));
+  return gbar(cats, [{ name: "单图延迟（毫秒）", values: evals.map(e => e.latency_ms) }],
+    { h: 240, fmt: v => v.toFixed(1) + "ms" });
 }
 function hw2SensSpecBars(d) {
   const evals = (d.evals || []).filter(e => e.dice != null && e.split === "test");
   if (!evals.length) return "";
-  const cats = evals.map(e => e.stage + "/" + e.prompt);
+  const cats = evals.map(e => stageCN(e.stage) + " · " + promptCN(e.prompt));
   return gbar(cats, [
-    { name: "Sensitivity", values: evals.map(e => e.sensitivity) },
-    { name: "Specificity", values: evals.map(e => e.specificity) },
+    { name: "灵敏度", values: evals.map(e => e.sensitivity) },
+    { name: "特异度", values: evals.map(e => e.specificity) },
   ], { h: 240, yMax: 1, fmt: v => v.toFixed(3) });
 }
 function hw2CascadeBars(d) {
@@ -2178,30 +3128,38 @@ function viewHw2() {
       '<div style="display:flex;justify-content:space-between;align-items:center"><h3>' + esc(s.name) + "</h3>" + statusBadge(s.status) + "</div>" +
       '<div class="muted" style="font-size:12.5px;margin-bottom:8px">' + esc(s.desc) + "</div>" +
       (best ? '<div class="metric-big">Dice ' + fmt3(best.dice) + "</div>" +
-        '<div class="run-metric">IoU ' + fmt3(best.iou) + " · HD95 " + fmt3(best.hd95) + " · n=" + esc(best.n) + "</div>"
+        '<div class="run-metric">IoU ' + fmt3(best.iou) + " · HD95 " + fmt3(best.hd95) + " · 样本数 " + esc(best.n) + "</div>"
         : '<div class="muted" style="font-size:13px">评测尚未生成</div>') +
       "</div>";
   }).join("");
 
   const embRows = Object.entries(emb).map(([split, v]) =>
-    '<div class="prog-row"><span class="lab">' + esc(split) + "</span>" +
+    '<div class="prog-row"><span class="lab">' + esc(splitCN(split)) + "</span>" +
       '<div class="prog"><i style="width:' + Math.min(100, v.pct) + '%"></i></div>' +
       '<span class="val">' + Number(v.done).toLocaleString("en-US") + " / " + Number(v.target).toLocaleString("en-US") + " · " + v.pct + "% · " + esc(v.size_h) + "</span></div>").join("");
 
-  const evalRows = (d.evals || []).map(e =>
+  const shownEvals = evalFilter.hw2 === "全部" ? (d.evals || []) :
+    (d.evals || []).filter(e => splitCN(e.split || "?") === evalFilter.hw2);
+  const evalRows = shownEvals.map(e =>
     '<tr class="row-click" onclick="showEvalDetail(\'hw2\',\'' + esc(e.file) + '\')">' +
-      '<td class="mono">' + esc(e.stage) + "/" + esc(e.prompt) + "</td>" +
-      '<td style="text-align:right">' + esc(e.split) + "</td>" +
+      '<td class="mono" title="阶段 · 提示形式">' + esc(stageCN(e.stage)) + " · " + esc(promptCN(e.prompt)) + "</td>" +
+      '<td style="text-align:right">' + esc(splitCN(e.split)) + "</td>" +
       '<td style="text-align:right">' + esc(e.n) + "</td>" +
       '<td style="text-align:right">' + diceCell(e.dice) + "</td>" +
       '<td style="text-align:right">' + (e.iou != null ? Number(e.iou).toFixed(4) : "—") + "</td>" +
       '<td style="text-align:right">' + (e.hd95 != null ? Number(e.hd95).toFixed(1) : "—") + "</td>" +
       '<td style="text-align:right">' + (e.sensitivity != null ? Number(e.sensitivity).toFixed(4) : "—") + "</td>" +
       '<td style="text-align:right">' + (e.specificity != null ? Number(e.specificity).toFixed(4) : "—") + "</td>" +
-      '<td style="text-align:right">' + (e.latency_ms ? (e.latency_ms / 1000).toFixed(2) + "s" : "—") + "</td>" +
+      '<td style="text-align:right">' + fmtLatency(e.latency_ms) + "</td>" +
     "</tr>").join("");
   const evalTable = '<div class="table-scroll"><table class="stat-table num-table">' +
-    '<tr><td style="color:var(--text2)">阶段/提示</td><td style="color:var(--text2)">split</td><td style="color:var(--text2)">n</td><td style="color:var(--text2)">Dice</td><td style="color:var(--text2)">IoU</td><td style="color:var(--text2)">HD95</td><td style="color:var(--text2)">Sens</td><td style="color:var(--text2)">Spec</td><td style="color:var(--text2)">延迟</td></tr>' +
+    '<tr><td style="color:var(--text2)">阶段 · 提示</td><td style="color:var(--text2)">划分</td><td style="color:var(--text2)">样本数</td>' +
+    '<td style="color:var(--text2)" title="Dice 相似系数（分割重叠指标，越高越好）">Dice</td>' +
+    '<td style="color:var(--text2)" title="交并比 IoU（分割重叠指标）">IoU</td>' +
+    '<td style="color:var(--text2)" title="95% Hausdorff 距离，边界误差，单位像素，越低越好">HD95</td>' +
+    '<td style="color:var(--text2)" title="灵敏度 Sensitivity＝召回率，病灶被检出的比例">灵敏度</td>' +
+    '<td style="color:var(--text2)" title="特异度 Specificity，背景被判为背景的比例">特异度</td>' +
+    '<td style="color:var(--text2)" title="单张图片从编码到出掩膜的平均耗时">延迟</td></tr>' +
     (evalRows || '<tr><td colspan="9" style="color:var(--text2)">暂无评测结果</td></tr>') + "</table></div>";
 
   const runSeries = (d.runs || []).map((r, i) => {
@@ -2214,79 +3172,454 @@ function viewHw2() {
 
   const repBtns = (d.reports || []).map(r =>
     '<button class="btn sm" data-report="' + esc(r.path) + '">' + esc(r.name) + "</button>").join(" ");
+  const hw2Gallery = figList(d.figures, "hw2");
 
   app.innerHTML =
     '<section class="view">' +
+      '<div class="page-with-nav">' +
+        '<aside class="page-nav" id="hw2-page-nav" aria-label="页面章节导航"></aside>' +
+        '<div class="page-main">' +
       '<div class="sec-head" style="margin-top:4px"><h2>' + esc(d.project.title) + "</h2>" +
         '<span style="font-size:13px;color:var(--text2)">' + esc(d.project.subtitle) + "</span></div>" +
       '<div class="chiprow" style="margin-bottom:16px">' +
         '<button class="btn sm" id="auto-refresh-btn" onclick="toggleAutoRefresh(\'hw2\')">▶ 自动刷新（10s）</button>' +
         '<a class="btn sm" href="#/hw1">查看作业 1（级联上游）→</a>' +
       "</div>" +
-      '<div class="card live-panel" id="live-panel" data-proj="hw2" style="margin-bottom:16px"></div>' +
+      '<div id="hw2-sec-map" data-sec>' +
+        '<div class="card" style="margin-bottom:16px"><div class="ph"><h3>🧭 实验地图</h3>' +
+          '<span class="p-meta">做了哪些实验 · 彼此关系 · 当前进度</span></div>' + expMapHw2(d) + "</div>" +
+      "</div>" +
+      '<div id="hw2-sec-live" data-sec>' +
+        '<div class="card live-panel" id="live-panel" data-proj="hw2" style="margin-bottom:16px"></div>' +
+      "</div>" +
 
       /* —— 统计面板行 —— */
-      '<div class="grid-stats">' +
-        gstat("E1 零样本 Dice", e1d != null ? fmt3(e1d) : "—", { sub: "GT 框提示 · n=1000", color: "var(--primary)" }) +
+      '<div class="grid-stats" id="hw2-sec-stats" data-sec>' +
+        gstat("E1 零样本 Dice", e1d != null ? fmt3(e1d) : "—", { sub: "GT 框提示 · 样本数 1000", color: "var(--primary)" }) +
         gstat("E2 冻结微调 Dice", e2d != null ? fmt3(e2d) : "—",
           { sub: gain != null ? "较 E1 " + (gain >= 0 ? "+" : "") + fmt3(gain) : "尚未评测", color: "var(--violet)" }) +
-        gstat("E3 LoRA Dice", e3d != null ? fmt3(e3d) : "—", { sub: "训练中/待运行", color: "var(--accent)" }) +
+        gstat("E3 LoRA Dice", e3d != null ? fmt3(e3d) : "—",
+          { sub: e3d != null ? "GT 框提示 · 样本数 1000" :
+              (({ running: "训练中", done: "已完成（无 test 评测）", pending: "待运行" })[stages.e3 && stages.e3.status] || "待运行"),
+            color: "var(--accent)" }) +
         gstat("阶段完成", doneN + " / 3", { sub: "E1 → E2 → E3 流水线" }) +
         gstat("嵌入缓存", embAll ? "100%" : "预计算中",
           { sub: embBytes ? fmtBytes(embBytes) : "—", color: embAll ? "var(--accent)" : "var(--warn)" }) +
-        gstat("评测档案", (d.evals || []).length, { sub: "test 1000 张/提示" }) +
+        gstat("评测档案", (d.evals || []).length, { sub: "测试集 1000 张/提示" }) +
       "</div>" +
 
       /* —— 三阶段卡 —— */
-      '<div class="grid grid-3" style="margin-top:16px">' + stageCards + "</div>" +
+      '<div class="grid grid-3" style="margin-top:16px" id="hw2-sec-stages" data-sec>' + stageCards + "</div>" +
 
-      /* —— 图表区 —— */
+      /* —— 图表区（提示对比 / 鲁棒性 / 延迟 / 灵敏度特异度 / 级联 / 嵌入缓存） —— */
+      '<div id="hw2-sec-charts" data-sec>' +
       '<div class="g12" style="margin-top:16px">' +
-        (promptBars ? '<div class="card col-7"><div class="ph"><h3>提示类型对比（各阶段 Dice）</h3><span class="p-meta">test 1000 张 · 悬停看数值</span></div>' + promptBars + "</div>" : "") +
-        (robust ? '<div class="card col-5"><div class="ph"><h3>扰动框鲁棒性曲线</h3></div>' + robust + "</div>" : "") +
+        (promptBars ? '<div class="card col-7"><div class="ph"><h3>🎯 提示类型对比（各阶段 Dice）</h3><span class="p-meta">测试集 1000 张 · 悬停看数值</span></div>' + promptBars + "</div>" : "") +
+        (robust ? '<div class="card col-5"><div class="ph"><h3>🌡️ 扰动框鲁棒性曲线</h3></div>' + robust + "</div>" : "") +
       "</div>" +
 
       '<div class="g12" style="margin-top:16px">' +
-        (hw2LatencyBars(d) ? '<div class="card col-4"><div class="ph"><h3>单图推理延迟</h3><span class="p-meta">秒 · 越低越好</span></div>' + hw2LatencyBars(d) + "</div>" : "") +
-        (hw2SensSpecBars(d) ? '<div class="card col-4"><div class="ph"><h3>Sensitivity / Specificity</h3></div>' + hw2SensSpecBars(d) + "</div>" : "") +
-        (hw2CascadeBars(d) ? '<div class="card col-4"><div class="ph"><h3>级联对比 · GT 框 vs 自动框</h3></div>' + hw2CascadeBars(d) + "</div>" : "") +
+        (hw2LatencyBars(d) ? '<div class="card col-4"><div class="ph"><h3>⏱️ 单图推理延迟</h3><span class="p-meta">毫秒 · 越低越好 · E3 为在线前向（无嵌入缓存），耗时高一个量级</span></div>' + hw2LatencyBars(d) + "</div>" : "") +
+        (hw2SensSpecBars(d) ? '<div class="card col-4"><div class="ph"><h3>🩺 灵敏度 / 特异度</h3><span class="p-meta">各阶段 × 提示形式 · 悬停看数值</span></div>' + hw2SensSpecBars(d) + "</div>" : "") +
+        (hw2CascadeBars(d) ? '<div class="card col-4"><div class="ph"><h3>🔗 级联对比 · GT 框 vs 自动框</h3><span class="p-meta">测试集 1000 张</span></div>' + hw2CascadeBars(d) + "</div>" : "") +
       "</div>" +
 
       '<div class="g12" style="margin-top:16px">' +
-        '<div class="card col-6"><div class="ph"><h3>图像嵌入缓存（E2/E3 训练加速）</h3></div>' + embRows + "</div>" +
-        '<div class="card col-6"><div class="ph"><h3>级联系统叙事</h3></div><p style="font-size:13.5px;line-height:1.8;margin:0">' +
+        '<div class="card col-6"><div class="ph"><h3>🧊 图像嵌入缓存（E2/E3 训练加速）</h3></div>' + embRows + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>🔗 级联系统叙事</h3></div><p style="font-size:13.5px;line-height:1.8;margin:0">' +
           renderTerms("作业 1 的 U-Net 小模型全自动分割出病灶粗框，作为提示输入 SAM 掩膜解码器精修——小模型提框、大模型精修，分工而非替代。E1 已量化零样本域差距，E2/E3 训练完成后可对比微调收益。") +
           '</p><div style="margin-top:10px"><span class="tag">U-Net 出框 → SAM 精修</span></div></div>' +
       "</div>" +
 
-      '<div class="card" style="margin-top:16px"><div class="ph"><h3>评测档案（' + (d.evals || []).length + '）</h3>' +
-        '<span class="p-meta">Dice 阈值着色 · 点击行看完整指标与原始 JSON</span></div>' + evalTable + "</div>" +
-
-      (runSeries.length ? '<div class="card" style="margin-top:16px"><div class="ph"><h3>训练曲线（E2/E3 运行）</h3></div>' +
-        gchart(runSeries, { yLabel: "val dice", xLabel: "epoch", smooth: true }) + "</div>" : "") +
-
-      '<div class="card" style="margin-top:16px"><div class="ph"><h3>图表产物（' + (d.figures || []).length + '）</h3>' +
-        '<span class="p-meta">点击放大</span></div>' + figureGallery(d.figures, "hw2", "figures 尚无输出") + "</div>" +
-
-      '<div class="g12" style="margin-top:16px">' +
-        '<div class="card col-6"><div class="ph"><h3>Checkpoints</h3></div>' +
-          fileRows(d.checkpoints, "hw2", "暂无模型权重（E2/E3 训练后生成）") + "</div>" +
-        '<div class="card col-6"><div class="ph"><h3>源码（src/）</h3></div>' + codeList(d.code, "hw2") + "</div>" +
       "</div>" +
 
-      '<div class="card" style="margin-top:16px"><div class="ph"><h3>报告文档</h3></div>' +
+      /* —— 评测档案（划分筛选 + >8 行折叠） —— */
+      '<div class="card" style="margin-top:16px" id="hw2-sec-evals" data-sec><div class="ph"><h3>🧪 评测档案（' + (d.evals || []).length + '）</h3>' +
+        '<span class="p-meta">Dice 阈值着色 · 点击行看完整指标与原始 JSON</span></div>' +
+        '<div class="chiprow" style="margin-bottom:8px">' +
+          ["全部"].concat([...new Set((d.evals || []).map(e => splitCN(e.split || "?")))]).map(k =>
+            '<button class="chip' + (evalFilter.hw2 === k ? " active" : "") + '" onclick="setEvalSplit(\'hw2\',\'' + k + '\')">' + k + "</button>").join("") +
+        "</div>" +
+        collapsibleBlock(evalTable, shownEvals.length, { key: "hw2-evals" }) + "</div>" +
+
+      '<div class="card" style="margin-top:16px" id="hw2-sec-curves" data-sec><div class="ph"><h3>📈 训练曲线（E2/E3 运行）</h3></div>' +
+        (runSeries.length ? gchart(runSeries, { yLabel: "验证 Dice", xLabel: "轮次", smooth: true })
+                          : '<div class="muted" style="font-size:13px">暂无训练运行</div>') + "</div>" +
+
+      /* —— 产物画廊 + 图目录说明 —— */
+      '<div id="hw2-sec-artifacts" data-sec>' +
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>🖼️ 图表产物（' + hw2Gallery.length + '）</h3>' +
+        '<span class="p-meta">按类型分组 · 点击放大看生成逻辑</span></div>' + figureGallery(hw2Gallery, "figures 尚无输出", true) + "</div>" +
+      figNotesCard(hw2Gallery, "hw2-fig-notes") +
+      "</div>" +
+
+      /* —— Checkpoints / 源码 / 报告 —— */
+      '<div id="hw2-sec-source" data-sec>' +
+      '<div class="g12" style="margin-top:16px">' +
+        '<div class="card col-6"><div class="ph"><h3>💾 模型权重 Checkpoints</h3><span class="p-meta">续跑依赖 last 文件 · 勿删</span></div>' +
+          collapsibleBlock(fileRows(d.checkpoints, "hw2", "暂无模型权重（E2/E3 训练后生成）"), (d.checkpoints || []).length, { key: "hw2-ckpt" }) + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>💻 源码（src/）</h3></div>' + codeList(d.code, "hw2") + "</div>" +
+      "</div>" +
+
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>📄 报告文档</h3></div>' +
         '<div class="chiprow" id="hw2-report-btns">' + (repBtns || '<span class="muted">暂无报告</span>') + "</div>" +
         '<pre class="report-pre" id="hw2-report-box" style="display:none"></pre></div>' +
+      "</div>" +
+        "</div>" +
+      "</div>" +
     "</section>";
 
   bindReportButtons("hw2-report-btns", "hw2", "hw2-report-box");
   startLivePoll();
+  initPageNav("hw2-page-nav", PAGE_SECTIONS.hw2);
+  requestAnimationFrame(attachChartResize);
 }
 
 /* ---------------- 404 ---------------- */
 function viewNotFound(path) {
   app.innerHTML = '<section class="view">' + emptyBox("🧭", "页面不存在", "路由：" + esc(path)) +
     '<div style="text-align:center"><a class="btn primary" href="#/">回到首页</a></div></section>';
+}
+
+/* =====================================================================
+ * 环境体检（#/env · /api/env 只读系统指标）
+ * 判定本机是否满足复现/续跑环境 + 按实验实测口径推算各部分耗时
+ * ===================================================================== */
+let envTimer = null, envHost = null, envChartIds = [];
+const envSamples = [];   /* 滚动窗口：最近 40 个采样（3 秒/点 ≈ 2 分钟） */
+function stopEnvPoll() { if (envTimer) { clearInterval(envTimer); envTimer = null; } }
+function fmtDur(sec) {
+  if (sec == null || isNaN(sec)) return "—";
+  sec = Math.round(sec);
+  if (sec < 90) return sec + " 秒";
+  const m = Math.round(sec / 60);
+  if (m < 90) return m + " 分钟";
+  const h = Math.floor(m / 60), rm = m % 60;
+  return h + " 小时" + (rm ? " " + rm + " 分钟" : "");
+}
+function nmedian(arr) {
+  const v = (arr || []).filter(x => typeof x === "number" && !isNaN(x)).sort((a, b) => a - b);
+  return v.length ? v[Math.floor(v.length / 2)] : null;
+}
+function envRules(env) {
+  const h = env.host || {}, lv = env.live || {}, pw = env.power || {}, dk = env.disk || {}, tc = env.torch || {};
+  const tf = tc.bench && tc.bench.tflops_fp16;
+  const sw = lv.swap_used_gb || 0, np = (env.procs || []).length;
+  const missA = (env.assets || []).filter(a => !a.exists).length;
+  const nA = (env.assets || []).length;
+  const envOk = !!tc.envs && tc.envs.length > 0 && tc.envs.every(e => !e.error && e.mps);
+  return [
+    { name: "算力芯片与内存", need: "Apple Silicon · 统一内存 ≥16GB",
+      act: (h.chip || "—") + " · " + (h.mem_gb != null ? h.mem_gb + "GB（" + h.cores_p + " 性能核 + " + h.cores_e + " 能效核）" : "—"),
+      level: h.mem_gb != null && h.mem_gb >= 16 ? "pass" : "fail" },
+    { name: "MPS 加速与实测算力", need: "MPS 可用 · fp16 矩阵乘 ≥10 TFLOPS",
+      act: tc.envs.map(e => e.env.split("-")[0] + "：" + (e.mps ? "MPS 可用" : "MPS 不可用")).join(" · ") +
+        (tf != null ? " · 实测 " + tf + " TFLOPS" : ""),
+      level: tf == null ? "warn" : (tf >= 10 ? "pass" : tf >= 7 ? "warn" : "fail") },
+    { name: "磁盘空闲", need: "≥30GB（嵌入缓存 7.2GB + 权重 + 原始数据 + 新增 checkpoints）",
+      act: dk.free_gb != null ? "空闲 " + dk.free_gb + "GB / 共 " + dk.total_gb + "GB" : "—",
+      level: dk.free_gb != null && dk.free_gb >= 30 ? "pass" : "fail" },
+    { name: "电源", need: "AC 供电（电池策略会在长训中降频）", act: pw.source || "—",
+      level: pw.source === "AC 供电" ? "pass" : "warn" },
+    { name: "热节流", need: "无降频（无风扇机身：长训后需冷却 20–30 分钟再评测）", act: pw.thermal || "—",
+      level: pw.throttled === false ? "pass" : pw.throttled == null ? "warn" : "fail" },
+    { name: "内存压力（swap）", need: "swap 已用 ≤4GB，超出说明常驻后台吃内存",
+      act: "已用 " + sw + "GB / " + (lv.swap_total_gb || "—") + "GB",
+      level: sw <= 4 ? "pass" : sw <= 8 ? "warn" : "fail" },
+    { name: "并发训练任务", need: "0 个（多任务会争抢 MPS 与热预算）",
+      act: np ? np + " 个在跑" : "无", level: np === 0 ? "pass" : "warn" },
+    { name: "conda 训练环境", need: "hw1 / hw2 两个具名环境 torch + MPS 可用",
+      act: envOk ? "两环境均可用（torch " + ((tc.envs[0] || {}).version || "?") + "）" : "存在异常环境",
+      level: envOk ? "pass" : "fail" },
+    { name: "关键资产", need: "ISIC 数据、SAM 权重、嵌入缓存全部在位",
+      act: (nA - missA) + " / " + nA + " 在位", level: missA ? "fail" : "pass" },
+  ];
+}
+/* 复现耗时：全部由 outputs/ 实测数据外推（每轮 epoch_sec、评测 latency_ms 的均值/中位），
+ * 没有实测的项目明确标注「外推 / 人工口径」，绝不出现无出处的数字。 */
+function envParts() {
+  const h1 = state.hw1, h2 = state.hw2;
+  const mainRuns = ((h1 && h1.runs) || []).filter(r => runGroup(r.tag) === "main");
+  const epSec = nmedian(mainRuns.flatMap(r => toPts(r.series, "epoch", "epoch_sec").map(p => p[1])));
+  const hw2Lat = st => {
+    const v = ((h2 && h2.evals) || []).filter(e => e.stage === st && e.latency_ms != null).map(e => e.latency_ms);
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length / 1000 : null;
+  };
+  const cachedLat = hw2Lat("e1") || hw2Lat("e2");
+  const onlineLat = hw2Lat("e3");
+  const runInfo = tag => {
+    const r = ((h2 && h2.runs) || []).find(x => x.tag === tag);
+    if (!r || !(r.series || []).length) return null;
+    return { ep: r.series.length, sec: nmedian(r.series.map(x => x.epoch_sec)) };
+  };
+  const e2 = runInfo("e2_box"), e3 = runInfo("e3_lora");
+  const evalN = 1000;
+  const rows = [];
+  rows.push({ name: "作业 1 · 主对比", sub: "3 模型 × 3 种子 × 12 轮",
+    unit: epSec != null ? epSec * 12 : null, n: 9,
+    basis: epSec != null ? "实测单轮中位 " + Math.round(epSec) + " 秒 × 12 轮" : "缺少主对比日志",
+    now: "✅ 已完成" });
+  rows.push({ name: "作业 1 · 消融", sub: "6 组 × 12 轮（含 2 组 384 分辨率）",
+    unit: epSec != null ? epSec * 12 * (4 + 2 * 2.25) / 6 : null, n: 6,
+    basis: epSec != null ? "按主对比单轮外推；384 组按像素比 (384/256)² 计 2.25 倍" : "缺少主对比日志",
+    now: "⬜ 未跑（当前唯一缺口）" });
+  rows.push({ name: "作业 1 · 测试集评测", sub: "10 组 × 1000 张",
+    unit: evalN * 0.9, n: 10, basis: "人工口径 0.9 秒/张（热节流时会显著变慢）", now: "✅ 已完成" });
+  rows.push({ name: "作业 2 · 嵌入缓存预计算", sub: "3694 张 × SAM 编码器",
+    unit: onlineLat != null ? 3694 * onlineLat : null, n: 1,
+    basis: onlineLat != null ? "上界口径：按 E3 在线前向实测均值 " + onlineLat.toFixed(2) + " 秒/张" : "缺少 E3 评测延迟",
+    now: "✅ 已 100%（7.2GB）" });
+  rows.push({ name: "作业 2 · E2 训练", sub: "冻结编码器微调",
+    unit: e2 ? e2.sec * e2.ep : null, n: 1,
+    basis: e2 ? "e2_box 实测 " + e2.ep + " 轮 × 单轮中位 " + Math.round(e2.sec) + " 秒" : "缺少 e2_box 日志",
+    now: "✅ 已完成" });
+  rows.push({ name: "作业 2 · E3 训练", sub: "LoRA(r=8) 微调",
+    unit: e3 ? e3.sec * e3.ep : null, n: 1,
+    basis: e3 ? "e3_lora 实测 " + e3.ep + " 轮 × 单轮中位 " + Math.round(e3.sec) + " 秒" : "缺少 e3_lora 日志",
+    now: "✅ 已完成" });
+  rows.push({ name: "作业 2 · E1/E2 评测", sub: "2 阶段 × 10 提示 × 1000 张（走缓存）",
+    unit: cachedLat != null ? evalN * cachedLat : null, n: 20,
+    basis: cachedLat != null ? "缓存命中实测均值 " + Math.round(cachedLat * 1000) + " 毫秒/张" : "缺少评测延迟",
+    now: "✅ 已完成" });
+  rows.push({ name: "作业 2 · E3 评测", sub: "8 提示 × 1000 张（在线前向）",
+    unit: onlineLat != null ? evalN * onlineLat : null, n: 8,
+    basis: onlineLat != null ? "在线前向实测均值 " + onlineLat.toFixed(2) + " 秒/张" : "缺少评测延迟",
+    now: "✅ 已完成（8/8 提示）" });
+  rows.push({ name: "级联评测", sub: "U-Net 粗框喂给 E1/E2：4 组 × 1000 张（走缓存）",
+    unit: cachedLat != null ? evalN * cachedLat : null, n: 4,
+    basis: cachedLat != null ? "同 E1/E2 缓存口径" : "缺少评测延迟",
+    now: "✅ 已完成" });
+  return rows;
+}
+/* 采一个点：网络为累计字节，需与上一次采样差分出吞吐 */
+function pushEnvSample(lv) {
+  const now = Date.now();
+  const s = { ts: now,
+    cpu_user: lv.cpu_user_pct, cpu_sys: lv.cpu_sys_pct,
+    mem_used: lv.mem_used_gb, swap_used: lv.swap_used_gb,
+    load1: lv.load1, load5: lv.load5, load15: lv.load15,
+    disk_mbps: lv.disk_mbps, proc_cpu: lv.proc_cpu_sum_pct,
+    net_recv: null, net_sent: null, raw_ib: lv.net_ibytes, raw_ob: lv.net_obytes };
+  const prev = envSamples[envSamples.length - 1];
+  if (prev && lv.net_ibytes != null && prev.raw_ib != null && lv.net_ibytes >= prev.raw_ib) {
+    const dt = (now - prev.ts) / 1000;
+    if (dt > 0) {
+      s.net_recv = (lv.net_ibytes - prev.raw_ib) / dt / 1024;   /* KB/s */
+      s.net_sent = (lv.net_obytes - prev.raw_ob) / dt / 1024;
+    }
+  }
+  envSamples.push(s);
+  if (envSamples.length > 40) envSamples.shift();
+}
+function envPanel(cls, title, meta, inner) {
+  return '<div class="card ' + cls + '"><div class="ph"><h3>' + esc(title) +
+    '</h3><span class="p-meta">' + esc(meta) + "</span></div>" + inner + "</div>";
+}
+/* 六面板实时监控网格：CPU / 内存与 Swap / 负载 / 磁盘 / 网络 / 进程 CPU */
+function envChartsHtml() {
+  if (envSamples.length < 2) {
+    return '<div class="card"><div class="muted" style="padding:18px">采样中…每 3 秒一个点，约半分钟后曲线成形；期间下方统计卡与判定表已可用。</div></div>';
+  }
+  const S = key => envSamples.map((s, i) => [i, s[key]]).filter(p => p[1] != null);
+  const opts = { xLabel: "采样序号（3 秒/点）", smooth: true };
+  const memGb = envHost && envHost.mem_gb;
+  const memCharts = gchart([
+    { name: "内存已用 GB", pts: S("mem_used") },
+    { name: "Swap 已用 GB", pts: S("swap_used") },
+  ], Object.assign({ h: 180, yMin: 0, yMax: memGb || null, area: true }, opts));
+  return '<div class="g12">' +
+    envPanel("col-6", "🖥️ CPU 占用率", "用户态 + 系统态 · iostat 单核均值口径，满载 100%",
+      gchart([
+        { name: "用户态 %", pts: S("cpu_user") },
+        { name: "系统态 %", pts: S("cpu_sys") },
+      ], Object.assign({ h: 180, yMin: 0, yMax: 100, area: true }, opts))) +
+    envPanel("col-6", "🧠 内存与 Swap", "已用内存 / 已用 swap（GB）" + (memGb ? " · 总量 " + memGb + "GB" : ""), memCharts) +
+    envPanel("col-4", "📈 系统负载", "load average 1 / 5 / 15 分钟",
+      gchart([
+        { name: "1 分钟", pts: S("load1") },
+        { name: "5 分钟", pts: S("load5") },
+        { name: "15 分钟", pts: S("load15") },
+      ], Object.assign({ h: 170, yMin: 0 }, opts))) +
+    envPanel("col-4", "💽 磁盘吞吐（disk0）", "读写合计 MB/s",
+      gchart([{ name: "MB/s", pts: S("disk_mbps") }], Object.assign({ h: 170, yMin: 0, area: true }, opts))) +
+    envPanel("col-4", "🌐 网络吞吐", "接收 / 发送 KB/s（两次采样差分）",
+      gchart([
+        { name: "接收 KB/s", pts: S("net_recv") },
+        { name: "发送 KB/s", pts: S("net_sent") },
+      ], Object.assign({ h: 170, yMin: 0 }, opts))) +
+    "</div>" +
+    envPanel("", "⚙️ 进程 CPU 总和", "全部进程 %CPU 累加 · 本机 " + ((envHost && envHost.ncpu) || "?") +
+      " 核满载约 " + ((envHost && envHost.ncpu) || "?") + "00%",
+      gchart([{ name: "进程 CPU 总和 %", pts: S("proc_cpu") }],
+        Object.assign({ h: 150, yMin: 0, area: true }, opts)));
+}
+/* 面板区整体重绘；清理被替换掉的旧图表注册项，避免 CHARTS 泄漏 */
+function envSetCharts(html) {
+  const box = document.getElementById("env-charts");
+  if (!box) return;
+  box.innerHTML = html;
+  const now = Array.from(box.querySelectorAll(".gchart")).map(el => el.dataset.chart).filter(Boolean);
+  envChartIds.filter(id => now.indexOf(id) < 0).forEach(id => { delete CHARTS[id]; });
+  envChartIds = now;
+  requestAnimationFrame(attachChartResize);
+}
+/* Grafana 嵌入：本机 Grafana(3000) 渲染的面板以 kiosk 模式 iframe 进来；
+ * 服务未启动时降级为提示，不影响本页其余自研面板。 */
+function envEmbedHtml() {
+  return '<div class="card" style="margin-top:16px" id="grafana-card">' +
+    '<div class="ph"><h3>📡 Grafana 实时大屏（自动渲染）</h3>' +
+      '<span class="p-meta">Prometheus 每 5 秒抓取 8800/metrics · 面板可缩放 / 悬停 / 切时间窗</span></div>' +
+    '<div id="grafana-slot"><div class="muted" style="padding:10px">检测 Grafana 服务…</div></div></div>';
+}
+function envInitEmbed() {
+  const slot = document.getElementById("grafana-slot");
+  if (!slot) return;
+  fetch("http://127.0.0.1:3000/api/health", { mode: "no-cors" }).then(() => {
+    slot.innerHTML =
+      '<iframe src="http://127.0.0.1:3000/d/env-stack/medseg?kiosk&refresh=5s&theme=' + currentTheme() + '" loading="lazy" ' +
+        'style="width:100%;height:1080px;border:1px solid var(--border);border-radius:8px;background:var(--card)" ' +
+        'title="Grafana 复现环境监控大屏"></iframe>' +
+      '<div class="muted" style="font-size:12px;margin-top:6px">数据链路：8800/metrics → Prometheus:9090 → Grafana:3000（5 秒刷新）· ' +
+        '<a href="http://127.0.0.1:3000/d/env-stack/medseg" target="_blank" rel="noopener">新窗口打开完整 Grafana ↗</a>' +
+        "（admin / medseg8800）· 启停脚本：~/.grafana-stack/start_monitor.sh · stop_monitor.sh</div>";
+  }).catch(() => {
+    slot.innerHTML = '<div class="err-box" style="margin-top:4px"><span>⚠️ Grafana 服务（:3000）未启动——下方与右侧的自研面板不受影响。</span>' +
+      '<span class="mono" style="font-size:12px">一键启动：bash ~/.grafana-stack/start_monitor.sh</span></div>';
+  });
+}
+function renderEnv(env) {
+  envHost = env.host || null;
+  const h = env.host || {}, lv = env.live || {}, pw = env.power || {}, dk = env.disk || {}, tc = env.torch || {};
+  const rules = envRules(env);
+  const nPass = rules.filter(r => r.level === "pass").length;
+  const nWarn = rules.filter(r => r.level === "warn").length, nFail = rules.filter(r => r.level === "fail").length;
+  const verdict = nFail ? "❌ 暂不满足复现条件" : nWarn ? "⚠️ 可以复现，有 " + nWarn + " 项注意点" : "✅ 满足复现条件";
+  const vColor = nFail ? "var(--danger)" : nWarn ? "var(--warn)" : "var(--accent)";
+  const tf = tc.bench && tc.bench.tflops_fp16;
+  const parts = envParts();
+  const totalAll = parts.reduce((s, p) => s + (p.unit != null ? p.unit * p.n : 0), 0);
+  const totalTodo = parts.filter(p => p.now.indexOf("⬜") === 0).reduce((s, p) => s + (p.unit != null ? p.unit * p.n : 0), 0);
+  const assetTotal = (env.assets || []).reduce((s, a) => s + (a.gb || 0), 0);
+  const partsHtml = '<div class="table-scroll"><table class="stat-table num-table">' +
+    '<tr><td style="color:var(--text2)">部分</td><td style="color:var(--text2)" title="单件实测口径推算">单件耗时</td>' +
+    '<td style="color:var(--text2)">数量</td><td style="color:var(--text2)">预计小计</td>' +
+    '<td style="color:var(--text2)">当前状态</td></tr>' +
+    parts.map(p =>
+      '<tr><td>' + esc(p.name) + '<div class="muted" style="font-size:11.5px">' + esc(p.sub) +
+        '<div title="' + esc(p.basis) + '" style="font-size:11.5px">口径：' + esc(p.basis) + "</div></div></td>" +
+      '<td style="text-align:right">' + fmtDur(p.unit) + "</td>" +
+      '<td style="text-align:right">× ' + p.n + "</td>" +
+      '<td style="text-align:right"><b>' + fmtDur(p.unit != null ? p.unit * p.n : null) + "</b></td>" +
+      '<td style="text-align:right;white-space:nowrap">' + p.now + "</td></tr>").join("") +
+    '<tr><td><b>全量复现合计</b><div class="muted" style="font-size:11.5px">串行、含评测，不含冷却等待</div></td>' +
+    '<td></td><td></td>' +
+    '<td style="text-align:right"><b style="color:var(--primary)">' + fmtDur(totalAll) + "</b></td>" +
+    '<td style="text-align:right">剩余待跑 <b>' + fmtDur(totalTodo) + "</b></td></tr>" +
+    "</table></div>" +
+    '<div class="muted" style="font-size:12.5px;line-height:1.7;margin-top:8px">' +
+      "策略约束：单次连续训练 ≤25 分钟（<code>run_all.py --max-minutes</code> 自动分段续跑）；" +
+      "长训后先冷却 20–30 分钟再评测（否则 0.9 秒/张会劣化到 15 秒/张）；" +
+      "上表耗时为实测数据外推的<b>估算值</b>，非承诺值。删除 checkpoints 会前功尽弃（续跑依赖 last 文件）。</div>";
+
+  const rulesHtml = rules.map(r => {
+    const ico = r.level === "pass" ? "✅" : r.level === "warn" ? "⚠️" : "❌";
+    return '<tr><td style="white-space:nowrap">' + ico + " " + esc(r.name) + "</td>" +
+      '<td class="muted" style="font-size:12.5px">' + esc(r.need) + "</td>" +
+      '<td style="text-align:right">' + esc(r.act) + "</td></tr>";
+  }).join("");
+
+  const assetsHtml = (env.assets || []).map(a =>
+    '<div class="prog-row"><span class="lab" style="width:auto;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis">' +
+      esc(a.name) + (a.exists ? "" : ' <span class="badge pending">缺失</span>') + "</span>" +
+      '<div class="prog"><i style="width:' + (a.exists ? 100 : 0) + '%"></i></div>' +
+      '<span class="val" style="width:90px">' + (a.gb != null ? a.gb + " GB" : "—") + "</span></div>").join("") +
+    '<div class="muted" style="font-size:12px;margin-top:4px">资产合计 ' + assetTotal.toFixed(1) + " GB（本机空闲 " +
+      (dk.free_gb != null ? dk.free_gb : "—") + " GB）</div>";
+
+  pushEnvSample(lv);
+  app.innerHTML =
+    '<section class="view">' +
+      '<div class="sec-head" style="margin-top:4px"><h2>环境体检 · 复现可行性</h2>' +
+        '<span style="font-size:13px;color:var(--text2)">只读采集本机指标（标准库 subprocess，3–600s 分级缓存）· 不干扰训练</span></div>' +
+      '<div class="lb-strip" style="border-left:4px solid ' + vColor + '"><span class="t" style="color:' + vColor + '">' + verdict +
+        '</span><span class="item">通过 ' + nPass + " · 注意 " + nWarn + " · 不满足 " + nFail +
+        '</span><span class="item">采样时间：' + new Date(env.ts * 1000).toLocaleTimeString("zh-CN") +
+        '</span><button class="chip" onclick="viewEnv()">重新体检</button></div>' +
+
+      /* —— 第一屏：本机概况（型号 / 算力 / 系统 / 电源） —— */
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>💻 本机概况</h3>' +
+        '<span class="p-meta">环境体检第一屏 · 型号与运行环境一览</span></div>' +
+        '<div class="grid grid-2" style="gap:0 32px">' +
+          '<table class="info-table">' +
+            '<tr><td>机型标识</td><td class="mono">' + esc(h.model || "—") + '</td></tr>' +
+            '<tr><td>算力芯片</td><td>' + esc(h.chip || "—") + '</td></tr>' +
+            '<tr><td>核心</td><td>' + (h.cores_p || "?") + " 性能核 + " + (h.cores_e || "?") + " 能效核（共 " + (h.ncpu || "?") + "）</td></tr>" +
+            '<tr><td>统一内存</td><td>' + (h.mem_gb != null ? h.mem_gb + " GB" : "—") + '</td></tr>' +
+            '<tr><td>操作系统</td><td>macOS ' + esc(h.macos || "—") + '</td></tr>' +
+          "</table>" +
+          '<table class="info-table">' +
+            '<tr><td>开机时长</td><td>' + (h.uptime_h != null ? h.uptime_h + " 小时" : "—") + '</td></tr>' +
+            '<tr><td>电源</td><td>' + esc(pw.source || "—") + '</td></tr>' +
+            '<tr><td>热节流</td><td>' + esc(pw.thermal || "—") + '</td></tr>' +
+            '<tr><td>磁盘空闲</td><td>' + (dk.free_gb != null ? dk.free_gb + " GB / 共 " + dk.total_gb + " GB" : "—") + '</td></tr>' +
+            '<tr><td>训练/评测进程</td><td>' + ((env.procs || []).length ? env.procs.length + " 个在跑" : "无") + '</td></tr>' +
+          "</table>" +
+        "</div></div>" +
+
+      envEmbedHtml() +
+
+      '<div class="grid-stats" style="margin-top:16px">' +
+        gstat("芯片 / 内存", (h.chip || "—").replace("Apple ", ""), { sub: (h.cores_p || "?") + " 性能核 + " + (h.cores_e || "?") + " 能效核 · " + (h.mem_gb != null ? h.mem_gb + "GB 统一内存" : "—") }) +
+        gstat("MPS 实测算力", tf != null ? tf : "—", { unit: "TFLOPS", color: tf >= 10 ? "var(--accent)" : "var(--warn)", sub: "fp16 矩阵乘（2048³×30 次实测）" }) +
+        gstat("CPU 占用", lv.cpu_user_pct != null ? lv.cpu_user_pct + "%" : "—", { sub: "系统 " + (lv.cpu_sys_pct != null ? lv.cpu_sys_pct : "—") + "% · 空闲 " + (lv.cpu_idle_pct != null ? lv.cpu_idle_pct : "—") + "%" }) +
+        gstat("内存占用", lv.mem_used_gb != null ? lv.mem_used_gb + " GB" : "—", { sub: lv.mem_used_pct != null ? "占 " + lv.mem_used_pct + "%" : "—", color: (lv.mem_used_pct || 0) > 90 ? "var(--warn)" : "var(--text)" }) +
+        gstat("Swap", (lv.swap_used_gb != null ? lv.swap_used_gb : "—") + " GB", { sub: "共 " + (lv.swap_total_gb || "—") + "GB · 越低越好", color: (lv.swap_used_gb || 0) > 8 ? "var(--warn)" : "var(--text)" }) +
+        gstat("磁盘空闲", dk.free_gb != null ? dk.free_gb + " GB" : "—", { sub: "共 " + (dk.total_gb || "—") + "GB", color: "var(--accent)" }) +
+        gstat("电源 / 热", (pw.source || "—").replace(" 供电", ""), { sub: pw.thermal || "—", color: pw.throttled === false ? "var(--accent)" : "var(--warn)" }) +
+        gstat("开机时长", h.uptime_h != null ? h.uptime_h + " 小时" : "—", { sub: "负载 " + (lv.load1 != null ? lv.load1 : "—") + " / " + (lv.load5 != null ? lv.load5 : "—") + " / " + (lv.load15 != null ? lv.load15 : "—") }) +
+      "</div>" +
+
+      '<div class="chiprow" style="margin:16px 0 10px">' +
+        '<span class="badge ' + ((env.procs || []).length ? "running" : "done") + '">' +
+          ((env.procs || []).length ? "训练/评测进程 " + env.procs.length + " 个在跑" : "当前无训练/评测进程") + "</span>" +
+        '<span class="muted" style="font-size:12.5px">实时监控面板 · 每 3 秒采样 · 最近 40 点（约 2 分钟窗口）</span>' +
+      "</div>" +
+      '<div id="env-charts">' + envChartsHtml() + "</div>" +
+
+      '<div class="g12" style="margin-top:16px">' +
+        '<div class="card col-6"><div class="ph"><h3>💽 关键资产盘点</h3><span class="p-meta">du 只读扫描 · 5 分钟缓存</span></div>' + assetsHtml + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>🩺 判定明细（' + rules.length + " 项）</h3>" +
+          '<span class="p-meta">✅ 满足 · ⚠️ 注意 · ❌ 不满足</span></div>' +
+          '<div class="table-scroll"><table class="stat-table">' +
+            '<tr><td style="color:var(--text2)">检查项</td><td style="color:var(--text2)">要求</td><td style="color:var(--text2);text-align:right">实测</td></tr>' + rulesHtml +
+          "</table></div></div>" +
+      "</div>" +
+
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>⏳ 复现耗时估算（按实验实测口径外推）</h3>' +
+        '<span class="p-meta">全部由 outputs/ 日志实测值推算 · 串行口径</span></div>' + partsHtml + "</div>" +
+
+      '<div class="card" style="margin-top:16px"><div class="ph"><h3>🧾 采集明细（原始值）</h3>' +
+        '<span class="p-meta">torch 探针：每个具名环境独立测一次 fp16 算力 · 10 分钟缓存</span></div>' +
+        '<pre class="report-pre" style="max-height:260px">' + esc(JSON.stringify(env, null, 2)) + "</pre></div>" +
+    "</section>";
+  requestAnimationFrame(attachChartResize);
+  envInitEmbed();
+  stopEnvPoll();
+  envTimer = setInterval(async () => {
+    if (parseHash().path !== "/env") { stopEnvPoll(); return; }
+    try {
+      const e = await api("/api/env");
+      pushEnvSample(e.live || {});
+      envSetCharts(envChartsHtml());
+    } catch (err) { /* 采样失败静默保旧值 */ }
+  }, 3000);
+}
+function viewEnv() {
+  app.innerHTML = '<section class="view"><div class="skel t" style="width:40%"></div><div class="skel"></div><div class="skel" style="width:70%"></div>' +
+    '<div class="muted" style="margin-top:14px;font-size:13px">体检中…（首次会做一次 MPS 算力基准，约 3–10 秒）</div></section>';
+  api("/api/env").then(renderEnv).catch(err => {
+    app.innerHTML = '<section class="view">' + errBox("环境体检失败：" + err.message) + "</section>";
+  });
 }
 
 /* =====================================================================
@@ -2306,6 +3639,9 @@ function markNav(path) {
 }
 function route() {
   stopLivePoll();                      // 离开实验视图时停掉实时轮询
+  stopAutoRefresh();                   // 以及自动刷新（否则 10s 后会把当前页面静默替换成作业视图）
+  stopEnvPoll();                       // 环境体检的 3s 采样随视图销毁
+  teardownPageNav();                   // 章节导航的滚动监听随视图销毁
   const { path, query } = parseHash();
   markNav(path);
   document.getElementById("nav").classList.remove("open");
@@ -2322,14 +3658,17 @@ function route() {
     return;
   }
 
-  if (path === "/") return viewHome();
-  if (path === "/datasets") return viewDatasets();
-  if (path.startsWith("/dataset/")) return viewDataset(decodeURIComponent(path.slice("/dataset/".length)));
-  if (path === "/hw1") return viewHw1();
-  if (path === "/hw2") return viewHw2();
-  if (path === "/glossary") return viewGlossary(query);
-  if (path === "/about") return viewAbout();
-  return viewNotFound(path);
+  if (path === "/") viewHome();
+  else if (path === "/datasets") viewDatasets();
+  else if (path.startsWith("/dataset/")) viewDataset(decodeURIComponent(path.slice("/dataset/".length)));
+  else if (path === "/hw1") viewHw1();
+  else if (path === "/hw2") viewHw2();
+  else if (path === "/glossary") viewGlossary(query);
+  else if (path === "/about") viewAbout();
+  else if (path === "/env") viewEnv();
+  else viewNotFound(path);
+  /* 渲染完等布局生效，再让图表按真实容器宽度重绘一次（保证首屏就是 1:1 比例） */
+  requestAnimationFrame(attachChartResize);
 }
 window.addEventListener("hashchange", route);
 
@@ -2369,12 +3708,61 @@ function addBubble(kind, html) {
   body.scrollTop = body.scrollHeight;
   return b;
 }
+/* 在已转义文本里包裹术语（不重复转义，供聊天气泡复用） */
+function linkTermsInEscaped(html) {
+  if (!termRegex || !state.glossary) return html;
+  let out = "", last = 0, m;
+  termRegex.lastIndex = 0;
+  while ((m = termRegex.exec(html)) !== null) {
+    const term = m[0], s = m.index, e = s + term.length;
+    if (!isTermHit(html, s, e, term)) continue;
+    out += html.slice(last, s);
+    out += '<span class="term" data-term="' + esc(term) + '" tabindex="0" role="button">' + term + "</span>";
+    last = e;
+  }
+  return out + html.slice(last);
+}
 function mdInline(s) {
-  let out = esc(s);
-  out = out.replace(/`([^`]+)`/g, "<code>$1</code>");
+  const codes = [];
+  let out = esc(s).replace(/`([^`]+)`/g, (m, c) => {
+    codes.push(c);
+    return "\u0001" + (codes.length - 1) + "\u0002";
+  });
+  out = linkTermsInEscaped(out);
   out = out.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
-  out = out.replace(/\n/g, "<br>");
+  out = out.replace(/\u0001(\d+)\u0002/g, (m, i) => "<code>" + codes[Number(i)] + "</code>");
   return out;
+}
+/* 行内格式 + 无序/有序列表 + 代码块（流式渲染时也安全） */
+function mdText(t) {
+  const lines = String(t).split("\n");
+  let html = "", list = null;
+  const closeList = () => { if (list) { html += "</" + list + ">"; list = null; } };
+  lines.forEach(line => {
+    const li = line.match(/^\s*(?:([-*])|(\d+)\.)\s+(.*)$/);
+    if (li) {
+      const kind = li[2] ? "ol" : "ul";
+      if (list !== kind) { closeList(); html += "<" + kind + ">"; list = kind; }
+      html += "<li>" + mdInline(li[3]) + "</li>";
+    } else if (/^\s*#{1,4}\s+/.test(line)) {
+      closeList();
+      html += "<strong>" + mdInline(line.replace(/^\s*#{1,4}\s+/, "")) + "</strong><br>";
+    } else {
+      closeList();
+      if (line.trim() !== "") html += mdInline(line) + "<br>";
+    }
+  });
+  closeList();
+  return html;
+}
+function mdBlock(src) {
+  return String(src).split("```").map((part, i) => {
+    if (i % 2 === 1) {
+      const body = part.replace(/^[A-Za-z0-9_+-]*\n/, "").replace(/\n$/, "");
+      return '<pre class="chat-pre"><code>' + esc(body) + "</code></pre>";
+    }
+    return mdText(part);
+  }).join("");
 }
 function scrollChat() {
   const body = document.getElementById("chat-body");
@@ -2414,7 +3802,7 @@ async function sendChat(text) {
     const delta = obj.choices && obj.choices[0] && obj.choices[0].delta && obj.choices[0].delta.content;
     if (delta) {
       full += delta;
-      bubble.innerHTML = mdInline(full) + '<span class="cursor"></span>';
+      bubble.innerHTML = mdBlock(full) + '<span class="cursor"></span>';
       scrollChat();
     }
   };
@@ -2448,12 +3836,12 @@ async function sendChat(text) {
       if (errored) break;
     }
     if (!errored) {
-      bubble.innerHTML = full ? mdInline(full) : "（空回复，请重试）";
+      bubble.innerHTML = full ? mdBlock(full) : "（空回复，请重试）";
       if (full) chat.messages.push({ role: "assistant", content: full });
     }
   } catch (err) {
     if (err.name === "AbortError") {
-      bubble.innerHTML = (full ? mdInline(full) : "") + "<br><span style='color:var(--text2);font-size:12px'>（已停止生成）</span>";
+      bubble.innerHTML = (full ? mdBlock(full) : "") + "<br><span style='color:var(--text2);font-size:12px'>（已停止生成）</span>";
       if (full) chat.messages.push({ role: "assistant", content: full });
     } else {
       bubble.innerHTML = "⚠️ " + esc(err.message || "网络错误，请重试");
@@ -2489,9 +3877,25 @@ document.getElementById("chat-chips").addEventListener("click", e => {
   if (b) sendChat(b.dataset.q);
 });
 
+/* ---------------- 回到顶部（长页面：术语表 / 实验视图） ---------------- */
+(function initToTop() {
+  const btn = document.createElement("button");
+  btn.id = "to-top";
+  btn.title = "回到顶部";
+  btn.setAttribute("aria-label", "回到顶部");
+  btn.textContent = "↑";
+  btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  document.body.appendChild(btn);
+  window.addEventListener("scroll", () => {
+    btn.classList.toggle("show", window.scrollY > 700);
+  }, { passive: true });
+})();
+
 /* ---------------- 启动 ---------------- */
 setTheme(currentTheme());                      // 同步按钮图标与当前主题
 document.getElementById("theme-btn").addEventListener("click", toggleTheme);
+pollGlobalLive();                              // 全局运行指示：所有页面共享
+setInterval(pollGlobalLive, 5000);
 route();
 
 </script>

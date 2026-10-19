@@ -1,0 +1,26 @@
+{
+  "tag": "loss_bce",
+  "split": "test",
+  "ckpt": "best",
+  "size": 256,
+  "params_M": 28.95,
+  "metrics": {
+    "n": 1000,
+    "dice": 0.5313012130895285,
+    "dice_std": 0.30850213366785506,
+    "iou": 0.4217226485017677,
+    "iou_std": 0.2898832974416182,
+    "hd95": 66.95733064554909,
+    "hd95_std": 43.186639483741104,
+    "hd95_valid": 967,
+    "sensitivity": 0.5236143330327194,
+    "sens_valid": 1000,
+    "specificity": 0.9150234256357158,
+    "spec_valid": 998,
+    "pixel_acc": 0.794512451171875,
+    "empty_pred": 33,
+    "empty_gt": 0,
+    "spec_undefined": 2,
+    "sens_undefined": 0
+  }
+}

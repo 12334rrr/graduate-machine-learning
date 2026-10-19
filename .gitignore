@@ -34,4 +34,11 @@ Thumbs.db
 
 # ================= 运行时杂项 =================
 *.log
+# 进度心跳是运行时数据（门户直接读盘），不入库
+*/outputs/progress/
+# 提交包压缩件可由 documents/打包提交.sh 重建；PDF/DOCX 报告保留
+submission/*.zip
+# 内部工作目录与评审截图
+.workbuddy/
+05_hw1_s*.png
 # 但保留文档目录（.md 不受上面规则影响）

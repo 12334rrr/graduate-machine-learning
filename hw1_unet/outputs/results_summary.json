@@ -1,6 +1,44 @@
 {
   "rows": [
     {
+      "tag": "attn_bottleneck",
+      "model": "attn_unet",
+      "seed": 42,
+      "size": 256,
+      "loss": "bce_dice",
+      "attn_where": "bottleneck",
+      "split": "test",
+      "params_M": 29.34,
+      "dice": 0.5937605821312836,
+      "dice_std": 0.31415814161313754,
+      "iou": 0.48919807485644734,
+      "hd95": 70.48013863350201,
+      "sensitivity": 0.601468861705635,
+      "specificity": 0.913857966754954,
+      "pixel_acc": 0.8108504638671875,
+      "empty_pred": 24,
+      "n": 1000
+    },
+    {
+      "tag": "attn_skip",
+      "model": "attn_unet",
+      "seed": 42,
+      "size": 256,
+      "loss": "bce_dice",
+      "attn_where": "skip",
+      "split": "test",
+      "params_M": 28.98,
+      "dice": 0.595445778374377,
+      "dice_std": 0.27690414082987264,
+      "iou": 0.4768719194667461,
+      "hd95": 95.06901958857115,
+      "sensitivity": 0.7278556087313165,
+      "specificity": 0.7727458573294542,
+      "pixel_acc": 0.7554194488525391,
+      "empty_pred": 1,
+      "n": 1000
+    },
+    {
       "tag": "attn_unet_s2026",
       "model": "attn_unet",
       "seed": 2026,
@@ -77,6 +115,44 @@
       "n": 100
     },
     {
+      "tag": "loss_bce",
+      "model": "unet",
+      "seed": 42,
+      "size": 256,
+      "loss": "bce",
+      "attn_where": "all",
+      "split": "test",
+      "params_M": 28.95,
+      "dice": 0.5313012130895285,
+      "dice_std": 0.30850213366785506,
+      "iou": 0.4217226485017677,
+      "hd95": 66.95733064554909,
+      "sensitivity": 0.5236143330327194,
+      "specificity": 0.9150234256357158,
+      "pixel_acc": 0.794512451171875,
+      "empty_pred": 33,
+      "n": 1000
+    },
+    {
+      "tag": "loss_dice",
+      "model": "unet",
+      "seed": 42,
+      "size": 256,
+      "loss": "dice",
+      "attn_where": "all",
+      "split": "test",
+      "params_M": 28.95,
+      "dice": 0.6025604686614902,
+      "dice_std": 0.2928384075527511,
+      "iou": 0.49199040944007777,
+      "hd95": 84.65904245664287,
+      "sensitivity": 0.7562337353234189,
+      "specificity": 0.7360563436271194,
+      "pixel_acc": 0.7376197357177734,
+      "empty_pred": 5,
+      "n": 1000
+    },
+    {
       "tag": "resunet_s2026",
       "model": "resunet",
       "seed": 2026,
@@ -131,6 +207,44 @@
       "specificity": 0.760658965123382,
       "pixel_acc": 0.7546598052978516,
       "empty_pred": 7,
+      "n": 1000
+    },
+    {
+      "tag": "size192",
+      "model": "unet",
+      "seed": 42,
+      "size": 192,
+      "loss": "bce_dice",
+      "attn_where": "all",
+      "split": "test",
+      "params_M": 28.95,
+      "dice": 0.6390797584868069,
+      "dice_std": 0.2750071119191993,
+      "iou": 0.5253726063946536,
+      "hd95": 59.22388603255749,
+      "sensitivity": 0.7887698333290392,
+      "specificity": 0.7725481589979751,
+      "pixel_acc": 0.7653038194444444,
+      "empty_pred": 4,
+      "n": 1000
+    },
+    {
+      "tag": "size384",
+      "model": "unet",
+      "seed": 42,
+      "size": 384,
+      "loss": "bce_dice",
+      "attn_where": "all",
+      "split": "test",
+      "params_M": 28.95,
+      "dice": 0.4756480713334724,
+      "dice_std": 0.35649309077694674,
+      "iou": 0.3878618251422048,
+      "hd95": 114.88402033358068,
+      "sensitivity": 0.46816219161440065,
+      "specificity": 0.9222955986437827,
+      "pixel_acc": 0.7867104153103298,
+      "empty_pred": 80,
       "n": 1000
     },
     {
@@ -309,6 +423,16 @@
   },
   "ablation": {
     "损失函数": {
+      "BCE": {
+        "dice": 0.5313,
+        "hd95": 66.96,
+        "iou": 0.4217
+      },
+      "Dice": {
+        "dice": 0.6026,
+        "hd95": 84.66,
+        "iou": 0.492
+      },
       "0.5BCE+0.5Dice（默认）": {
         "dice": 0.6062,
         "hd95": 93.89,
@@ -316,13 +440,33 @@
       }
     },
     "输入分辨率": {
+      "192": {
+        "dice": 0.6391,
+        "hd95": 59.22,
+        "iou": 0.5254
+      },
       "256（默认）": {
         "dice": 0.6062,
         "hd95": 93.89,
         "iou": 0.49
+      },
+      "384": {
+        "dice": 0.4756,
+        "hd95": 114.88,
+        "iou": 0.3879
       }
     },
     "注意力位置": {
+      "仅 skip": {
+        "dice": 0.5954,
+        "hd95": 95.07,
+        "iou": 0.4769
+      },
+      "仅 bottleneck": {
+        "dice": 0.5938,
+        "hd95": 70.48,
+        "iou": 0.4892
+      },
       "全部（默认）": {
         "dice": 0.6226,
         "hd95": 82.84,

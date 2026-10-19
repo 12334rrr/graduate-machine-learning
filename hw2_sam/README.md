@@ -61,6 +61,7 @@ python src/run_all.py --only eval           # 只评测
 单独跑：
 
 ```bash
+python src/download_sam.py                  # 下载 SAM ViT-B 权重（已存在则跳过）
 python src/precompute_embeddings.py --split train
 python src/evaluate_sam.py --stage e1 --prompt gt     --split test
 python src/evaluate_sam.py --stage e1 --prompt pert20 --split test
@@ -68,6 +69,7 @@ python src/e2_finetune.py --tag e2_box --epochs 20
 python src/e3_lora.py     --tag e3_lora --epochs 10
 python src/evaluate_sam.py --stage e2 --tag e2_box --prompt auto --unet-tag unet_s42
 python src/plot_figures.py --arch --robust --cascade
+python src/plot_cases.py                   # 定性案例图（GT 框，E1/E2/E3 对比）
 ```
 
 ## 提示设计

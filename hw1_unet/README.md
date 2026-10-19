@@ -45,6 +45,8 @@ python src/download_isic.py                  # 1) 分块并行下载官方 6 个
 python src/prepare_data.py                   # 2) 解压、配对、resize、出 data_stats.md
 python src/plot_figures.py --arch            # 3) 三张模型结构图
 python src/run_all.py                        # 4) 训练 + 评测 + 汇总（自动分段续跑）
+python src/plot_figures.py --curves unet_s42 resunet_s42 attn_unet_s42  # 5) 训练曲线
+python src/plot_figures.py --ablation outputs/ablation.json             # 6) 消融对比图
 ```
 
 单独跑一个实验：
