@@ -1,0 +1,26 @@
+{
+  "tag": "cv_resunet_f4",
+  "split": "fold4",
+  "ckpt": "best",
+  "size": 256,
+  "params_M": 30.35,
+  "metrics": {
+    "n": 538,
+    "dice": 0.5810913186853425,
+    "dice_std": 0.28504329455042393,
+    "iou": 0.46405766717423275,
+    "iou_std": 0.27559527367429304,
+    "hd95": 88.52865751382599,
+    "hd95_std": 46.00407745246781,
+    "hd95_valid": 532,
+    "sensitivity": 0.6399405568968871,
+    "sens_valid": 538,
+    "specificity": 0.8942540092228088,
+    "spec_valid": 538,
+    "pixel_acc": 0.838642077818236,
+    "empty_pred": 6,
+    "empty_gt": 0,
+    "spec_undefined": 0,
+    "sens_undefined": 0
+  }
+}

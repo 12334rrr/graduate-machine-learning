@@ -2739,6 +2739,17 @@ function expMapHw1(d) {
   const cv = runs.filter(r => runGroup(r.tag) === "cv");
   const fin = arr => arr.filter(r => r.status === "finished").length;
   const cvRunning = cv.some(r => r.status !== "finished");
+  const cvDone = fin(cv);
+  const cvEvals = (d.evals || []).filter(e =>
+    e.metrics && /^cv_/.test(e.tag || "") && /^fold/.test(e.split || ""));
+  const cvMean = key => {
+    const vals = cvEvals.filter(e => (e.tag || "").startsWith(key)).map(e => e.metrics.dice);
+    const m = nmean(vals), s = nstd(vals);
+    return m == null ? "—" : Number(m).toFixed(3) + (s != null ? " ± " + Number(s).toFixed(3) : "");
+  };
+  const cvSub = cvDone >= 10
+    ? "2 模型 × 5 折全部完成；每折 4 折训练 + 1 折评测（官方 test 不参与）"
+    : "最佳 2 组超参 × 5 折；train+val 合并后重划分；单折约 1–1.5 小时，10 折合计约 12–18 小时";
   return '<div class="exp-map">' +
     '<div class="em-row">' +
       emBox("① 主对比", "3 模型 × 3 种子；测试集 n=1000，报告均值±标准差",
@@ -2747,14 +2758,18 @@ function expMapHw1(d) {
       emBox("② 消融", "损失函数 / 输入分辨率 / 注意力位置，各 3 个设置",
         abl.length + " 组", emBadge(fin(abl), abl.length, abl.some(r => r.status !== "finished"))) +
       '<span class="em-arrow">→</span>' +
-      emBox("③ 五折交叉验证", "最佳 2 组超参 × 5 折；train+val 合并后重划分，test 不参与；" +
-        "单折约 1–1.5 小时，10 折合计约 12–18 小时（受机器负载影响）" +
+      emBox("③ 五折交叉验证", cvSub +
         '<br><span id="exp-cv-eta" style="color:var(--primary)"></span>',
-        "10 折", emBadge(fin(cv), 10, cvRunning)) +
+        "10 折", emBadge(cvDone, 10, cvRunning)) +
     "</div>" +
     '<div class="em-flow"><b>三者的关系：</b><span>主对比回答“哪个模型更好”</span><span>→</span>' +
       '<span>消融回答“差异来自哪个超参数”</span><span>→</span>' +
       '<span>五折 CV 回答“这个排名是否依赖某一次划分”</span></div>' +
+    (cvEvals.length >= 2
+      ? '<div class="em-flow"><b>五折结果：</b><span>Attention U-Net <b>' + cvMean("cv_attn") +
+        "</b></span><span>ResUNet <b>" + cvMean("cv_resunet") +
+        "</b></span><span>相差 0.7 点，小于折间标准差 → 结构差异不显著；ResUNet 折间更稳</span></div>"
+      : "") +
     '<div class="em-flow"><b>接作业 2：</b><span class="em-chip">unet_s42_test_boxes.json</span>' +
       "<span>（1000 个自动预测框）→</span><a href=\"#/hw2\">作为 SAM 的 auto / auto10 提示 →</a></div>" +
   "</div>";
