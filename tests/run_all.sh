@@ -37,7 +37,30 @@ echo "============================================================"
 /usr/bin/python3 tests/test_hub.py
 
 echo "============================================================"
-echo "[4/4] 报告/提交包结构检查"
+echo "[4/5] 前端渲染冒烟（门户在线时）"
+echo "============================================================"
+if curl -s -o /dev/null --max-time 2 http://127.0.0.1:8800/; then
+  CH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+  if [ -x "$CH" ]; then
+    rm -rf /tmp/hub-render-profile
+    "$CH" --headless=new --disable-gpu --no-first-run \
+      --user-data-dir=/tmp/hub-render-profile --virtual-time-budget=6000 \
+      --enable-logging=stderr --v=0 --dump-dom "http://127.0.0.1:8800/#/hw1" \
+      > /tmp/hub-render.html 2>/tmp/hub-render.err || true
+    grep -q "实验地图" /tmp/hub-render.html || { echo "  [失败] 前端未渲染出实验地图"; exit 1; }
+    if grep -qi "CONSOLE.*\\(error\\|uncaught\\)" /tmp/hub-render.err; then
+      echo "  [失败] 前端控制台报错"; grep -i "CONSOLE" /tmp/hub-render.err | head -5; exit 1
+    fi
+    echo "  前端渲染与控制台检查通过"
+  else
+    echo "  跳过（未找到 Chrome）"
+  fi
+else
+  echo "  跳过（门户未启动）"
+fi
+
+echo "============================================================"
+echo "[5/5] 报告/提交包结构检查"
 echo "============================================================"
 for f in hw1_unet/reports/实验报告.md hw2_sam/reports/实验报告.md \
          hw1_unet/reports/tables.md submission/提交说明.md; do

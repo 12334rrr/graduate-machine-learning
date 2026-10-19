@@ -50,7 +50,7 @@ conda activate hw2-sam-transformer    # 作业 2
 | **数据/权重不入库** | 见 `.gitignore`：`*/data/`、`*/outputs/checkpoints/`、`.conda/`、`.env` 全部排除 |
 | **密钥只存 `.env`** | `dataset_hub/.env` 已被 gitignore；前端、文档、提交里不得出现明文密钥 |
 | **门户只读实验产物** | `dataset_hub` 每次请求扫描两作业 `outputs/`，**不改实验代码** |
-| **推送前必须单元测试** | 任何代码修改后，先跑 `bash tests/run_all.sh`（语法 + hw1/hw2/hub 单元测试 + HTTP 冒烟），**全绿才允许 `git commit` / `git push`**；测试失败不得推送，禁止 `--no-verify` 绕过 |
+| **推送前必须单元测试** | 任何代码修改后，先跑 `bash tests/run_all.sh`（语法 + hw1/hw2/hub 单元测试 + HTTP/前端渲染冒烟 + 交付物结构），**全绿才允许 `git commit` / `git push`**；测试失败不得推送，禁止 `--no-verify` 绕过（已装 `.githooks/pre-push` 自动门禁） |
 
 ---
 
@@ -149,5 +149,6 @@ server.py (127.0.0.1:8800, 标准库)
 3. **长任务后台跑**：`nohup ... &`，不要占着终端；被中断就重跑同一条命令（自动续跑），**绝不删 checkpoint**。
 4. **改实验代码只允许修 bug**，改动必须记录在提交信息里；改完先 `python -m py_compile` 再跑。
 5. **测试门禁与推送**：任何代码修改后先跑 `bash tests/run_all.sh`，全部通过后才 `git add/commit/push`；
+   仓库已配置 `.githooks/pre-push`，`git push` 时会再自动跑一遍，失败即拒绝推送；
    提交信息里写明改动与测试结果；推送前 `git status` 确认没有数据、权重、`.env` 或明文密钥。
 6. **报告纪律**：数字全部来自 `outputs/logs/*.json`，不得手填；口径（12 epoch、E3 子集、GT 框提示）必须在报告中披露。
