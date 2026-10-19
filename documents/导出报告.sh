@@ -33,9 +33,12 @@ for proj in hw1_unet hw2_sam; do
   pandoc reports/实验报告.md -o "/tmp/${proj}_report.html" \
     --standalone --embed-resources --resource-path=reports:. --css="$CSS"
   rm -rf "/tmp/chrome_report_$proj"
-  "$CH" --headless=new --disable-gpu --no-first-run \
+  # --no-sandbox：本机沙箱/CI 容器内 Chrome 无头打印必需（正常桌面环境加上也无副作用）
+  "$CH" --headless=new --no-sandbox --disable-gpu --no-first-run \
     --user-data-dir="/tmp/chrome_report_$proj" --no-pdf-header-footer \
     --print-to-pdf="reports/实验报告.pdf" "file:///tmp/${proj}_report.html" >/dev/null 2>&1
+  # 校验 PDF 真的生成（Chrome 崩溃时会静默失败，set -e 捕不到 shell trap）
+  [ -s "reports/实验报告.pdf" ] || { echo "  [失败] $proj PDF 未生成"; exit 1; }
   echo "  → $proj/reports/实验报告.{docx,pdf}"
 done
 rm -f "$CSS"

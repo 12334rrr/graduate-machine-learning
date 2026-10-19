@@ -17,6 +17,9 @@ sys.path.insert(0, str(ROOT / "dataset_hub"))
 
 import server  # noqa: E402
 
+# 沙箱/CI 环境常注入 HTTP_PROXY，localhost 请求必须绕过代理（否则 502/连接被拒）
+_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 
 class TestHelpers(unittest.TestCase):
     def test_sanitize_json(self):
@@ -65,7 +68,7 @@ class TestHTTP(unittest.TestCase):
     BASE = "http://127.0.0.1:8800"
 
     def _get(self, path):
-        with urllib.request.urlopen(self.BASE + path, timeout=5) as r:
+        with _OPENER.open(self.BASE + path, timeout=5) as r:
             self.assertEqual(r.status, 200)
             return json.loads(r.read().decode("utf-8"))
 

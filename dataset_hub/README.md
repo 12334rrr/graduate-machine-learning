@@ -25,6 +25,7 @@
 | 🧭 代码与产物浏览 | 源码浏览器（点击 `src/*.py` 直接看内容）、图表画廊（缩略图 + 灯箱放大）、评测档案（完整指标 + 原始 JSON）、运行详情（逐 epoch 明细）、权重流式下载、报告查看 |
 | ⏱ 实时刷新 | 实时运行面板每 **3s** 轮询 `/api/live`（进度条 + 已运行/预计剩余时间，只更新面板不重绘整页）；**顶栏全局徽标在任何页面显示“有几个任务在跑、是什么、还需多久”**；每个实验视图顶部有「实验地图」（实验矩阵 + 依赖关系 + 当前进度）；另有「▶ 自动刷新（10s）」重新聚合，离开视图自动停表 |
 | 🏛 架构说明页 | 内嵌 SVG 分层架构图、模块划分表、前后端链路时序（`#/about`） |
+| 🩺 环境体检 | 只读本机指标（负载/CPU/内存/swap/电源/热/磁盘/网络/硬件资产/torch MPS 基准）+ 复现条件判定明细 + 复现耗时估算；内嵌 Grafana kiosk 大屏（本机 Prometheus → Grafana 全链路，`#/env`） |
 
 ## 页面（hash 路由，单文件 SPA）
 
@@ -37,6 +38,7 @@
 | `#/hw2` | 作业 2 实验 | E1/E2/E3 阶段卡、嵌入缓存进度、评测表、级联叙事、checkpoints（含 SAM 原版权重下载） |
 | `#/glossary` | 术语表 | 分类分组 + 筛选 + 搜索；支持 `#/glossary?term=Dice` 直达锚点 |
 | `#/about` | 架构说明 | SVG 架构图（含 progress 心跳节点）、模块表、五条链路、三服务关系卡 |
+| `#/env` | 环境体检 | 本机只读指标面板 + 复现条件判定 + 复现耗时估算 + Grafana kiosk 大屏（iframe 嵌入 `127.0.0.1:3000`，不可达时自动降级为提示卡） |
 
 ## 技术栈
 
@@ -53,7 +55,7 @@
 dataset_hub/
 ├── server.py           # 后端：静态服务 + JSON API + 链接检测 + DeepSeek SSE 代理（端口 8800）
 ├── static/
-│   └── index.html      # 前端：单文件 SPA（七视图 + 术语 tooltip + 聊天面板，内联 CSS/JS）
+│   └── index.html      # 前端：单文件 SPA（八视图 + 术语 tooltip + 聊天面板，内联 CSS/JS）
 ├── data/
 │   ├── datasets.json   # 数据集条目：描述/统计/格式/大小/许可证/下载(含镜像)/榜单/关联术语
 │   └── glossary.json   # 术语表：术语/英文/分类/定义/公式
@@ -72,6 +74,7 @@ dataset_hub/
    │ ③ POST /api/chat {messages:[…]}                           （聊天时，SSE 流式响应）
    │ ④ GET /api/hw1 · /api/hw2 · /exp/…                        （作业 1 / 作业 2 实验视图）
    │ ⑤ GET /api/live                                            （实时运行面板，每 3s 轮询）
+   │ ⑥ GET /api/env · /metrics                                  （环境体检视图；/metrics 供本机 Prometheus 抓取）
    ▼
 server.py (127.0.0.1:8800)
    ├─ 读 data/*.json ──────── 数据来源（唯一事实来源）
@@ -86,6 +89,7 @@ server.py (127.0.0.1:8800)
 - **③ 聊天链路**：前端 `fetch + ReadableStream` 逐行解析 `data:`，增量渲染至 `[DONE]`；`{"error": …}` 事件统一渲染为友好错误。
 - **④ 实验聚合链路**：`/api/hw1`、`/api/hw2` 每次请求实时扫描两作业的 `outputs/`（logs/figures/checkpoints/reports）与 hw2 的 `data/embeddings/` 嵌入缓存（与暗色监控台同一套聚合口径），训练进行中时视图随之刷新；图片经 `/exp/<proj>/figures/<f>`，权重经 `/exp/<proj>/download` 流式下载（1MB 分块；白名单为各作业 `outputs/checkpoints/` 与 hw2 的 SAM 原版权重，防目录穿越）。
 - **⑤ 实时监控链路**：训练/评测进程每 epoch（评测每 25 张）向 `outputs/progress/*.json` 写心跳 → 前端每 **3 秒**轮询 `/api/live`（10 分钟心跳窗口；`phase=done` 保留 10 分钟展示「刚完成」）→ 只更新实时运行面板，不打断图表悬停与滚动；实验视图的「自动刷新（10s）」则重新聚合 `/api/hw1|hw2`，离开视图会自动停表。
+- **⑥ 环境监控链路**：`/metrics` 以 Prometheus 文本格式暴露机器指标与作业心跳计数 → 本机 Prometheus（`:9090`，配置在 `~/.grafana-stack/`，仓库外）每 5s 抓取 → Grafana（`:3000`）渲染 kiosk 大屏 → `#/env` 以 iframe 嵌入（Grafana 未启动时自动降级为中文提示卡，不影响其余面板）。
 
 ## 启动
 
@@ -129,6 +133,8 @@ export DEEPSEEK_API_KEY=sk-你的密钥
 | GET | `/api/hw1` | 作业 1 实验聚合（runs/evals/checkpoints/figures/reports/data_stats，只读） |
 | GET | `/api/hw2` | 作业 2 实验聚合（stages/embeddings/runs/evals/checkpoints/figures/reports，只读） |
 | GET | `/api/live` | 实时进度：扫描两作业 `outputs/progress/*.json` 心跳，只返回 10 分钟内的条目（`phase=done` 保留 10 分钟，且同一阶段/提示已完成时自动隐藏残留的 eval 心跳）；每条含 `elapsed_sec` / `eta_sec`（训练按最近 epoch 实测耗时、评测按相邻心跳速率估算） |
+| GET | `/api/env` | 环境体检：只读系统指标（`live`/`host`/`power`/`procs`/`torch`/`checks`/`estimate`，标准库 `subprocess` 采集、全部带降级） |
+| GET | `/metrics` | Prometheus 文本格式暴露（`machine_cpu_*` / `machine_mem_used_bytes` / `machine_load1` / 作业心跳计数等），供本机 Prometheus 抓取 → Grafana 渲染 |
 | GET | `/api/hw_report?proj=&path=` | 报告文本内容（限各作业 reports/ 目录） |
 | GET | `/api/hw_code?proj=&path=` | 源码内容（限各作业 src/，仅 .py） |
 | GET | `/api/hw_eval?proj=&file=` | 评测 JSON 原文（限各作业 outputs/logs/） |
@@ -143,4 +149,6 @@ export DEEPSEEK_API_KEY=sk-你的密钥
 - 新增数据集/术语：直接编辑 `data/*.json`（服务端每次请求实时读盘，无需重启）；`glossary.json` 中新增分类时记得同步 `categories` 数组（前端另有未声明分类的兜底渲染，不会丢词条）。
 - 榜单纪律：只添加官方或论文可考的来源，禁止编造排名与指标数字。
 - 本平台对 `hw1_unet/`、`hw2_sam/` **只读引用**（叙述与事实数据），绝不修改实验代码。
+- Grafana/Prometheus 栈位于 `~/.grafana-stack/`（仓库外，`.gitignore` 不涉及）：`#/env` 的 kiosk 大屏与 `/metrics` 依赖它；未安装时门户其余功能不受影响（环境面板自动降级）。
+- 环境体检页的「复现条件」判定随机器负载实时波动：训练占用高时显示「暂不满足」属设计行为，空闲时恢复 ✅。
 - 安全边界：`/api/check_link` 可探测任意 http/https 目标（含本机端口），属本地工具的有意设计；服务仅绑定 `127.0.0.1`，**切勿**改为 `0.0.0.0` 对外暴露。

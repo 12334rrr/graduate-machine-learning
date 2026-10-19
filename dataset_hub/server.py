@@ -15,6 +15,7 @@ MedSeg Dataset Hub —— 科研数据集展示平台后端
   GET  /api/hw2              作业2 实验聚合（只读 hw2_sam/outputs + 嵌入缓存）
   GET  /api/live             实时进度：扫描两作业 outputs/progress/*.json 心跳（10 分钟窗口）
   GET  /api/env              环境体检：只读系统指标（负载/CPU/内存/swap/电源/热/磁盘/网络/资产/torch MPS 基准）
+  GET  /metrics             Prometheus 文本格式（机器指标 + 作业心跳计数，供本机 Prometheus 抓取 → Grafana 渲染）
   GET  /api/hw_report        作业报告内容（限 reports/ 目录）
   GET  /api/hw_code          作业源码内容（限 src/ 目录）
   GET  /api/hw_eval          评测 JSON 原文（限 outputs/logs/）

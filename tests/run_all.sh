@@ -6,7 +6,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 source /opt/anaconda3/etc/profile.d/conda.sh
 
 echo "============================================================"
-echo "[0/4] 语法检查"
+echo "[0/5] 语法检查"
 echo "============================================================"
 /usr/bin/python3 -m py_compile "$ROOT/dataset_hub/server.py"
 conda activate hw1-unet-medseg
@@ -19,20 +19,20 @@ python -m py_compile "$ROOT/hw2_sam/src/evaluate_sam.py" "$ROOT/hw2_sam/src/plot
 echo "  语法检查通过"
 
 echo "============================================================"
-echo "[1/4] 作业 1 单元测试"
+echo "[1/5] 作业 1 单元测试"
 echo "============================================================"
 cd "$ROOT"
 conda activate hw1-unet-medseg
 python tests/test_hw1.py
 
 echo "============================================================"
-echo "[2/4] 作业 2 单元测试"
+echo "[2/5] 作业 2 单元测试"
 echo "============================================================"
 conda activate hw2-sam-transformer
 python tests/test_hw2.py
 
 echo "============================================================"
-echo "[3/4] 门户单元 + HTTP 冒烟"
+echo "[3/5] 门户单元 + HTTP 冒烟"
 echo "============================================================"
 /usr/bin/python3 tests/test_hub.py
 
@@ -43,7 +43,9 @@ if curl -s -o /dev/null --max-time 2 http://127.0.0.1:8800/; then
   CH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
   if [ -x "$CH" ]; then
     rm -rf /tmp/hub-render-profile
-    "$CH" --headless=new --disable-gpu --no-first-run \
+    # --no-sandbox：本机沙箱/CI 容器内 Chrome 必需（正常桌面环境加上也无副作用）
+    # --no-proxy-server：避免沙箱注入的 HTTP_PROXY 把 127.0.0.1 请求代理出去（连接被拒）
+    "$CH" --headless=new --no-sandbox --no-proxy-server --disable-gpu --no-first-run \
       --user-data-dir=/tmp/hub-render-profile --virtual-time-budget=6000 \
       --enable-logging=stderr --v=0 --dump-dom "http://127.0.0.1:8800/#/hw1" \
       > /tmp/hub-render.html 2>/tmp/hub-render.err || true

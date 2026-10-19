@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """汇总所有实验结果 -> 报告要用的表格（Markdown + JSON）。
 
-读两类文件：
+读三类文件：
 - outputs/logs/{tag}_summary.json   训练过程（含 args：model / size / loss / seed / attn_where）
 - outputs/logs/eval_{tag}_{split}.json  测试集评测指标
+- outputs/cv_results.json           五折交叉验证汇总（run_cv.py 生成，可选）
 
 产出：
 - outputs/results_summary.json
@@ -160,6 +161,37 @@ def build_markdown(rows, models):
     return "\n".join(L)
 
 
+def build_cv_section():
+    """五折交叉验证汇总节（outputs/cv_results.json 存在才生成，保持向后兼容）。"""
+    p = LOG_DIR.parent / "cv_results.json"
+    if not p.exists():
+        return ""
+    cv = json.loads(p.read_text(encoding="utf-8"))
+    L = ["\n\n## 4. 五折交叉验证（train+val 合并重划分，官方 test 不参与）\n"]
+    L.append("| 模型 | 折数 | Dice (均值±标准差) | IoU (均值±标准差) | HD95 (px) |")
+    L.append("| --- | --- | --- | --- | --- |")
+    for key in ["cv_attn_unet", "cv_resunet"]:
+        v = cv.get(key)
+        if not v:
+            continue
+        L.append(f"| {MODEL_CN.get(v['model'], v['model'])} | {v['n_folds']} | "
+                 f"{v['dice_mean']:.4f} ± {v['dice_std']:.4f} | "
+                 f"{v['iou_mean']:.4f} ± {v['iou_std']:.4f} | "
+                 f"{v['hd95_mean']:.2f} ± {v['hd95_std']:.2f} |")
+    L.append("\n逐折 Dice 明细：\n")
+    L.append("| 模型 | " + " | ".join(f"fold {i}" for i in range(5)) + " |")
+    L.append("| --- |" + " --- |" * 5)
+    for key in ["cv_attn_unet", "cv_resunet"]:
+        v = cv.get(key)
+        if not v:
+            continue
+        cells = [f"{f['dice']:.4f}" for f in sorted(v["folds"], key=lambda x: x["fold"])]
+        L.append(f"| {MODEL_CN.get(v['model'], v['model'])} | " + " | ".join(cells) + " |")
+    L.append("\n> 数据源：`outputs/cv_results.json`（`run_cv.py` 生成）、"
+             "`outputs/logs/eval_cv_*_fold*.json`；CV 均值不与官方 test 主表直接对齐。")
+    return "\n".join(L)
+
+
 def main():
     rows = load_all()
     models = agg_models(rows, "test")
@@ -168,7 +200,7 @@ def main():
         json.dumps({"rows": rows, "models": models, "ablation": ablation},
                    indent=2, ensure_ascii=False),
         encoding="utf-8")
-    md = build_markdown(rows, models)
+    md = build_markdown(rows, models) + build_cv_section()
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     (REPORT_DIR / "tables.md").write_text(md, encoding="utf-8")
     # 供 plot_figures.py --ablation 直接使用（此前无人生成，导致消融图缺数据源）
