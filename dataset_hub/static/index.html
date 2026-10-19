@@ -3354,6 +3354,11 @@ function envParts() {
   };
   const e2 = runInfo("e2_box"), e3 = runInfo("e3_lora");
   const evalN = 1000;
+  const cvRuns = ((h1 && h1.runs) || []).filter(r => runGroup(r.tag) === "cv");
+  const cvDone = cvRuns.filter(r => r.status === "finished").length;
+  const cvRunning = cvRuns.some(r => r.status !== "finished");
+  const cvStatus = cvRunning ? "🔄 运行中（" + cvDone + "/10 折完成）"
+    : (cvDone >= 10 ? "✅ 已完成" : "⬜ 未开始");
   const rows = [];
   rows.push({ name: "作业 1 · 主对比", sub: "3 模型 × 3 种子 × 12 轮",
     unit: epSec != null ? epSec * 12 : null, n: 9,
@@ -3362,9 +3367,13 @@ function envParts() {
   rows.push({ name: "作业 1 · 消融", sub: "6 组 × 12 轮（含 2 组 384 分辨率）",
     unit: epSec != null ? epSec * 12 * (4 + 2 * 2.25) / 6 : null, n: 6,
     basis: epSec != null ? "按主对比单轮外推；384 组按像素比 (384/256)² 计 2.25 倍" : "缺少主对比日志",
-    now: "⬜ 未跑（当前唯一缺口）" });
-  rows.push({ name: "作业 1 · 测试集评测", sub: "10 组 × 1000 张",
-    unit: evalN * 0.9, n: 10, basis: "人工口径 0.9 秒/张（热节流时会显著变慢）", now: "✅ 已完成" });
+    now: "✅ 已完成（6/6）" });
+  rows.push({ name: "作业 1 · 五折交叉验证", sub: "2 模型 × 5 折 × 12 轮（train+val 重划分）",
+    unit: epSec != null ? epSec * 12 * 10 * 0.83 : null, n: 10,
+    basis: epSec != null ? "主对比单轮中位 × 0.83（2155/2594）× 10 折" : "缺少主对比日志",
+    now: cvStatus });
+  rows.push({ name: "作业 1 · 测试集评测", sub: "主对比 9 + 消融 6 = 15 组 × 1000 张",
+    unit: evalN * 0.9, n: 15, basis: "人工口径 0.9 秒/张（热节流时会显著变慢）", now: "✅ 已完成" });
   rows.push({ name: "作业 2 · 嵌入缓存预计算", sub: "3694 张 × SAM 编码器",
     unit: onlineLat != null ? 3694 * onlineLat : null, n: 1,
     basis: onlineLat != null ? "上界口径：按 E3 在线前向实测均值 " + onlineLat.toFixed(2) + " 秒/张" : "缺少 E3 评测延迟",
@@ -3381,13 +3390,14 @@ function envParts() {
     unit: cachedLat != null ? evalN * cachedLat : null, n: 20,
     basis: cachedLat != null ? "缓存命中实测均值 " + Math.round(cachedLat * 1000) + " 毫秒/张" : "缺少评测延迟",
     now: "✅ 已完成" });
-  rows.push({ name: "作业 2 · E3 评测", sub: "8 提示 × 1000 张（在线前向）",
-    unit: onlineLat != null ? evalN * onlineLat : null, n: 8,
+  rows.push({ name: "作业 2 · E3 评测", sub: "10 提示 × 1000 张（在线前向）",
+    unit: onlineLat != null ? evalN * onlineLat : null, n: 10,
     basis: onlineLat != null ? "在线前向实测均值 " + onlineLat.toFixed(2) + " 秒/张" : "缺少评测延迟",
-    now: "✅ 已完成（8/8 提示）" });
-  rows.push({ name: "级联评测", sub: "U-Net 粗框喂给 E1/E2：4 组 × 1000 张（走缓存）",
-    unit: cachedLat != null ? evalN * cachedLat : null, n: 4,
-    basis: cachedLat != null ? "同 E1/E2 缓存口径" : "缺少评测延迟",
+    now: "✅ 已完成（10/10 提示）" });
+  rows.push({ name: "级联评测", sub: "U-Net 粗框喂给 E1/E2/E3：6 组 × 1000 张",
+    unit: (cachedLat != null && onlineLat != null)
+      ? (4 * evalN * cachedLat + 2 * evalN * onlineLat) / 6 : null, n: 6,
+    basis: "E1/E2 四组走缓存，E3 两组在线前向（分别按各自实测延迟）",
     now: "✅ 已完成" });
   return rows;
 }
