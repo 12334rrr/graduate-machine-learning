@@ -1,0 +1,52 @@
+{
+  "checks": [
+    {
+      "prompt": "pert-20",
+      "embedding_bitwise_equal": true,
+      "prediction_bitwise_equal": true
+    },
+    {
+      "prompt": "pert-10",
+      "embedding_bitwise_equal": true,
+      "prediction_bitwise_equal": true
+    },
+    {
+      "prompt": "pert10",
+      "embedding_bitwise_equal": true,
+      "prediction_bitwise_equal": true
+    },
+    {
+      "prompt": "pert20",
+      "embedding_bitwise_equal": true,
+      "prediction_bitwise_equal": true
+    },
+    {
+      "prompt": "point1",
+      "embedding_bitwise_equal": true,
+      "prediction_bitwise_equal": true
+    },
+    {
+      "prompt": "point3",
+      "embedding_bitwise_equal": true,
+      "prediction_bitwise_equal": true
+    },
+    {
+      "prompt": "point5",
+      "embedding_bitwise_equal": true,
+      "prediction_bitwise_equal": true
+    },
+    {
+      "prompt": "auto",
+      "embedding_bitwise_equal": true,
+      "prediction_bitwise_equal": true
+    },
+    {
+      "prompt": "auto10",
+      "embedding_bitwise_equal": true,
+      "prediction_bitwise_equal": true
+    }
+  ],
+  "gt_reference_first3_equal": true,
+  "n": 3,
+  "checkpoint_sha256": "dfcda04447439e6cd349f7391503f600a072fb3f702b8e05e9f390038bd485c6"
+}

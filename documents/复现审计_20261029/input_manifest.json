@@ -1,0 +1,6 @@
+{
+  "hw2_sam/data/raw/sam_vit_b_01ec64.pth": "ec2df62732614e57411cdcf32a23ffdf28910380d03139ee0f4fcbe91eb8c912",
+  "hw1_unet/data/processed/val_ids.txt": "a1ba70239281e07d23d0253ca51298fd130a6ab9f10a959cc03f20206e908ee2",
+  "hw1_unet/data/processed/train_ids.txt": "b67ac10bc80b3201763c849f071907f60b27d526e0fc90f42f856a2fff1d8113",
+  "hw1_unet/data/processed/test_ids.txt": "4f65fc694bcbd7c3b8d1c362dc454c98b34138d3572f2855b5c8b6b58b9141e6"
+}

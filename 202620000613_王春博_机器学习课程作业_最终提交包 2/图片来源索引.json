@@ -1,0 +1,335 @@
+[
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/ablation.png",
+    "copy": "figures/gallery_hw1/ablation.png",
+    "sha256": "a68a94aff28f4f5ddd992851c2bf1ec46ceb73a3739f7a62bffbf0054e68a489",
+    "heading": "B.01",
+    "report_figure": "图24",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/arch_attn_unet.png",
+    "copy": "figures/gallery_hw1/arch_attn_unet.png",
+    "sha256": "7881223e857a1f7a60a79aa9ae6bf2e410b3e05691c73e66d1c49788bab1df5e",
+    "heading": "B.02",
+    "report_figure": "图25",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/arch_resunet.png",
+    "copy": "figures/gallery_hw1/arch_resunet.png",
+    "sha256": "70c82484d3ff5c880f1b5a05f0c03dbace605b09d99c6c2b0e9daa316d7acbd9",
+    "heading": "B.03",
+    "report_figure": "图26",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/arch_unet.png",
+    "copy": "figures/gallery_hw1/arch_unet.png",
+    "sha256": "3eee89f7813a85a89055a4e9abadce431fbf8e1423a94b1ed741fb0d1c39dd13",
+    "heading": "B.04",
+    "report_figure": "图27",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_attn_bottleneck_test.png",
+    "copy": "figures/gallery_hw1/case_attn_bottleneck_test.png",
+    "sha256": "05820c167a29d03f003d777e214db3399a3ab25bf814a62fdbe8e15196ded463",
+    "heading": "B.05",
+    "report_figure": "图28",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_attn_skip_test.png",
+    "copy": "figures/gallery_hw1/case_attn_skip_test.png",
+    "sha256": "b5534c3ab4c701197dcfb4fe68795544e62370c9b8bf800ddd8456c77fc93f7e",
+    "heading": "B.06",
+    "report_figure": "图29",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_attn_unet_s2026_test.png",
+    "copy": "figures/gallery_hw1/case_attn_unet_s2026_test.png",
+    "sha256": "1f4b55758a9262b0ed34d9a5c9bf64847da42c72542629597cf3444431d48c32",
+    "heading": "B.07",
+    "report_figure": "图30",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_attn_unet_s42_test.png",
+    "copy": "figures/gallery_hw1/case_attn_unet_s42_test.png",
+    "sha256": "9f8e6a08490683517fb8ae45c260be0fde3d08a956db7aff85d56685ea1dd6f5",
+    "heading": "B.08",
+    "report_figure": "图31",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_attn_unet_s7_test.png",
+    "copy": "figures/gallery_hw1/case_attn_unet_s7_test.png",
+    "sha256": "939109fe101819b36b256283a1fd1f7be7a8a153ac5ae3091e93390c13fa6a2b",
+    "heading": "B.09",
+    "report_figure": "图32",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_attn_unet_f0_fold0.png",
+    "copy": "figures/gallery_hw1/case_cv_attn_unet_f0_fold0.png",
+    "sha256": "721824e5f0fb60cc8cebf1760d4e8acae6c9adb671674f8d19492ffa2e934a33",
+    "heading": "B.10",
+    "report_figure": "图33",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_attn_unet_f1_fold1.png",
+    "copy": "figures/gallery_hw1/case_cv_attn_unet_f1_fold1.png",
+    "sha256": "5d859cbe46d7ed9d2287082091a76d7ff982af6065e250f6977be515409dfa2a",
+    "heading": "B.11",
+    "report_figure": "图34",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_attn_unet_f2_fold2.png",
+    "copy": "figures/gallery_hw1/case_cv_attn_unet_f2_fold2.png",
+    "sha256": "a789124f65d834a4bdb7c20dea1478bdd47b7c6630c05e680469f0c67baa2893",
+    "heading": "B.12",
+    "report_figure": "图35",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_attn_unet_f3_fold3.png",
+    "copy": "figures/gallery_hw1/case_cv_attn_unet_f3_fold3.png",
+    "sha256": "47a3f491342c6acf45d3f757241f0a0f286cca2635d8ce2e85b35b4665ff2c72",
+    "heading": "B.13",
+    "report_figure": "图36",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_attn_unet_f4_fold4.png",
+    "copy": "figures/gallery_hw1/case_cv_attn_unet_f4_fold4.png",
+    "sha256": "f3f10f35727b81c0c0ede918347448e0d74ce1b2b5496c7d7053efae4041055f",
+    "heading": "B.14",
+    "report_figure": "图37",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_resunet_f0_fold0.png",
+    "copy": "figures/gallery_hw1/case_cv_resunet_f0_fold0.png",
+    "sha256": "c7b736a7d588348db423f05afd2f533e562c394bd7f11a0e91291baef5cae87e",
+    "heading": "B.15",
+    "report_figure": "图38",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_resunet_f1_fold1.png",
+    "copy": "figures/gallery_hw1/case_cv_resunet_f1_fold1.png",
+    "sha256": "02dad4d4bdce929becd998b1f0863ce7770104161e55bb67bb67b6d0344b09f1",
+    "heading": "B.16",
+    "report_figure": "图39",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_resunet_f2_fold2.png",
+    "copy": "figures/gallery_hw1/case_cv_resunet_f2_fold2.png",
+    "sha256": "5073c039c0a44235755253fe6d60d3bc45da76afbc5e070734f2212177541316",
+    "heading": "B.17",
+    "report_figure": "图40",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_resunet_f3_fold3.png",
+    "copy": "figures/gallery_hw1/case_cv_resunet_f3_fold3.png",
+    "sha256": "4cd9b23af8b720772100a39c9b411b07218b5629b56f05d51408591e64854305",
+    "heading": "B.18",
+    "report_figure": "图41",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_cv_resunet_f4_fold4.png",
+    "copy": "figures/gallery_hw1/case_cv_resunet_f4_fold4.png",
+    "sha256": "8bb8aa013aefe6881eaa19c860494173fafaae786c5de1e5ff85d7abb7bdeb01",
+    "heading": "B.19",
+    "report_figure": "图42",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_diag_1e-3_amp_val.png",
+    "copy": "figures/gallery_hw1/case_diag_1e-3_amp_val.png",
+    "sha256": "9f6886a32a6d92216d1e1a7fb7ce8276490113879ea516fcb4be031584cbef36",
+    "heading": "B.20",
+    "report_figure": "图43",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_loss_bce_test.png",
+    "copy": "figures/gallery_hw1/case_loss_bce_test.png",
+    "sha256": "4e14c5d8d67034581f177250206207f5c1eb0288d63742c7b6b2032cf2de949c",
+    "heading": "B.21",
+    "report_figure": "图44",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_loss_dice_test.png",
+    "copy": "figures/gallery_hw1/case_loss_dice_test.png",
+    "sha256": "8449918392f4e584c0802b61d9c568f3e8a82caa2eef0f70ad155f874efcadc5",
+    "heading": "B.22",
+    "report_figure": "图45",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_resunet_s2026_test.png",
+    "copy": "figures/gallery_hw1/case_resunet_s2026_test.png",
+    "sha256": "821c9d74099a78b71a9e003399af3509d46c6e23f4d862c7a3a52336b6717156",
+    "heading": "B.23",
+    "report_figure": "图46",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_resunet_s42_test.png",
+    "copy": "figures/gallery_hw1/case_resunet_s42_test.png",
+    "sha256": "2d4749d893053b070587d21750f4695870d1f75b5b4b2f00dfc5f42fae1abcec",
+    "heading": "B.24",
+    "report_figure": "图47",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_resunet_s7_test.png",
+    "copy": "figures/gallery_hw1/case_resunet_s7_test.png",
+    "sha256": "cf4a3a052f12cbb4a6137868f0a774d85ff8a50bfafeb87e500bf0842140fd64",
+    "heading": "B.25",
+    "report_figure": "图48",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_size192_test.png",
+    "copy": "figures/gallery_hw1/case_size192_test.png",
+    "sha256": "2c29a5eece6028248b65e3d68229916c3f942430f29ffe187550a00aae2c5ed7",
+    "heading": "B.26",
+    "report_figure": "图49",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_size384_test.png",
+    "copy": "figures/gallery_hw1/case_size384_test.png",
+    "sha256": "18c0cd733f1b92f11fcfe97991787e0635d59fc53832d45cb88dfe530b3035da",
+    "heading": "B.27",
+    "report_figure": "图50",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_unet_s2026_test.png",
+    "copy": "figures/gallery_hw1/case_unet_s2026_test.png",
+    "sha256": "ef509faf097e92341dd6de2fa50bf1de728ef3a71fa97c47db7d50a543a8b92e",
+    "heading": "B.28",
+    "report_figure": "图51",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_unet_s42_test.png",
+    "copy": "figures/gallery_hw1/case_unet_s42_test.png",
+    "sha256": "9c5043a55458de25f1c89268a197fd1d842f1b6d11d697ebbba069123c6f574b",
+    "heading": "B.29",
+    "report_figure": "图52",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/case_unet_s7_test.png",
+    "copy": "figures/gallery_hw1/case_unet_s7_test.png",
+    "sha256": "85e5d77e66000b1d33921d5e601dddb4510b0476ba0e846fe39b71358ac27d02",
+    "heading": "B.30",
+    "report_figure": "图53",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/data_stats.png",
+    "copy": "figures/gallery_hw1/data_stats.png",
+    "sha256": "c343caab73dcf7c16f8ea5d3ca84067eb9c61447d58ec44b811d6cfbf6a221b6",
+    "heading": "B.31",
+    "report_figure": "图54",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 1,
+    "source": "hw1_unet/outputs/figures/training_curves.png",
+    "copy": "figures/gallery_hw1/training_curves.png",
+    "sha256": "0a0f0a1da2c14ce87755ca6bd4712090444aabff18b989a4bfd2236c6d1a485d",
+    "heading": "B.32",
+    "report_figure": "图55",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 2,
+    "source": "hw2_sam/outputs/figures/arch_mask_decoder.png",
+    "copy": "figures/gallery_hw2/arch_mask_decoder.png",
+    "sha256": "0f3eee7bae3af92e5e6c19778c02c69c12df22d8cf994c97821bfd7fb0801d48",
+    "heading": "B.33",
+    "report_figure": "图56",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 2,
+    "source": "hw2_sam/outputs/figures/arch_sam.png",
+    "copy": "figures/gallery_hw2/arch_sam.png",
+    "sha256": "1943aff22ece7eec8d27fe9b9638076671d9918eb0d828cdd69eaca55050ab8f",
+    "heading": "B.34",
+    "report_figure": "图57",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 2,
+    "source": "hw2_sam/outputs/figures/cascade_system.png",
+    "copy": "figures/gallery_hw2/cascade_system.png",
+    "sha256": "a976de38d10c416f745efe3910c6024ce7862a1711de858bff71d2d349c0009d",
+    "heading": "B.35",
+    "report_figure": "图58",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 2,
+    "source": "hw2_sam/outputs/figures/case_sam_gt_test.png",
+    "copy": "figures/gallery_hw2/case_sam_gt_test.png",
+    "sha256": "64bc8cd39bf0d7c3f7ad10bbb52fe0f4265952712aa247cff67ca72565c70dee",
+    "heading": "B.36",
+    "report_figure": "图59",
+    "placement": "离线原始实验电子图录.html"
+  },
+  {
+    "project": 2,
+    "source": "hw2_sam/outputs/figures/robustness.png",
+    "copy": "figures/gallery_hw2/robustness.png",
+    "sha256": "1d6a176323a5c794e48485911fe456ab939e5d2b98ca26491ca4b6362d08d544",
+    "heading": "B.37",
+    "report_figure": "图60",
+    "placement": "离线原始实验电子图录.html"
+  }
+]

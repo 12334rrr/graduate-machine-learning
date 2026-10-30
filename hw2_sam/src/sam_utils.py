@@ -4,10 +4,10 @@
 SAM 的三个部件（这也是报告里要讲清的 Transformer 落点）：
 1. **image encoder** —— ViT-B/16：把 1024×1024 图像切成 64×64 个 16×16 patch，
    经 12 层 **Transformer** block（多头自注意力 + FFN + LayerNorm）得到
-   256×64×64 的图像嵌入。参数量约 89 M，占 SAM 总参数的 97%。
+   256×64×64 的图像嵌入。参数量89.670 M，占原版SAM总参数约95.7%。
 2. **prompt encoder** —— 把提示（点/框/掩膜）变成嵌入：稀疏提示用可学习的
    token + 位置编码，稠密提示（掩膜）用卷积下采样。
-3. **mask decoder** —— 轻量 Transformer：先对图像嵌入做自注意力，再用
+3. **mask decoder** —— 轻量 Transformer：先对提示与输出token做自注意力，再用
    **双向交叉注意力**（token→image 与 image→token 两个方向交替）把提示信息
    注入，最后上采样出掩膜。参数约 4 M。
 """

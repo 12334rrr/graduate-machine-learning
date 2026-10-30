@@ -1,0 +1,20 @@
+{
+  "stage": "e3",
+  "prompt": "auto",
+  "n": 3,
+  "per_sample": [
+    {
+      "id": "ISIC_0012169",
+      "dice": 0.5458159715585458
+    },
+    {
+      "id": "ISIC_0012236",
+      "dice": 0.2343160257064164
+    },
+    {
+      "id": "ISIC_0012292",
+      "dice": 0.8252279635258358
+    }
+  ],
+  "matches_full_evaluation": true
+}

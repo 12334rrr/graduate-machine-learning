@@ -2,7 +2,7 @@
   "tag": "cv_resunet_f3",
   "model": "resunet",
   "stop_reason": "early_stop(patience=6)",
-  "best_dice": 0.5135555002591736,
+  "best_dice": 0.5139828872096565,
   "args": {
     "model": "resunet",
     "attn_where": "all",

@@ -42,3 +42,17 @@ submission/*.zip
 .workbuddy/
 05_hw1_s*.png
 # 但保留文档目录（.md 不受上面规则影响）
+
+# ================= 交付压缩包与构建暂存（可重建，不入库） =================
+# 交付 zip 单个可达 130–200MB，超过 GitHub 100MB 单文件上限
+202620000613_*.zip
+# 打包过程的临时构建目录（内容为最终包的中间副本）
+.*_build/
+.individual_reports/
+.split_delivery/
+# 10-29 复现/修复过程目录（审计 JSON 已归档到 documents/复现审计_20261029/）
+full_reproduction_*/
+history_before_repair_*/
+# 最终提交包内的 repository/ 与 figures/ 是项目树副本（含 >95MB 权重），只提交包根的报告与验证记录
+202620000613_*/repository/
+202620000613_*/figures/

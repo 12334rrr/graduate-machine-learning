@@ -44,7 +44,7 @@
   --shadow:0 2px 10px rgba(31,35,41,.10);
   --shadow-lg:0 14px 44px rgba(31,35,41,.22);
   /* 图表数据色板（8 色，色相分散且对色盲友好） */
-  --s1:#1a73e8; --s2:#7c3aed; --s3:#188038; --s4:#e37400;
+  --s1:#2878b5; --s2:#21a08b; --s3:#e39d3e; --s4:#7d87b9;
   --s5:#d93025; --s6:#00838f; --s7:#c2185b; --s8:#5f6470;
   --radius:8px;
   --mono:"SF Mono",Menlo,Consolas,"Courier New",monospace;
@@ -597,6 +597,8 @@ footer .container{display:flex;justify-content:space-between;gap:12px;flex-wrap:
   .prog-row .prog{order:3;flex-basis:100%;min-width:0;margin-top:5px}
   .table-scroll table{min-width:560px}
 }
+
+.stat-table th,.stat-table td { text-align:center !important; vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -625,6 +627,7 @@ footer .container{display:flex;justify-content:space-between;gap:12px;flex-wrap:
   </div>
 </nav>
 
+<aside id="repair-status" class="container" style="display:none;margin-top:18px" aria-live="polite"></aside>
 <main id="app" class="container"><div class="view"><div class="skel t"></div><div class="skel" style="width:80%"></div><div class="skel" style="width:60%"></div></div></main>
 
 <footer>
@@ -2021,7 +2024,7 @@ function showRunDetail(proj, tag) {
     ? gchart([
         { name: metCN(yKey), pts: toPts(r.series, "epoch", yKey) },
         { name: "训练损失", pts: toPts(r.series, "epoch", "train_loss") },
-      ], { h: 220, smooth: true, xLabel: "轮次" })
+      ], { h: 220, smooth: false, xLabel: "轮次" })
     : '<div class="muted">无曲线数据</div>';
   const table = '<div class="table-scroll"><table class="stat-table num-table"><tr>' +
     cols.map(c => "<td>" + esc(metCN(c)) + "</td>").join("") + "</tr>" +
@@ -2748,7 +2751,7 @@ function expMapHw1(d) {
     return m == null ? "—" : Number(m).toFixed(3) + (s != null ? " ± " + Number(s).toFixed(3) : "");
   };
   const cvSub = cvDone >= 10
-    ? "2 模型 × 5 折全部完成；每折 4 折训练 + 1 折评测（官方 test 不参与）"
+    ? "2模型×5折；留出折兼用于权重选择和评估，官方test不参与"
     : "最佳 2 组超参 × 5 折；train+val 合并后重划分；单折约 1–1.5 小时，10 折合计约 12–18 小时";
   return '<div class="exp-map">' +
     '<div class="em-row">' +
@@ -2768,7 +2771,7 @@ function expMapHw1(d) {
     (cvEvals.length >= 2
       ? '<div class="em-flow"><b>五折结果：</b><span>Attention U-Net <b>' + cvMean("cv_attn") +
         "</b></span><span>ResUNet <b>" + cvMean("cv_resunet") +
-        "</b></span><span>相差 0.7 点，小于折间标准差 → 结构差异不显著；ResUNet 折间更稳</span></div>"
+        "</b></span><span>均值相差约0.7个百分点；同一留出折用于选权重和评估，仅作划分敏感性分析</span></div>"
       : "") +
     '<div class="em-flow"><b>接作业 2：</b><span class="em-chip">unet_s42_test_boxes.json</span>' +
       "<span>（1000 个自动预测框）→</span><a href=\"#/hw2\">作为 SAM 的 auto / auto10 提示 →</a></div>" +
@@ -2790,11 +2793,11 @@ function expMapHw2(d) {
       '<span class="em-arrow">→</span>' +
       emBox("E2 冻结微调", "冻结 ViT，只训提示编码器 + 掩膜解码器（4.06M）", fmt3(pick("e2", "gt")), stBadge("e2")) +
       '<span class="em-arrow">→</span>' +
-      emBox("E3 LoRA", "ViT q/v 注入 LoRA(r=8)，连同解码器训练（LoRA 0.295M）", fmt3(pick("e3", "gt")), stBadge("e3")) +
+      emBox("E3 LoRA", "ViT q/v 注入 LoRA(r=8)，联合提示编码器与解码器（4.359M）", fmt3(pick("e3", "gt")), stBadge("e3")) +
     "</div>" +
     '<div class="em-flow"><b>递进关系：</b><span>E1 测域差距</span><span>→</span>' +
-      '<span>E2 只调解码器（4.06M）</span><span>→</span>' +
-      '<span>E3 给主干松绑（LoRA 0.295M + 解码器）</span>' +
+      '<span>E2 调整提示编码器与解码器（4.06M）</span><span>→</span>' +
+      '<span>E3 调整LoRA、提示编码器与解码器（4.36M）</span>' +
       '<span>可训练参数：0 → 4.06M → 4.36M</span></div>' +
     '<div class="em-flow"><b>提示矩阵：</b><span>每个阶段 × ' + (prompts || 10) + ' 种提示</span>' +
       '<span>（GT / ±10% / ±20% / 点×1,3,5 / 自动框 / 自动框+10%）</span>' +
@@ -2803,7 +2806,7 @@ function expMapHw2(d) {
       '<span>E1 <b>' + fmt3(pick("e1", "auto")) + "</b></span><span>→</span>" +
       '<span>E2 <b>' + fmt3(pick("e2", "auto")) + "</b></span><span>→</span>" +
       '<span>E3 <b>' + fmt3(pick("e3", "auto")) + "</b></span>" +
-      '<span>（自动框提示；越往后越能忍受粗框）</span></div>' +
+      '<span>（自动框提示；比较同一上游框的精修效果）</span></div>' +
   "</div>";
 }
 
@@ -2932,7 +2935,7 @@ function viewHw1() {
           { size: "19px", color: "var(--primary)",
             sub: bestTest ? esc(bestTest.name) + " · " + (bestTest.n > 1 ? bestTest.n + " 种子 × 样本数 1000" : "单种子") : "尚未评测" }) +
         gstat("测试集 IoU（模型均值）", pm(bestTest && bestTest.iou, bestTest && bestTest.iou_std),
-          { size: "19px", color: "var(--violet)",
+          { size: "19px", color: "var(--s2)",
             sub: bestTest ? esc(bestTest.name) + " · 同上口径" : "—" }) +
         gstat("测试集 HD95（模型均值）", pm(bestTest && bestTest.hd95, bestTest && bestTest.hd95_std, 1),
           { size: "19px", unit: "px", color: "var(--warn)", sub: "越低越好" }) +
@@ -2945,7 +2948,7 @@ function viewHw1() {
         '<div class="card col-8"><div class="ph"><h3>📈 验证 Dice 曲线对比（' +
           (groupKey === "all" ? "全部运行" : esc((HW1_GROUPS.find(g => g[0] === groupKey) || [, "当前分组"])[1])) +
           " · " + runs.length + " 个）</h3><span class=\"p-meta\">悬停看数值 · 点图例隐藏</span></div>" +
-          (runs.length ? gchart(diceSeries, { yLabel: "验证 Dice", xLabel: "轮次", smooth: true, h: 300,
+          (runs.length ? gchart(diceSeries, { yLabel: "验证 Dice", xLabel: "轮次", smooth: false, h: 300,
             threshold: { value: 0.75, label: "目标 0.75" } }) : '<div class="muted" style="font-size:13px">该分组暂无运行</div>') + "</div>" +
         '<div class="card col-4"><div class="ph"><h3>🎚️ 学习率调度 · <span id="hw1-loss-title" class="mono">' + (sel ? esc(sel.tag) : "—") + "</span></h3></div>" +
           '<div id="hw1-lr-chart">' + gchart(lrSeries, { yLabel: "学习率", xLabel: "轮次", h: 132 }) + "</div>" +
@@ -2953,7 +2956,7 @@ function viewHw1() {
           '<div id="hw1-sec-chart">' + gchart(secSeries, { yLabel: "秒", xLabel: "轮次", h: 132 }) + "</div></div>" +
         '<div class="card col-12"><div class="ph"><h3>📉 损失曲线 · <span id="hw1-loss-title2" class="mono">' + (sel ? esc(sel.tag) : "—") + "</span></h3>" +
           '<span class="p-meta">点击下方运行切换</span></div>' +
-          '<div id="hw1-loss-chart">' + gchart(lossSeries, { yLabel: "损失", xLabel: "轮次", smooth: true, h: 240 }) + "</div>" +
+          '<div id="hw1-loss-chart">' + gchart(lossSeries, { yLabel: "损失", xLabel: "轮次", smooth: false, h: 240 }) + "</div>" +
           '<div class="chiprow" style="margin-top:10px" id="hw1-run-chips">' + selChips + "</div></div>" +
       "</div>" +
 
@@ -3044,7 +3047,7 @@ function selectHw1Run(tag) {
   if (loss) loss.innerHTML = gchart([
     { name: "训练损失", pts: toPts(sel.series, "epoch", "train_loss") },
     { name: "验证损失", pts: toPts(sel.series, "epoch", "val_loss") },
-  ], { yLabel: "损失", xLabel: "轮次", smooth: true, h: 240 });
+  ], { yLabel: "损失", xLabel: "轮次", smooth: false, h: 240 });
   const lr = document.getElementById("hw1-lr-chart");
   if (lr) lr.innerHTML = gchart([{ name: "学习率", pts: toPts(sel.series, "epoch", "lr") }],
     { yLabel: "学习率", xLabel: "轮次", h: 132 });
@@ -3093,7 +3096,7 @@ function hw2Robustness(d) {
   })).filter(s => s.pts.length);
   if (!series.length) return "";
   return '<div class="muted" style="font-size:12.5px;margin-bottom:6px">横轴为提示框相对 GT 外接框的扰动幅度；曲线越平说明对提示误差越不敏感。</div>' +
-    gchart(series, { h: 280, yLabel: "Dice", xLabel: "扰动幅度", smooth: true,
+    gchart(series, { h: 280, yLabel: "Dice", xLabel: "扰动幅度", smooth: false,
                      xTicks: ["-20%", "-10%", "GT", "+10%", "+20%"] });
 }
 function fmtLatency(ms) {
@@ -3122,11 +3125,12 @@ function hw2CascadeBars(d) {
     const hit = test.find(e => e.stage === stage && e.prompt === prompt);
     return hit ? hit.dice : null;
   };
-  const cats = ["E1 零样本", "E2 微调"];
+  const ids = ["e1", "e2", "e3"];
+  const cats = ["E1 零样本", "E2 冻结微调", "E3 LoRA"];
   const series = [
-    { name: "GT 框提示", values: [pick("e1", "gt"), pick("e2", "gt")] },
-    { name: "自动框（U-Net 级联）", values: [pick("e1", "auto"), pick("e2", "auto")] },
-    { name: "自动框外扩 10%", values: [pick("e1", "auto10"), pick("e2", "auto10")] },
+    { name: "GT 框提示", values: ids.map(s => pick(s, "gt")) },
+    { name: "自动框（U-Net 级联）", values: ids.map(s => pick(s, "auto")) },
+    { name: "自动框外扩 10%", values: ids.map(s => pick(s, "auto10")) },
   ].filter(s => s.values.some(v => v != null));
   if (!series.length) return "";
   return gbar(cats, series, { h: 240, yMax: 1, fmt: v => v.toFixed(3) });
@@ -3190,7 +3194,7 @@ function viewHw2() {
     '<td style="color:var(--text2)" title="95% Hausdorff 距离，边界误差，单位像素，越低越好">HD95</td>' +
     '<td style="color:var(--text2)" title="灵敏度 Sensitivity＝召回率，病灶被检出的比例">灵敏度</td>' +
     '<td style="color:var(--text2)" title="特异度 Specificity，背景被判为背景的比例">特异度</td>' +
-    '<td style="color:var(--text2)" title="单张图片从编码到出掩膜的平均耗时">延迟</td></tr>' +
+    '<td style="color:var(--text2)" title="记录执行路径的平均耗时：缓存读取或在线编码加解码，不能直接作部署比较">延迟</td></tr>' +
     (evalRows || '<tr><td colspan="9" style="color:var(--text2)">暂无评测结果</td></tr>') + "</table></div>";
 
   const runSeries = (d.runs || []).map((r, i) => {
@@ -3228,11 +3232,11 @@ function viewHw2() {
       '<div class="grid-stats" id="hw2-sec-stats" data-sec>' +
         gstat("E1 零样本 Dice", e1d != null ? fmt3(e1d) : "—", { sub: "GT 框提示 · 样本数 1000", color: "var(--primary)" }) +
         gstat("E2 冻结微调 Dice", e2d != null ? fmt3(e2d) : "—",
-          { sub: gain != null ? "较 E1 " + (gain >= 0 ? "+" : "") + fmt3(gain) : "尚未评测", color: "var(--violet)" }) +
+          { sub: gain != null ? "较 E1 " + (gain >= 0 ? "+" : "") + fmt3(gain) : "尚未评测", color: "var(--s2)" }) +
         gstat("E3 LoRA Dice", e3d != null ? fmt3(e3d) : "—",
           { sub: e3d != null ? "GT 框提示 · 样本数 1000" :
               (({ running: "训练中", done: "已完成（无 test 评测）", pending: "待运行" })[stages.e3 && stages.e3.status] || "待运行"),
-            color: "var(--accent)" }) +
+            color: "var(--s3)" }) +
         gstat("阶段完成", doneN + " / 3", { sub: "E1 → E2 → E3 流水线" }) +
         gstat("嵌入缓存", embAll ? "100%" : "预计算中",
           { sub: embBytes ? fmtBytes(embBytes) : "—", color: embAll ? "var(--accent)" : "var(--warn)" }) +
@@ -3250,15 +3254,15 @@ function viewHw2() {
       "</div>" +
 
       '<div class="g12" style="margin-top:16px">' +
-        (hw2LatencyBars(d) ? '<div class="card col-4"><div class="ph"><h3>⏱️ 单图推理延迟</h3><span class="p-meta">毫秒 · 越低越好 · E3 为在线前向（无嵌入缓存），耗时高一个量级</span></div>' + hw2LatencyBars(d) + "</div>" : "") +
+        (hw2LatencyBars(d) ? '<div class="card col-4"><div class="ph"><h3>⏱️ 单图推理延迟</h3><span class="p-meta">E1/E2读取原版缓存，E3在线编码；执行路径不同，仅作运行记录</span></div>' + hw2LatencyBars(d) + "</div>" : "") +
         (hw2SensSpecBars(d) ? '<div class="card col-4"><div class="ph"><h3>🩺 灵敏度 / 特异度</h3><span class="p-meta">各阶段 × 提示形式 · 悬停看数值</span></div>' + hw2SensSpecBars(d) + "</div>" : "") +
         (hw2CascadeBars(d) ? '<div class="card col-4"><div class="ph"><h3>🔗 级联对比 · GT 框 vs 自动框</h3><span class="p-meta">测试集 1000 张</span></div>' + hw2CascadeBars(d) + "</div>" : "") +
       "</div>" +
 
       '<div class="g12" style="margin-top:16px">' +
-        '<div class="card col-6"><div class="ph"><h3>🧊 图像嵌入缓存（E2/E3 训练加速）</h3></div>' + embRows + "</div>" +
+        '<div class="card col-6"><div class="ph"><h3>🧊 原版图像嵌入缓存（E1/E2使用）</h3></div>' + embRows + "</div>" +
         '<div class="card col-6"><div class="ph"><h3>🔗 级联系统叙事</h3></div><p style="font-size:13.5px;line-height:1.8;margin:0">' +
-          renderTerms("作业 1 的 U-Net 小模型全自动分割出病灶粗框，作为提示输入 SAM 掩膜解码器精修——小模型提框、大模型精修，分工而非替代。E1 已量化零样本域差距，E2/E3 训练完成后可对比微调收益。") +
+          renderTerms("作业 1 的 U-Net 小模型全自动分割出病灶粗框，作为提示输入 SAM 掩膜解码器精修——小模型提框、大模型精修，分工而非替代。E1 已量化零样本域差距，本轮E2/E3已完成重训与十类提示全测试评测。自动框来自固定unet_s42，GT框和前景点属于模拟交互条件。") +
           '</p><div style="margin-top:10px"><span class="tag">U-Net 出框 → SAM 精修</span></div></div>' +
       "</div>" +
 
@@ -3274,7 +3278,7 @@ function viewHw2() {
         collapsibleBlock(evalTable, shownEvals.length, { key: "hw2-evals" }) + "</div>" +
 
       '<div class="card" style="margin-top:16px" id="hw2-sec-curves" data-sec><div class="ph"><h3>📈 训练曲线（E2/E3 运行）</h3></div>' +
-        (runSeries.length ? gchart(runSeries, { yLabel: "验证 Dice", xLabel: "轮次", smooth: true })
+        (runSeries.length ? gchart(runSeries, { yLabel: "验证 Dice", xLabel: "轮次", smooth: false })
                           : '<div class="muted" style="font-size:13px">暂无训练运行</div>') + "</div>" +
 
       /* —— 产物画廊 + 图目录说明 —— */
@@ -3462,7 +3466,7 @@ function envChartsHtml() {
     return '<div class="card"><div class="muted" style="padding:18px">采样中…每 3 秒一个点，约半分钟后曲线成形；期间下方统计卡与判定表已可用。</div></div>';
   }
   const S = key => envSamples.map((s, i) => [i, s[key]]).filter(p => p[1] != null);
-  const opts = { xLabel: "采样序号（3 秒/点）", smooth: true };
+  const opts = { xLabel: "采样序号（3 秒/点）", smooth: false };
   const memGb = envHost && envHost.mem_gb;
   const memCharts = gchart([
     { name: "内存已用 GB", pts: S("mem_used") },
@@ -3931,6 +3935,26 @@ document.getElementById("chat-chips").addEventListener("click", e => {
     btn.classList.toggle("show", window.scrollY > 700);
   }, { passive: true });
 })();
+
+
+async function pollRepairStatus() {
+  try {
+    const r = await fetch('/api/reproduction');
+    if (!r.ok) return;
+    const d = await r.json(), box = document.getElementById('repair-status');
+    if (!d.total_jobs) { box.style.display='none'; return; }
+    const labels={E2_retrain20:'E2监督修复后训练',E3_retrain6:'E3权重选择复验',train_size384:'384输入训练',eval_size384:'384输入测试',eval_e3_remaining_prompts:'E3提示矩阵评测'};
+    const ready=d.displayed_results==='validated_repair';
+    const title=ready?'最终实验结果已核验':d.status==='failed'?'复验失败':d.status==='interrupted'?'复验已中断':d.status==='experiments_complete'?'实验完成，正在核验':'问题实验复验中';
+    const current=labels[d.current_job] || d.current_job || '';
+    const progress=d.suite_total?' · '+d.suite_samples+'/'+d.suite_total+' 张':d.epoch!=null?' · '+d.epoch+'/'+d.epochs_total+' 轮':'';
+    const detail=ready?'E2已完成20轮、E3已完成6轮；各10种提示均在1000张测试图上评测。384输入实验已重新训练和评测，其他24组卷积实验及E1经核对保留。当前图表使用这套最终结果。':'E2、E3与384输入为本次复验范围。任务完成并通过核验后，图表统一更新为最终结果。';
+    box.style.display='block';
+    box.innerHTML='<div style="padding:16px 20px;border:1px solid var(--border);border-left:4px solid var(--s2);border-radius:8px;background:var(--card)"><strong>'+esc(title)+'</strong><span style="margin-left:12px;color:var(--text2)">'+esc(ready?d.completed_jobs+'/'+d.total_jobs+' 项完成':current+progress)+'</span><p style="margin:8px 0 0;color:var(--text2)">'+esc(detail)+'</p></div>';
+  } catch(e) { }
+}
+pollRepairStatus();
+setInterval(pollRepairStatus, 10000);
 
 /* ---------------- 启动 ---------------- */
 setTheme(currentTheme());                      // 同步按钮图标与当前主题

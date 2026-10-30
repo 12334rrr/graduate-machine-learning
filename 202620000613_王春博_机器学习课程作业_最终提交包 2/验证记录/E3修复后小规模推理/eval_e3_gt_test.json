@@ -1,0 +1,44 @@
+{
+  "stage": "e3",
+  "tag": "e3_lora",
+  "prompt": "gt",
+  "split": "test",
+  "n": 3,
+  "metrics": {
+    "n": 3,
+    "dice": 0.8971178037888506,
+    "dice_std": 0.05811728116592271,
+    "iou": 0.8185288689578915,
+    "iou_std": 0.09681738220611714,
+    "hd95": 4.201850425154663,
+    "hd95_std": 0.586901188129294,
+    "hd95_valid": 3,
+    "sensitivity": 0.9901960784313726,
+    "sens_valid": 3,
+    "specificity": 0.9939572610913295,
+    "spec_valid": 3,
+    "pixel_acc": 0.99273681640625,
+    "empty_pred": 0,
+    "empty_gt": 0,
+    "spec_undefined": 0,
+    "sens_undefined": 0,
+    "latency_ms_per_img": 1690.7506783803303,
+    "no_prompt_fallback": 0
+  },
+  "per_sample": [
+    {
+      "id": "ISIC_0012169",
+      "dice": 0.9711577522004062
+    },
+    {
+      "id": "ISIC_0012236",
+      "dice": 0.8910007757951901
+    },
+    {
+      "id": "ISIC_0012292",
+      "dice": 0.8291948833709556
+    }
+  ],
+  "revision": "aligned-cache-full-prompt-v2",
+  "seed": 42
+}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "scripts/evaluate_repaired_suite.py"
+  ],
+  "completed_at": 1793259872.0224798,
+  "source_sha256": "16034dca8febc7a826ef43267efc8670812d441cd19a90c65a6806c2700ef7b6",
+  "best_weights": {
+    "e3_lora_best.pth": "dfcda04447439e6cd349f7391503f600a072fb3f702b8e05e9f390038bd485c6"
+  },
+  "n": 1000,
+  "seed": 42
+}

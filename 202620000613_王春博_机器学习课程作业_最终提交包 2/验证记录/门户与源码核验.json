@@ -1,0 +1,35 @@
+{
+  "/": {
+    "status": 200,
+    "bytes": 231088
+  },
+  "/api/datasets": {
+    "status": 200,
+    "bytes": 11191
+  },
+  "/api/glossary": {
+    "status": 200,
+    "bytes": 8553
+  },
+  "/api/hw1": {
+    "status": 200,
+    "bytes": 145687,
+    "evals": 26,
+    "figures": 32
+  },
+  "/api/hw2": {
+    "status": 200,
+    "bytes": 22484,
+    "evals": 30,
+    "figures": 5
+  },
+  "/exp/hw1/figures/case_unet_s42_test.png": {
+    "status": 200,
+    "bytes": 859062
+  },
+  "/exp/hw2/figures/case_sam_gt_test.png": {
+    "status": 200,
+    "bytes": 1044365
+  },
+  "source_bytes_unchanged": true
+}

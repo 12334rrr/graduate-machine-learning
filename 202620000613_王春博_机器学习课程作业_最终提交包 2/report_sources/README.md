@@ -1,0 +1,9 @@
+# 报告源文件与实际运行记录
+
+当前提交以手动修改后再次完成空格与分页优化的DOCX和PDF为准。根目录机器学习课程作业_精简报告.md已从当前Word同步导出，图片位于current_word_media。generate_result_charts.py从repository中的正式JSON读取数据并生成比较图；结构图可编辑SVG位于figures/hw1和hw2。
+
+正式运行脚本full_reproduce.py、repair_affected.py及evaluate_repaired_suite.py作为作者机器上的实际执行记录保留，包含当时环境路径，不是接收者的一键入口。新机器请使用repository/QUICKSTART.md和quick_reproduce.py。报告构建脚本也保留作者工作目录引用；直接编辑Word或使用正文MD与图片重新导出均可。
+
+验证记录/完整复验包含实际命令、完整训练及测试日志、源文件哈希、训练权重哈希和正式结果发布记录。推理权重的导出哈希另见repository/推理权重校验.json。
+
+2026年10月29日的本次排版保留手工修订的全部非空白文字、实验数字、17张嵌入图片和6个公式；核验记录见验证记录/排版空格核验.json。旧构建脚本用于追溯初稿，不应直接运行覆盖手工修订后的当前Word。

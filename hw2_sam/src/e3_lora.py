@@ -184,15 +184,16 @@ def main():
         print(f"  epoch {epoch:3d} | loss {tl:.4f} | dice {vs['dice']:.4f} | "
               f"hd95 {vs['hd95']:.2f} | {row['epoch_sec']:.0f}s")
 
+        improved = vs["dice"] > best
+        best = max(best, vs["dice"])
         state = {"epoch": epoch, "sam_lora": lora_state_dict(sam),
                  "mask_decoder": sam.mask_decoder.state_dict(),
                  "prompt_encoder": sam.prompt_encoder.state_dict(),
                  "optim": optimizer.state_dict(), "sched": scheduler.state_dict(),
                  "best_dice": best, "history": history, "args": vars(args),
-                 "lora_r": args.lora_r}
+                 "lora_r": args.lora_r, "lora_alpha": args.lora_alpha}
         torch.save(state, ck_last)
-        if vs["dice"] > best:
-            best = vs["dice"]; state["best_dice"] = best
+        if improved:
             torch.save(state, ck_best)
             print(f"    ↑ 最佳 Dice={best:.4f}")
         if row["cum_min"] >= args.max_minutes:

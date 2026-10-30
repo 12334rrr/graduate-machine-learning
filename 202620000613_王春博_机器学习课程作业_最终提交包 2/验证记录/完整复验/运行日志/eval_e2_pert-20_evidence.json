@@ -1,0 +1,21 @@
+{
+  "command": [
+    "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+    "-u",
+    "src/evaluate_sam.py",
+    "--stage",
+    "e2",
+    "--tag",
+    "e2_box",
+    "--prompt",
+    "pert-20",
+    "--split",
+    "test"
+  ],
+  "completed_at": 1793247547.7071302,
+  "source_manifest_sha256": "610725b2f2bc9ecdc523956b7afdbf37a16736926a55175a047e60661b3ec051",
+  "best_weights": {
+    "e2_box_best.pth": "1009fb559064ecc988e0884ec40fc717a775dfd23cf547897999107afa532064",
+    "e3_lora_best.pth": "dfcda04447439e6cd349f7391503f600a072fb3f702b8e05e9f390038bd485c6"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "pages_before": 29,
+  "pages_after": 24,
+  "manual_revision_content_preserved": true,
+  "experiment_numbers_preserved": true,
+  "embedded_images_byte_identical": 17,
+  "editable_formulas_preserved": 6,
+  "tables": 13,
+  "all_tables_single_page": true,
+  "all_table_cells_centered": true,
+  "figure_caption_pairs_same_page": 17,
+  "code_blocks_single_page": true,
+  "literal_spacing_edits": 48,
+  "automatic_cjk_latin_digit_spacing_disabled": true,
+  "first_page": "题名、署名与摘要",
+  "toc_page": 2,
+  "table_pages": [
+    {
+      "page": 11,
+      "rows": 7,
+      "columns": 3
+    },
+    {
+      "page": 18,
+      "rows": 4,
+      "columns": 6
+    },
+    {
+      "page": 18,
+      "rows": 4,
+      "columns": 7
+    },
+    {
+      "page": 19,
+      "rows": 10,
+      "columns": 8
+    },
+    {
+      "page": 19,
+      "rows": 9,
+      "columns": 7
+    },
+    {
+      "page": 19,
+      "rows": 3,
+      "columns": 7
+    },
+    {
+      "page": 19,
+      "rows": 4,
+      "columns": 7
+    },
+    {
+      "page": 20,
+      "rows": 4,
+      "columns": 6
+    },
+    {
+      "page": 20,
+      "rows": 3,
+      "columns": 7
+    },
+    {
+      "page": 20,
+      "rows": 11,
+      "columns": 4
+    },
+    {
+      "page": 20,
+      "rows": 8,
+      "columns": 7
+    },
+    {
+      "page": 21,
+      "rows": 26,
+      "columns": 8
+    },
+    {
+      "page": 22,
+      "rows": 31,
+      "columns": 8
+    }
+  ],
+  "visual_review": "all_24_pages_passed"
+}

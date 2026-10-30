@@ -41,9 +41,11 @@ def load_stage_weights(sam, stage: str, tag: str, device):
         print(f"[载入] E2 权重 {ck.name}  (epoch={state.get('epoch')}, dice={state.get('best_dice'):.4f})")
     else:
         from lora import apply_lora_to_sam
-        sam = apply_lora_to_sam(sam, r=state.get("lora_r", 8))
+        sam = apply_lora_to_sam(sam, r=state.get("lora_r", 8),
+                                alpha=state.get("lora_alpha", state.get("args", {}).get("lora_alpha", 16)))
         sam.load_state_dict(state["sam_lora"], strict=False)
         sam.mask_decoder.load_state_dict(state["mask_decoder"])
+        sam.prompt_encoder.load_state_dict(state["prompt_encoder"])
         print(f"[载入] E3(LoRA) 权重 {ck.name}")
     return sam
 
@@ -90,6 +92,7 @@ def build_prompt(prompt: str, mask, size, rng, unet_boxes=None, sid=None):
     raise ValueError(f"未知提示类型 {prompt}")
 
 
+@torch.no_grad()
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", default="e1", choices=["e1", "e2", "e3"])
@@ -102,6 +105,7 @@ def main():
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--unet-tag", default=None, help="级联用：作业 1 的实验标签")
     ap.add_argument("--save-vis", action="store_true")
+    ap.add_argument("--output-dir", type=Path, default=None, help="隔离复验输出目录")
     args = ap.parse_args()
 
     set_seed(args.seed)
@@ -156,15 +160,18 @@ def main():
     summary["latency_ms_per_img"] = float(np.mean(latencies))
     summary["no_prompt_fallback"] = no_prompt
     out = {"stage": args.stage, "tag": tag, "prompt": args.prompt, "split": args.split,
-           "n": n, "metrics": summary}
+           "n": n, "metrics": summary, "per_sample": per_sample,
+           "revision": "aligned-cache-full-prompt-v2", "seed": args.seed}
     # 文件名必须带 split：否则 --split val 与 --split test 相互覆盖（曾把 test 结果覆掉 val 冒烟）
     name = f"eval_{args.stage}_{args.prompt}_{args.split}"
     if args.unet_tag:
         name += f"_{args.unet_tag}"
-    (LOG_DIR / f"{name}.json").write_text(json.dumps(out, indent=2, ensure_ascii=False),
+    output_dir = args.output_dir or LOG_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / f"{name}.json").write_text(json.dumps(out, indent=2, ensure_ascii=False),
                                           encoding="utf-8")
     print(json.dumps(summary, indent=2, ensure_ascii=False))
-    print(f"[保存] {LOG_DIR / (name + '.json')}")
+    print(f"[保存] {output_dir / (name + '.json')}")
     write_progress(name, phase="done", detail=f"{args.stage}/{args.prompt} n={n} dice={summary.get('dice', float('nan')):.4f}")
 
 

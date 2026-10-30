@@ -1,0 +1,57 @@
+﻿project,file,tag,split,size,stage,prompt,n,dice,iou,hd95,empty_pred,hd95_valid,sens_valid,spec_valid,weight_provenance
+hw1_unet,hw1_unet/outputs/logs/eval_attn_bottleneck_test.json,attn_bottleneck,test,256,,,1000,0.5937605821312836,0.48919807485644734,70.48013863350201,24,976,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_attn_skip_test.json,attn_skip,test,256,,,1000,0.595445778374377,0.4768719194667461,95.06901958857115,1,999,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_attn_unet_s2026_test.json,attn_unet_s2026,test,256,,,1000,0.5929557681458584,0.4787531524219285,103.05039165340594,2,998,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_attn_unet_s42_test.json,attn_unet_s42,test,256,,,1000,0.6225659028112043,0.5141365777426907,82.84346785139151,7,993,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_attn_unet_s7_test.json,attn_unet_s7,test,256,,,1000,0.6084518444845107,0.5028703663788151,78.41478877010094,15,985,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_attn_unet_f0_fold0.json,cv_attn_unet_f0,fold0,256,,,539,0.6000116654325488,0.4856143273198961,88.25220310364668,1,538,539,539,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_attn_unet_f1_fold1.json,cv_attn_unet_f1,fold1,256,,,539,0.6205683112767073,0.511936373314145,77.19127794724083,7,532,539,539,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_attn_unet_f2_fold2.json,cv_attn_unet_f2,fold2,256,,,539,0.5722910005967017,0.45909560474785166,84.37089255211659,7,532,539,539,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_attn_unet_f3_fold3.json,cv_attn_unet_f3,fold3,256,,,539,0.5760665931428974,0.46921563403977995,85.16971176306318,6,533,539,539,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_attn_unet_f4_fold4.json,cv_attn_unet_f4,fold4,256,,,538,0.4467485877210756,0.35116659935435796,83.09604517353283,49,489,538,538,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_resunet_f0_fold0.json,cv_resunet_f0,fold0,256,,,539,0.6054261565077186,0.4922398392388089,81.68580810779332,1,538,539,539,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_resunet_f1_fold1.json,cv_resunet_f1,fold1,256,,,539,0.5614523197553738,0.4462579287020435,87.49329982645388,0,539,539,539,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_resunet_f2_fold2.json,cv_resunet_f2,fold2,256,,,539,0.5871969788154154,0.47488369408901443,85.9549521431628,7,532,539,539,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_resunet_f3_fold3.json,cv_resunet_f3,fold3,256,,,539,0.5139828872096565,0.3969396687678016,93.9925798349812,0,539,539,539,best
+hw1_unet,hw1_unet/outputs/logs/eval_cv_resunet_f4_fold4.json,cv_resunet_f4,fold4,256,,,538,0.5810913186853425,0.46405766717423275,88.52865751382599,6,532,538,538,best
+hw1_unet,hw1_unet/outputs/logs/eval_diag_1e-3_amp_val.json,diag_1e-3_amp,val,256,,,100,0.6205783369089205,0.4942717022402109,101.93528017349307,0,100,,,best
+hw1_unet,hw1_unet/outputs/logs/eval_loss_bce_test.json,loss_bce,test,256,,,1000,0.5313012130895285,0.4217226485017677,66.95733064554909,33,967,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_loss_dice_test.json,loss_dice,test,256,,,1000,0.6025604686614902,0.49199040944007777,84.65904245664287,5,995,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_resunet_s2026_test.json,resunet_s2026,test,256,,,1000,0.6149520286733434,0.5047493575286573,84.83447259133689,11,989,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_resunet_s42_test.json,resunet_s42,test,256,,,1000,0.5857074699822679,0.4720857285831491,82.94967125936633,7,993,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_resunet_s7_test.json,resunet_s7,test,256,,,1000,0.6225167093699782,0.5097900802564123,87.6905656742414,7,993,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_size192_test.json,size192,test,192,,,1000,0.6390797584868069,0.5253726063946536,59.22388603255749,4,996,1000,999,best
+hw1_unet,hw1_unet/outputs/logs/eval_size384_test.json,size384,test,384,,,1000,0.4756480713334724,0.3878618251422048,114.88402033358068,80,920,1000,999,best
+hw1_unet,hw1_unet/outputs/logs/eval_unet_s2026_test.json,unet_s2026,test,256,,,1000,0.5686578319544765,0.46428287085949793,74.6600507810035,21,979,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_unet_s42_test.json,unet_s42,test,256,,,1000,0.6062257326187589,0.4900092787297931,93.89281701917325,6,994,1000,998,best
+hw1_unet,hw1_unet/outputs/logs/eval_unet_s7_test.json,unet_s7,test,256,,,1000,0.6067229622097456,0.506050187727377,80.7376203655274,28,972,1000,998,best
+hw2_sam,hw2_sam/outputs/logs/eval_e1_auto10_test_unet_s42.json,e1,test,256,e1,auto10,1000,0.3555749311969198,0.27221868235216246,95.8368436886489,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e1_auto_test_unet_s42.json,e1,test,256,e1,auto,1000,0.38366318201829447,0.2983314051360187,93.4076049905449,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e1_gt_test.json,e1,test,256,e1,gt,1000,0.8690856828146295,0.7788404164936847,24.312890149037244,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e1_pert-10_test.json,e1,test,256,e1,pert-10,1000,0.7870871493154946,0.6624663267536208,27.75322472873547,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e1_pert-20_test.json,e1,test,256,e1,pert-20,1000,0.5502914973131249,0.38874433943528114,42.033336230925954,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e1_pert10_test.json,e1,test,256,e1,pert10,1000,0.7854891990991629,0.6804514058697384,35.443200565788445,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e1_pert20_test.json,e1,test,256,e1,pert20,1000,0.6188220673504309,0.503851101647969,51.4800966371442,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e1_point1_test.json,e1,test,256,e1,point1,1000,0.7292323202599225,0.6240580734325953,40.820288236671644,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e1_point3_test.json,e1,test,256,e1,point3,1000,0.7695465694554959,0.6631799479929027,42.20740935827506,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e1_point5_test.json,e1,test,256,e1,point5,1000,0.7902352815071463,0.6861658534028285,39.35539606753742,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_auto10_test_unet_s42.json,e2_box,test,256,e2,auto10,1000,0.6415777521801711,0.5269420489193648,56.702676457653055,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_auto_test_unet_s42.json,e2_box,test,256,e2,auto,1000,0.6594652018828117,0.5462344573303387,53.41931689369243,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_gt_test.json,e2_box,test,256,e2,gt,1000,0.8999052644365035,0.8252716075324262,17.256935064697032,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_pert-10_test.json,e2_box,test,256,e2,pert-10,1000,0.896373653271862,0.8193291307935092,17.703998083046,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_pert-20_test.json,e2_box,test,256,e2,pert-20,1000,0.8498790347453719,0.7531369381083772,23.212543419799072,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_pert10_test.json,e2_box,test,256,e2,pert10,1000,0.8840467966046649,0.800678241477798,19.409333164654942,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_pert20_test.json,e2_box,test,256,e2,pert20,1000,0.8563155910782414,0.7600735267065714,23.335622892913946,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_point1_test.json,e2_box,test,256,e2,point1,1000,0.7804278608885518,0.6639846890516273,34.80335047656337,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_point3_test.json,e2_box,test,256,e2,point3,1000,0.7583227084427071,0.6336923653066326,40.37806353519602,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e2_point5_test.json,e2_box,test,256,e2,point5,1000,0.7472527278202683,0.621237285144801,42.308302356160105,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_auto10_test_unet_s42.json,e3_lora,test,256,e3,auto10,1000,0.6988205878687738,0.5944350888621642,58.14041278213356,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_auto_test_unet_s42.json,e3_lora,test,256,e3,auto,1000,0.7025567539400167,0.5993920482257464,56.68512681053267,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_gt_test.json,e3_lora,test,256,e3,gt,1000,0.8979015397145683,0.82089924197289,17.47075407316201,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_pert-10_test.json,e3_lora,test,256,e3,pert-10,1000,0.8956485169005441,0.8186477423073378,17.278044682758164,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_pert-20_test.json,e3_lora,test,256,e3,pert-20,1000,0.8818351197625859,0.8021317674210876,19.18438094471821,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_pert10_test.json,e3_lora,test,256,e3,pert10,1000,0.8848094263170756,0.8012950996924405,20.33866485210044,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_pert20_test.json,e3_lora,test,256,e3,pert20,1000,0.8673618016673769,0.7763836904061235,23.827411499327305,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_point1_test.json,e3_lora,test,256,e3,point1,1000,0.8545645103617199,0.7688744260852504,24.529843590695215,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_point3_test.json,e3_lora,test,256,e3,point3,1000,0.8479035015890634,0.7553877442392,28.065983837197155,0,1000,1000,998,historical; hash not recorded
+hw2_sam,hw2_sam/outputs/logs/eval_e3_point5_test.json,e3_lora,test,256,e3,point5,1000,0.8458119621300121,0.7525776257239642,27.94785854667469,0,1000,1000,998,historical; hash not recorded

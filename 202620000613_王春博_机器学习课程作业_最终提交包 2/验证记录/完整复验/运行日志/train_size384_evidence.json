@@ -1,0 +1,26 @@
+{
+  "command": [
+    "/opt/anaconda3/envs/hw1-unet-medseg/bin/python",
+    "-u",
+    "src/train.py",
+    "--epochs",
+    "12",
+    "--patience",
+    "6",
+    "--max-minutes",
+    "100000",
+    "--num-workers",
+    "0",
+    "--model",
+    "unet",
+    "--tag",
+    "size384",
+    "--size",
+    "384"
+  ],
+  "completed_at": 1793247397.317076,
+  "source_manifest_sha256": "610725b2f2bc9ecdc523956b7afdbf37a16736926a55175a047e60661b3ec051",
+  "best_weights": {
+    "size384_best.pth": "24cc8d59d33b675830bbca48773afccf9bf702844935ce3f11c3d75e44cd559a"
+  }
+}

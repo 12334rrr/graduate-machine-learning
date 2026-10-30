@@ -1,0 +1,16 @@
+{
+  "unchanged": "其余24组卷积运行与E1不重跑",
+  "rerun": [
+    "e2_box:缓存监督修复，20轮重新训练",
+    "e3_lora:完整权重恢复与best选择，6轮重新训练",
+    "size384:现存best第10轮0.4961312低于日志第7轮0.5118251"
+  ],
+  "upstream_auto_boxes": {
+    "source": "hw1_unet/outputs/predictions/unet_s42_test_boxes.json",
+    "sha256": "43b168b04fea35a28cfc5da631b20d150cbedab6da1a6fd1daaf44c66a978288"
+  },
+  "sam_re_evaluation": "仅E2/E3各10种提示，test1000；E1未受影响不重跑",
+  "metadata_only": {
+    "cv_resunet_f3": "实际best第6轮0.5139828872与日志峰值一致，只修正summary滞后值，无需重训"
+  }
+}

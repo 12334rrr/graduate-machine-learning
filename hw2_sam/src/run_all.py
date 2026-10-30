@@ -65,15 +65,17 @@ def train_loop(script: str, tag: str, extra: list, max_segments: int = 20):
         print(f"  段用时 {(time.time()-t0)/60:.1f} min，退出码 {r.returncode}")
         if r.returncode != 0:
             print(f"[失败] {tag}")
-            return False
-        # 训练脚本跑满 epoch 后会正常退出；这里用 CSV 行数判断是否结束
-        csv = LOG_DIR / f"{tag}.csv"
-        if csv.exists():
-            lines = csv.read_text(encoding="utf-8").strip().split("\n")
-            if len(lines) - 1 >= 10:      # 达到设定 epoch 数就停（默认 10/20）
-                print(f"[完成] {tag} 已跑 {len(lines)-1} epoch")
+            raise RuntimeError(f"{tag} 训练子进程失败: {r.returncode}")
+        import csv as csv_module
+        target = int(extra[extra.index("--epochs") + 1]) if "--epochs" in extra else (20 if "e2" in script else 6)
+        csv_path = LOG_DIR / f"{tag}.csv"
+        if csv_path.exists():
+            with csv_path.open() as handle:
+                epochs = [int(row["epoch"]) for row in csv_module.DictReader(handle)]
+            if epochs and max(epochs) >= target:
+                print(f"[完成] {tag} epoch={max(epochs)}/{target}")
                 return True
-    return True
+    raise RuntimeError(f"{tag} 在 {max_segments} 段后仍未完成训练协议")
 
 
 def main():

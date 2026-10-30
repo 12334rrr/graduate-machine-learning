@@ -1,0 +1,7 @@
+{
+  "source": "/Users/wangchunbo/Learn/研一上/机器学习/作业/submission_combined/repository",
+  "input_root": "/Users/wangchunbo/Learn/研一上/机器学习/作业",
+  "created": "20261028_221302_643465",
+  "scope": "unet",
+  "note": "隔离验证，不用于替代1000张正式评测"
+}

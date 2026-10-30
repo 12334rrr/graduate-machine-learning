@@ -1,0 +1,430 @@
+[
+  {
+    "name": "E2_retrain20",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/e2_finetune.py",
+      "--tag",
+      "e2_box",
+      "--epochs",
+      "20",
+      "--batch",
+      "8",
+      "--max-minutes",
+      "100000",
+      "--num-workers",
+      "0"
+    ]
+  },
+  {
+    "name": "E3_retrain6",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/e3_lora.py",
+      "--tag",
+      "e3_lora",
+      "--epochs",
+      "6",
+      "--batch",
+      "1",
+      "--accum",
+      "8",
+      "--train-limit",
+      "600",
+      "--val-limit",
+      "100",
+      "--max-minutes",
+      "100000"
+    ]
+  },
+  {
+    "name": "train_size384",
+    "project": "hw1_unet",
+    "command": [
+      "/opt/anaconda3/envs/hw1-unet-medseg/bin/python",
+      "-u",
+      "src/train.py",
+      "--epochs",
+      "12",
+      "--patience",
+      "6",
+      "--max-minutes",
+      "100000",
+      "--num-workers",
+      "0",
+      "--model",
+      "unet",
+      "--tag",
+      "size384",
+      "--size",
+      "384"
+    ]
+  },
+  {
+    "name": "eval_size384",
+    "project": "hw1_unet",
+    "command": [
+      "/opt/anaconda3/envs/hw1-unet-medseg/bin/python",
+      "-u",
+      "src/evaluate.py",
+      "--tag",
+      "size384",
+      "--split",
+      "test",
+      "--size",
+      "384"
+    ]
+  },
+  {
+    "name": "eval_e2_gt",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "gt",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e2_pert-20",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "pert-20",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e2_pert-10",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "pert-10",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e2_pert10",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "pert10",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e2_pert20",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "pert20",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e2_point1",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "point1",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e2_point3",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "point3",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e2_point5",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "point5",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e2_auto",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "auto",
+      "--split",
+      "test",
+      "--unet-tag",
+      "unet_s42"
+    ]
+  },
+  {
+    "name": "eval_e2_auto10",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e2",
+      "--tag",
+      "e2_box",
+      "--prompt",
+      "auto10",
+      "--split",
+      "test",
+      "--unet-tag",
+      "unet_s42"
+    ]
+  },
+  {
+    "name": "eval_e3_gt",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "gt",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e3_pert-20",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "pert-20",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e3_pert-10",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "pert-10",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e3_pert10",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "pert10",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e3_pert20",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "pert20",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e3_point1",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "point1",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e3_point3",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "point3",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e3_point5",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "point5",
+      "--split",
+      "test"
+    ]
+  },
+  {
+    "name": "eval_e3_auto",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "auto",
+      "--split",
+      "test",
+      "--unet-tag",
+      "unet_s42"
+    ]
+  },
+  {
+    "name": "eval_e3_auto10",
+    "project": "hw2_sam",
+    "command": [
+      "/opt/anaconda3/envs/hw2-sam-transformer/bin/python",
+      "-u",
+      "src/evaluate_sam.py",
+      "--stage",
+      "e3",
+      "--tag",
+      "e3_lora",
+      "--prompt",
+      "auto10",
+      "--split",
+      "test",
+      "--unet-tag",
+      "unet_s42"
+    ]
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "pages": 24,
+  "figures": 17,
+  "tables": 13,
+  "equations": 6,
+  "all_tables_and_cells_centered": true,
+  "independent_cover_and_toc": true,
+  "full_retraining_completed": true,
+  "affected_runs": [
+    "e2_box",
+    "e3_lora",
+    "size384"
+  ],
+  "sam_evaluations": 20,
+  "test_samples_per_evaluation": 1000,
+  "retained_conv_formal_runs": 24,
+  "retained_E1_evaluations": 10,
+  "checkpoint_audit": "passed",
+  "regression": "passed",
+  "portable_inference_exports": "tensor-identical",
+  "gallery_originals_sha256_verified": 37,
+  "manual_revision_preserved": true,
+  "layout_and_spacing": "verified",
+  "all_tables_single_page": true,
+  "figure_captions_same_page": true
+}

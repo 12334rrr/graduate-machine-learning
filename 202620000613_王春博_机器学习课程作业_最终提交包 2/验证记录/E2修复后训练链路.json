@@ -1,0 +1,7 @@
+{
+  "train_samples": 2,
+  "optimizer_steps": 1,
+  "loss": 0.7182164192199707,
+  "finite_decoder_gradient": true,
+  "full_retraining": false
+}

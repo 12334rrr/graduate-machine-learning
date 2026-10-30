@@ -1,0 +1,42 @@
+{
+  "tag": "smoke_unet",
+  "model": "unet",
+  "stop_reason": "completed",
+  "best_dice": 0.40332760005924817,
+  "args": {
+    "model": "unet",
+    "attn_where": "all",
+    "size": 192,
+    "loss": "bce_dice",
+    "epochs": 1,
+    "batch": 2,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "patience": 8,
+    "seed": 42,
+    "tag": "smoke_unet",
+    "resume": false,
+    "max_minutes": 25.0,
+    "no_amp": false,
+    "num_workers": 0,
+    "subset": 16,
+    "fold": null,
+    "folds": 5
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "lr": 0.001,
+      "train_loss": 0.5903813168406487,
+      "val_loss": 0.8108946198225021,
+      "dice": 0.40332760005924817,
+      "iou": 0.2808947264281338,
+      "hd95": 83.03995139778245,
+      "sensitivity": 0.9831979745757589,
+      "specificity": 0.12615899513278453,
+      "pixel_acc": 0.3458894856770833,
+      "epoch_sec": 3.2,
+      "cum_min": 0.1
+    }
+  ]
+}

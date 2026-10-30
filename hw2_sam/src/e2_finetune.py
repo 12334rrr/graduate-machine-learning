@@ -42,21 +42,6 @@ from sam_utils import build_sam, encode_and_decode, gt_box_from_mask, perturb_bo
 FIELDS = ["epoch", "lr", "train_loss", "val_dice", "val_iou", "val_hd95", "epoch_sec", "cum_min"]
 
 
-def flip_emb_and_box(emb: torch.Tensor, box: np.ndarray, h: bool, v: bool, size=EVAL_SIZE):
-    """对图像嵌入与框做一致的翻转增强。
-
-    图像嵌入是 (256,64,64) 的特征图，翻转它等价于翻转原图（因为 ViT 的
-    patch 网格与图像空间一一对应）—— 这是缓存嵌入后唯一还能做的几何增强。
-    """
-    if h:
-        emb = torch.flip(emb, dims=[-1])
-        box = np.array([size - 1 - box[2], box[1], size - 1 - box[0], box[3]], dtype=np.float32)
-    if v:
-        emb = torch.flip(emb, dims=[-2])
-        box = np.array([box[0], size - 1 - box[3], box[2], size - 1 - box[1]], dtype=np.float32)
-    return emb, box
-
-
 def make_batch(batch, rng, train: bool):
     """把 Dataset 采样结果组装成可直接喂给 SAM 的批。"""
     embs, masks, ids = batch
@@ -89,15 +74,7 @@ def run_epoch(sam, loader, optimizer, criterion, device, amp, train, rng, epoch_
         for batch in tqdm(loader, desc=epoch_desc, leave=False):
             embs, boxes, gt = make_batch(batch, rng, train)
             B = embs.shape[0]
-            # 随机翻转增强（同一张图内所有样本一致，避免额外复杂度）
-            if train:
-                do_h, do_v = bool(rng.integers(0, 2)), bool(rng.integers(0, 2))
-                if do_h or do_v:
-                    new_embs, new_boxes = [], []
-                    for i in range(B):
-                        e, b = flip_emb_and_box(embs[i], boxes[i], do_h, do_v)
-                        new_embs.append(e); new_boxes.append(b)
-                    embs = torch.stack(new_embs); boxes = np.stack(new_boxes)
+            # 缓存保持原图空间；仅扰动提示框，避免特征翻转与监督错位。
             embs = embs.to(device)
             gt = gt.to(device)
             boxes1024 = np.stack([to_1024_box(b) for b in boxes])
@@ -147,7 +124,7 @@ def main():
     print(f"[参数] 可训练 {trainable/1e6:.2f} M / 总计 {total/1e6:.2f} M "
           f"({trainable/total*100:.1f}%)")
 
-    train_ds = EmbeddingDataset("train", augment=True)
+    train_ds = EmbeddingDataset("train", augment=False)
     val_ds = EmbeddingDataset("val")
     g = torch.Generator(); g.manual_seed(args.seed)
     train_loader = DataLoader(train_ds, batch_size=args.batch, shuffle=True,
@@ -192,13 +169,14 @@ def main():
         print(f"  epoch {epoch:3d} | loss {tl:.4f} | dice {vs['dice']:.4f} | "
               f"iou {vs['iou']:.4f} | hd95 {vs['hd95']:.2f} | {row['epoch_sec']}s")
 
+        improved = vs["dice"] > best
+        best = max(best, vs["dice"])
         state = {"epoch": epoch, "mask_decoder": sam.mask_decoder.state_dict(),
                  "prompt_encoder": sam.prompt_encoder.state_dict(),
                  "optim": optimizer.state_dict(), "sched": scheduler.state_dict(),
                  "best_dice": best, "history": history, "args": vars(args)}
         torch.save(state, ck_last)
-        if vs["dice"] > best:
-            best = vs["dice"]; state["best_dice"] = best
+        if improved:
             torch.save(state, ck_best)
             print(f"    ↑ 最佳 Dice={best:.4f}")
         if row["cum_min"] >= args.max_minutes:

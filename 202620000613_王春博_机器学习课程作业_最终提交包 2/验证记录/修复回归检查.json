@@ -1,0 +1,9 @@
+{
+  "E2_cache_target_orientation": "passed",
+  "E3_actual_checkpoint_prompt_all_tensors": "passed",
+  "hw1_unet/src/train.py_persistence": "passed",
+  "hw2_sam/src/e2_finetune.py_persistence": "passed",
+  "hw2_sam/src/e3_lora.py_persistence": "passed",
+  "five_source_syntax": "passed",
+  "stage_completion_6_20_and_incomplete17": "passed"
+}

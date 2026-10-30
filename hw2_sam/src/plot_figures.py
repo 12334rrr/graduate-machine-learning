@@ -58,11 +58,11 @@ def draw_sam_arch(save_path: Path):
 
     # ViT
     _box(ax, 5.1, 5.0, 3.0, 2.6,
-         "ViT-B 图像编码器（≈89 M 参数，占 SAM 97%）\n"
+         "ViT-B 图像编码器（89.670 M 参数，占原版95.7%）\n"
          "12 × Transformer Block：\n"
          "  LayerNorm → 多头自注意力 → 残差 →\n"
          "  LayerNorm → FFN → 残差\n"
-         "（第 2/5/8/11 层用全局注意力，其余用窗口注意力）", C_VIT, fs=9)
+         "（零起始层2/5/8/11为全局注意力，其余为窗口注意力）", C_VIT, fs=9)
     _arrow(ax, 3.25, 5.0, 3.55, 5.0)
 
     # 图像嵌入
@@ -109,7 +109,7 @@ def draw_decoder_flow(save_path: Path):
             fontsize=12.5, fontweight="bold")
 
     _box(ax, 1.3, 7.6, 2.2, 0.9, "图像嵌入\n256×64×64", "#E1F5FE")
-    _box(ax, 1.3, 5.6, 2.2, 0.9, "稠密提示嵌入\n(dense PE)", C_PE)
+    _box(ax, 1.3, 5.6, 2.2, 0.9, "稠密提示嵌入\n另加固定图像位置编码", C_PE)
     _box(ax, 1.3, 3.6, 2.2, 0.9, "提示 token\n(稀疏嵌入 + IoU/掩膜 token)", C_PE)
 
     _box(ax, 5.0, 6.6, 2.4, 1.0, "① 提示 token\n自注意力", "#E8F5E9")
@@ -131,7 +131,7 @@ def draw_decoder_flow(save_path: Path):
     _box(ax, 11.0, 6.6, 1.6, 1.0, "IoU 估计头", C_IO)
     _arrow(ax, 8.0, 7.2, 10.15, 6.8, ls="--")
 
-    ax.text(0.1, 0.6, "每跑一次解码还会在 token 里拼一次「上一轮掩膜」，因此 SAM 支持迭代式多轮精修。",
+    ax.text(0.1, 0.6, "本实验不输入上一轮掩膜；掩膜提示经卷积生成稠密嵌入，不拼入稀疏token。",
             fontsize=9.5, bbox=dict(boxstyle="round,pad=0.4", fc="#F5F5F5", ec="#BDBDBD"))
     fig.tight_layout(); fig.savefig(save_path, dpi=160); plt.close(fig)
     print(f"[图] {save_path}")
@@ -140,7 +140,7 @@ def draw_decoder_flow(save_path: Path):
 def draw_robustness(save_path: Path):
     """扰动框鲁棒性曲线 + 各提示类型对比（读 outputs/logs/eval_*.json）。
 
-    视觉规范：与门户同一套配色（E1 蓝 / E2 紫 / E3 绿），
+    视觉规范：与门户同一套配色（E1蓝 / E2绿 / E3橙），
     左图用阴影标出两阶段之间的「鲁棒性差距」，右图按阶段着色。
     """
     files = sorted(LOG_DIR.glob("eval_*.json"))
@@ -151,7 +151,7 @@ def draw_robustness(save_path: Path):
     # 只取 test 划分（val 冒烟不混入）
     records = [r for r in records if r.get("split") == "test"] or records
 
-    C = {"e1": "#1a73e8", "e2": "#7c3aed", "e3": "#188038"}
+    C = {"e1": "#2878B5", "e2": "#21A08B", "e3": "#E39D3E"}
     NAME = {"e1": "E1 零样本", "e2": "E2 冻结微调", "e3": "E3 LoRA"}
     order = {"pert-20": -20, "pert-10": -10, "gt": 0, "pert10": 10, "pert20": 20}
 
@@ -182,7 +182,7 @@ def draw_robustness(save_path: Path):
         xs = curves["e1"][0]
         axes[0].fill_between(xs, curves["e1"][1], curves["e2"][1],
                              color=C["e2"], alpha=0.10, zorder=1,
-                             label="微调带来的鲁棒性增益")
+                             label="E2与E1的Dice差异")
 
     axes[0].axvline(0, color="#9aa0a6", ls=":", lw=1.2)
     axes[0].text(0.6, axes[0].get_ylim()[0] + 0.01, "GT 框", color="#5f6470", fontsize=9, va="bottom")
@@ -200,7 +200,7 @@ def draw_robustness(save_path: Path):
 
     axes[0].set_xlabel("框扰动幅度（%）  负 = 内缩，正 = 外扩", fontsize=11)
     axes[0].set_ylabel("Dice", fontsize=11)
-    axes[0].set_title("提示框扰动鲁棒性：微调买到的是「不怕提示不准」", fontsize=12.5, pad=10)
+    axes[0].set_title("三阶段提示框扰动比较", fontsize=12.5, pad=10)
     axes[0].set_xticks([-20, -10, 0, 10, 20])
     axes[0].grid(alpha=0.25)
     axes[0].legend(fontsize=9, frameon=False, loc="upper left", bbox_to_anchor=(0.02, 0.98))
@@ -248,10 +248,10 @@ def draw_cascade(save_path: Path):
     """
     blocks = [
         ("① 皮肤镜图像\n256×256", C_IO),
-        ("② U-Net 自动分割\n（作业 1，29 M，~10 ms）\n→ 粗掩膜", "#E8F5E9"),
+        ("② U-Net 自动分割\n（作业1，28.95M）\n→ 粗掩膜", "#E8F5E9"),
         ("③ 掩膜 → 外接矩形框\n（自动提示生成）", C_PE),
-        ("④ SAM 交互式精修\n（作业 2，94 M，0.02–0.9 s）\n→ 精细掩膜", C_VIT),
-        ("⑤ 输出\n给医生复核", C_IO),
+        ("④ SAM 提示精修\n（作业2，ViT-B）\n→ 精细掩膜", C_VIT),
+        ("⑤ 输出\n用于课程分析", C_IO),
     ]
     n = len(blocks)
     w, h, gap, margin = 2.3, 1.9, 0.62, 0.55

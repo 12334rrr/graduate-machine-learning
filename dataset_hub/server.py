@@ -79,7 +79,7 @@ SYSTEM_PROMPT_BASE = """你是「MedSeg Dataset Hub」科研数据集展示平�
 
 【项目背景】
 - 作业1（hw1_unet）：在 ISIC 2018 Task 1 皮肤镜数据集上手写实现并对比三个分割模型：U-Net、ResUNet、Attention U-Net；评价指标为 Dice / IoU / HD95。
-- 作业2（hw2_sam）：基于 SAM ViT-B（375MB，91M 参数）的三阶段实验：E1 零样本评测（量化 SAM 从自然图像到皮肤镜的域差距）、E2 冻结图像编码器只微调提示编码器与掩膜解码器、E3 用 LoRA(r=8) 微调 ViT 的 q/v 投影（约 0.5M 可训练参数）。
+- 作业2（hw2_sam）：基于 SAM ViT-B（原版93.735M参数）的三阶段实验：E1 零样本评测（量化 SAM 从自然图像到皮肤镜的域差距）、E2 冻结图像编码器只微调提示编码器与掩膜解码器、E3 用 LoRA(r=8) 微调 ViT 的 q/v 投影（LoRA新增0.295M，联合优化提示编码器与解码器共4.359M）。
 - 核心叙事「级联系统」：U-Net 小模型全自动出粗框 → 作为提示输入 SAM 精修——小模型提框、大模型精修，分工而非替代。
 
 【平台收录内容】
@@ -247,7 +247,7 @@ HW2_PROJECT = {
 STAGE_META = {
     "e1": {"name": "E1 零样本评测", "desc": "原版 SAM 不训练，GT 外接矩形框提示，量化域差距"},
     "e2": {"name": "E2 冻结编码器微调", "desc": "冻结 ViT 编码器，仅训练提示编码器 + 掩膜解码器（约 4% 参数）"},
-    "e3": {"name": "E3 LoRA 微调", "desc": "ViT q/v 投影注入 LoRA(r=8)，连同解码器一起训练（约 0.5M 可训练参数）"},
+    "e3": {"name": "E3 LoRA 微调", "desc": "ViT q/v 投影注入 LoRA(r=8)，连同解码器一起训练（LoRA新增0.295M，联合优化提示编码器与解码器共4.359M）"},
 }
 EMB_TARGETS = {"train": 2594, "val": 100, "test": 1000}
 FIG_EXTS = {".png", ".jpg", ".jpeg", ".svg"}
@@ -591,6 +591,39 @@ def live_state():
             _LIVE_TRACK.pop(k, None)
 
     return {"now": now, "count": len(items), "items": items}
+
+
+def reproduction_state():
+    """Expose the selective repair run without mixing partial results into historical charts."""
+    import csv
+    root = WORKSPACE / "full_reproduction_20261029"
+    state = _read_json_file(root / "pipeline_status.json") or {}
+    scope = _read_json_file(root / "affected_scope.json") or {}
+    current = state.get("current_job", "")
+    published = _read_json_file(WORKSPACE / "RESULTS_RELEASE.json") or {}
+    status = state.get("status", "not_started")
+    if status == "running":
+        try:
+            os.kill(int(state.get("pid", 0)), 0)
+        except (ProcessLookupError, PermissionError, ValueError):
+            status = "interrupted"
+    epoch, target = None, None
+    if current in ("E2_retrain20", "E3_retrain6"):
+        tag, target = ("e2_box", 20) if current.startswith("E2") else ("e3_lora", 6)
+        csv_path = root / "hw2_sam" / "outputs" / "logs" / (tag + ".csv")
+        if csv_path.exists():
+            try:
+                with csv_path.open() as handle:
+                    rows = list(csv.DictReader(handle))
+                if rows: epoch = int(rows[-1]["epoch"])
+            except (OSError, ValueError, KeyError): pass
+    return {"status": "published" if published.get("validated") else status, "current_job": current,
+            "completed_jobs": len(state.get("completed", [])) or published.get("jobs", 0), "total_jobs": state.get("total_jobs", published.get("jobs", 0)),
+            "epoch": epoch, "epochs_total": target,
+            "updated_at": state.get("updated_at"), "scope": scope,
+            "suite_samples": state.get("suite_samples"), "suite_total": state.get("suite_total"),
+            "displayed_results": "validated_repair" if published.get("validated") else "historical",
+            "release": published, "error": state.get("error")}
 
 
 def hw1_state():
@@ -1079,6 +1112,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send_json(hw1_state())
             if path == "/api/hw2":
                 return self._send_json(hw2_state())
+            if path == "/api/reproduction":
+                return self._send_json(reproduction_state())
             if path == "/api/live":
                 return self._send_json(live_state())
             if path == "/api/env":

@@ -176,19 +176,18 @@ def main():
         write_progress(tag, phase="train", epoch=epoch, epochs_total=args.epochs,
                        detail=f"epoch {epoch}/{args.epochs} · val dice {vsum['dice']:.4f}")
 
-        # —— 每个 epoch 都存盘（硬性要求）——
+        improved = vsum["dice"] > best_dice
+        if improved:
+            best_dice, bad_epochs = vsum["dice"], 0
+        else:
+            bad_epochs += 1
+        # 更新状态后再保存，续跑与不间断训练使用相同的最佳值和耐心计数。
         state = {"epoch": epoch, "model": model.state_dict(), "optim": optimizer.state_dict(),
                  "sched": scheduler.state_dict(), "best_dice": best_dice,
                  "bad_epochs": bad_epochs, "history": history, "args": vars(args)}
         torch.save(state, ckpt_last)
-        if vsum["dice"] > best_dice:
-            best_dice = vsum["dice"]
-            bad_epochs = 0
-            state["best_dice"] = best_dice
+        if improved:
             torch.save(state, ckpt_best)
-            print(f"    ↑ 新的最佳 Dice={best_dice:.4f}，已存 {ckpt_best.name}")
-        else:
-            bad_epochs += 1
 
         if bad_epochs >= args.patience:
             stop_reason = f"early_stop(patience={args.patience})"
