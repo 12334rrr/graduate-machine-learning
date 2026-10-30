@@ -15,6 +15,7 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "hw1_unet" / "src"))
+DATA_PROCESSED = ROOT / "hw1_unet" / "data" / "processed"
 
 from dataset import ISICSeg  # noqa: E402
 from metrics import count_components, dice_score, foreground_ratio, hd95, iou_score  # noqa: E402
@@ -50,6 +51,12 @@ class TestMetrics(unittest.TestCase):
 class TestFoldSplit(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # 数据与权重不入库（体积 28GB，2026-10-30 清理）；缺失时跳过而非失败
+        npy = DATA_PROCESSED / "train_images.npy"
+        if not npy.exists():
+            raise unittest.SkipTest(
+                "数据未就绪（清理后不入库）：按 hw1_unet/README.md 运行 "
+                "download_isic.py + prepare_data.py 后重跑")
         cls.train0 = ISICSeg("train", size=64, fold=0)
         cls.val0 = ISICSeg("val", size=64, fold=0)
         cls.test = ISICSeg("test", size=64)

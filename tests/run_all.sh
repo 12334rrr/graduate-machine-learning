@@ -65,9 +65,19 @@ echo "============================================================"
 echo "[5/5] 报告/提交包结构检查"
 echo "============================================================"
 for f in hw1_unet/reports/实验报告.md hw2_sam/reports/实验报告.md \
-         hw1_unet/reports/tables.md submission/提交说明.md; do
+         hw1_unet/reports/tables.md; do
   if [ ! -f "$ROOT/$f" ]; then
     echo "  [缺失] $f"
+    exit 1
+  fi
+done
+# 最终交付物（2026-10-30 清理后，正式报告以最终提交包为准；hw*/reports 的 md 仅为指引存根）
+FINAL_DIR="$ROOT/202620000613_王春博_机器学习课程作业_最终提交包 2"
+for f in "202620000613_王春博_机器学习课程作业_最终报告.pdf" \
+         "202620000613_王春博_机器学习课程作业_最终报告.docx" \
+         "RESULTS_RELEASE.json"; do
+  if [ ! -s "$FINAL_DIR/$f" ] && [ ! -s "$ROOT/$f" ]; then
+    echo "  [缺失] 最终交付物：$f"
     exit 1
   fi
 done
